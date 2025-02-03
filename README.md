@@ -1,5 +1,7 @@
 # Meal Planning App Name
 
+Team Blue 
+
 This app helps you plan your meals, manage your grocery list, and keep track of your pantry.
 
 ## Features
