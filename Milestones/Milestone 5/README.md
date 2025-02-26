@@ -1,10 +1,10 @@
 # High Fidelity Design 
 
-Overview
+## Overview
 
 This report outlines the rationale behind the high-fidelity prototype of Byte Me, a mobile application designed to streamline meal planning while minimizing food waste. Building upon insights gained from user research and low-fidelity prototyping, this high-fidelity iteration represents a significant step toward delivering a user-centric solution that enhances meal management. This document will highlight how the design addresses user needs and pain points identified in the research phase, emphasizing key improvements implemented since the low-fidelity prototype. Additionally, we will provide a clear justification for each design choice and its intended impact.
 
-User Needs and Requirements
+## User Needs and Requirements
 
 Recap of User Research
 The high-fidelity prototype of Byte Me is designed with a strong foundation in user research, which identified several key challenges:
@@ -30,7 +30,7 @@ The high-fidelity design of Byte Me incorporates the following features to direc
 
 - Goal Tracking: A visual progress tracker allows users to monitor their calorie intake and track achievements such as trying new recipes.
 
-Design Rationale and Improvements
+## Design Rationale and Improvements
 
 Navigation:
 In response to user feedback, we expanded the navigation bar from four to five tabs, separating the pantry feature from the grocery list for easier access. Since pantry management is central to reducing food waste, its prominence improves usability. Additionally, the navigation bar is removed from profile and settings screens to reduce clutter and improve focus.

@@ -1,12 +1,12 @@
 # Milestone 3: Software Market Research
 
-Introduction
+## Introduction
 
 Our meal planning application started with the goal of simplifying meal planning while fostering social meal coordination. However, after conducting user research, we refined our focus towards a personalized experience, prioritizing convenience, dietary customization, and tailored meal plans over social features.
 
 To enhance our app’s direction, we analyzed the market landscape and competitor apps to identify industry trends, gaps in current offerings, and opportunities to differentiate our product.
 
-Market Overview
+## Market Overview
 
 Market Size and Growth Trends:
 
@@ -16,7 +16,7 @@ Market Size and Growth Trends:
 
 - A surge in demand for nutrition apps was observed during the pandemic, with both free and paid app usage increasing.
 
-Major Players & Market Share
+## Major Players & Market Share
 
 - Yummly & Paprika dominate the market with extensive feature sets and intuitive UI.
 
@@ -26,7 +26,7 @@ Major Players & Market Share
 
 - Prepear & Eat This Much appeal to budget-focused users with portion control and grocery integration.
 
-Competitor Analysis & Strategic Positioning
+## Competitor Analysis & Strategic Positioning
 
 Our app aims to fill gaps left by competitors by focusing on:
 
@@ -40,7 +40,7 @@ Our app aims to fill gaps left by competitors by focusing on:
 
 - Balanced free & premium model to provide accessibility without limiting key features.
 
-Conclusion & Next Steps
+## Conclusion & Next Steps
 
 - Market research has confirmed a strong growth trajectory for meal planning apps.
 

@@ -1,10 +1,10 @@
 # Milestone 4 - Low-Fidelity Introduction
 
-Overview
+## Overview
 
 The success of any software application depends on its ability to address the needs and preferences of its target audience effectively. In developing our meal planning application, we have relied on user-centered research and an analysis of the competitive landscape to guide our design choices. This report outlines the justification for the selected features based on user feedback, usability considerations, and industry trends. By focusing on personalized and practical functionalities, our application aims to streamline meal preparation, help users maintain dietary goals, and reduce food waste.
 
-Feature Explanation
+## Feature Explanation
 
 Home Page
 The home page is based on Brian's wireframe as it effectively integrates key features users expect from a meal planning app. It includes:

@@ -1,8 +1,8 @@
 # Milestone 1: Team Formation, Software Theme & Entrepreneurial Context
 
-Team Blue
+## Team Blue
 
-Members & Roles:
+Members & Roles
 
 - Jorge Mejia – QA Specialist (Python, C++, DB, Figma)
 
@@ -14,9 +14,9 @@ Members & Roles:
 
 - Trung Le – Database Administrator(C++, Python, Java, ML)
 
-Software Theme
+## Software Theme
 
-Overview:
+Overview
 A meal planning app that simplifies healthy eating by integrating personalized meal recommendations, cost management, and scheduling into one platform. Features include:
 
 - Tailored meal plans based on dietary needs and preferences
@@ -35,7 +35,7 @@ Target Audience:
 
 - Health-conscious individuals
 
-Entrepreneurial Context
+## Entrepreneurial Context
 
 Market Analysis:
 Growing demand for meal planning solutions within the health and wellness industry, projected to expand significantly.
