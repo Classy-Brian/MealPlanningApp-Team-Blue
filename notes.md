@@ -84,6 +84,68 @@ type in console: npm run dev
     connectDB();
     - Establish the connection to the MongoDB database when the server starts
 
+16. Made a MongoDB and put the connectection string in the .env
+    - I will need your email to give you access
+
+17. Creates models folder in backend
+
+18. Created receipe.model.js
+
+19. Added in receipe.model.js
+    const recipeSchema = new mongoose.Schema({
+        name: 
+        {
+            type: String,
+            required: true
+        },
+        ingredient:
+        {
+            type: String,
+            required: true
+        },
+        image: {
+            type: String,
+            required: true
+        },
+    }, {
+        timestamps: true 
+    });
+
+    const Recipe = mongoose.model('Recipe', recipeSchema);
+    export default Recipe;
+
+    - Defines a Mongoose schema for recipe data
+        - Probably need to add more like allergies/cooking direction
+
+20. Created user.model.js
+
+21. Added in user.model.js
+    const userSchema = new mongoose({
+        name: {
+            type: String,
+            required: true
+        },
+        email: {
+            type: String,
+            required: true,
+            unique: true
+        },
+        password: {
+            type: String,
+            required: true
+        },
+        allergies: {
+            type: String
+        }
+    }, {
+        timestamps: true 
+    });
+
+    const User = mongoose.model('User', userSchema);
+    export default User;
+
+    - Defines a Mongoose schema for User data
+
 Current next step for backend:
 - Make the MongoDB and put it in the .env
     - Then test it
