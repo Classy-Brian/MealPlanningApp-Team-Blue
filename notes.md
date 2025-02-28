@@ -1,13 +1,8 @@
 -- DEPENDENCIES NEEDED --
-"dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "mongoose": "^8.11.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.9"
-  }
+Look into the package.json and look for "dependencies"
+- There is one in the root and another in the frontend. Im not sure if its good practice but it's there when I started the expo project so yeah.
   - note: Im using windows so if you're not, the version might be different
+  - To install my dependencies, cd into the folder with the package.json and type: npm install
 
 -- TO RUN THE SERVER --
 type in console: npm run dev
@@ -94,3 +89,16 @@ Current next step for backend:
     - Then test it
 - Add the meal planner API
 
+-- Frontend: Step by step what I did -- 
+
+1. cd in the frontend folder
+
+2. In the console: npx create-expo-app@latest
+    - For the name I put byte-me
+
+3. cd in the byte-me folder
+
+4. In the console: npm run reset-project
+    - Start off with blank canvas
+    - In the app-example was the default template
+        - Could use it as a reference
