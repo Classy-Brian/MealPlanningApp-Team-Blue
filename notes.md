@@ -156,7 +156,7 @@ type in console: npm run dev
 23. Added controllers folder and recipe.controller.js
     export const getRecipes = async (req, res) => {
         try {
-            const response = await axios.get('https://api.edamam.com/api/recipes/v2', {
+            const response = await axios.get('https://api.edamam.com/api/recipes/v2/', {
                 params: {
                     type: 'public',
                     q: req.query.q,
@@ -192,6 +192,8 @@ type in console: npm run dev
     app.use(express.json()); // Allows us to accept JSON data in the req body
 
     app.use('/api/recipes', recipeRoutes) // Mount the recipe routes
+
+26. Tested in Postman
 
 Current next step for backend:
 - Make the MongoDB and put it in the .env
