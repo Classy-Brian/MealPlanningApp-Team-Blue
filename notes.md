@@ -8,6 +8,9 @@ Look into the package.json and look for "dependencies"
 -- TO RUN THE SERVER --
 type in console: npm run dev
 
+-- TO RUN THE FRONT-END --
+type in console: npx expo start
+
 -- BACKEND: Step by step what I did -- 
 
 1. Created backend and frontend folder
