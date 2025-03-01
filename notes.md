@@ -2,6 +2,7 @@
 Look into the package.json and look for "dependencies"
 - There is one in the root and another in the frontend. Im not sure if its good practice but it's there when I started the expo project so yeah.
   - note: Im using windows so if you're not, the version might be different
+  - note: Must install Node.js and npm
   - To install my dependencies, cd into the folder with the package.json and type: npm install
 
 -- TO RUN THE SERVER --
@@ -113,7 +114,6 @@ type in console: npm run dev
 
     const Recipe = mongoose.model('Recipe', recipeSchema);
     export default Recipe;
-
     - Defines a Mongoose schema for recipe data
         - Probably need to add more like allergies/cooking direction
 
@@ -143,8 +143,57 @@ type in console: npm run dev
 
     const User = mongoose.model('User', userSchema);
     export default User;
-
     - Defines a Mongoose schema for User data
+
+22. Added in .env
+    PORT=...
+    EDAMAM_APP_ID=...
+    EDAMAM_API_KEY=...
+    - The Port variable specifies the port number where the server will run
+    - The EDAMAM_APP_ID and EDAMAM_API_KEY are obtained from the Edamam website and are used to authenticate requests to their API
+
+
+23. Added controllers folder and recipe.controller.js
+    export const getRecipes = async (req, res) => {
+        try {
+            const response = await axios.get('https://api.edamam.com/api/recipes/v2/', {
+                params: {
+                    type: 'public',
+                    q: req.query.q,
+                    app_id: process.env.EDAMAM_APP_ID,
+                    app_key: process.env.EDAMAM_APP_KEY
+                }
+            });
+            res.json(response.data);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Error fetching recipes '});
+        }
+    };
+    - The controllers folder will contain controller functions that handle API requests and logic.
+    - The getRecipes function in recipe.controller.js is responsible for fetching recipes from the Edamam API.
+    - It uses axios to make a GET request to the Edamam API, including the search query (q) from the request parameters and the API credentials from the .env file.
+    - It then sends the API response back to the client in JSON format.
+
+24. Added routes folder and recipe.route.js
+    import express from "express";
+
+    import { getRecipes } from "../controllers/recipe.controller";
+
+    const router = express.Router();
+
+    router.get("/", getRecipes);
+
+    export default router;
+    - The routes folder will contain route definitions for different parts of the API.
+    - The recipe.route.js file defines a route (/) that uses the getRecipes controller function to handle GET requests for recipes.
+
+25. Added in server.js 
+    app.use(express.json()); // Allows us to accept JSON data in the req body
+
+    app.use('/api/recipes', recipeRoutes) // Mount the recipe routes
+
+26. Tested in Postman
 
 Current next step for backend:
 - Make the MongoDB and put it in the .env
