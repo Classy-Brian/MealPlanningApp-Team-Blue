@@ -16,10 +16,7 @@ const userSchema = new mongoose({
         required: true
     },
     allergies: [{
-        name: {
-            type: String,
-            required: true
-        }
+        type: String
     }]
 }, {
     timestamps: true 
