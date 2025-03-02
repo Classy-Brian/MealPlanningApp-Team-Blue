@@ -216,3 +216,13 @@ Current next step for backend:
     - Start off with blank canvas
     - In the app-example was the default template
         - Could use it as a reference
+
+valerie's notes
+- to run android, do
+    npm run web -> a
+
+download android studio (i used this link as a ref)
+https://reactnative.dev/docs/set-up-your-environment?platform=android
+
+in tsconfig.json, you need to add a line in the "include" frame,
+    which is **/*.jsx
