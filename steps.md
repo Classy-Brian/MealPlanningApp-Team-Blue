@@ -270,4 +270,101 @@
     };
 
     - login is not done yet
-        
+
+    7. Added more to user.model.js and recipe.model.js
+
+    8. Adding createRecipe into recipe.controller.js
+    export const createRecipe = async (req, res) => {
+        try {
+            const newRecipe = new Recipe(req.body); // Create a new recipe object from request body
+            const savedRecipe = await newRecipe.save(); // Save the new recipe
+            res.status(201).json(savedRecipe); // 201 -> Created successful
+        } catch (error) {
+            res.status(400).json({ message: error. message }); // 400 -> Bad request
+        }
+    };
+    - Receives recipe data from the client in the request body (req.body).
+    - Creates a new Recipe object using the Mongoose model.
+    - Saves the new recipe to the MongoDB database.
+    - Sends a 201 Created response with the saved recipe data (if successful).
+    - Sends a 400 Bad Request response with an error message (if there was an error).
+
+    9. Adding getAllRecipes into recipe.controller.js
+    export const getAllRecipes = async (req, res) => {
+        try {
+            const recipes = await Recipe.find(); //Find all recipes
+            res.json(recipes);
+            if (!recipe) {
+                return res.status(404).json({ message: 'Recipe not found' }); // 404 -> Not found
+            }
+        } catch (error) {
+            res.status(500).json({ message: error.message }); // 500 -> Internal server error
+        }
+    };
+    - Receives a request (req): Doesn't use any data from the request body or parameters.
+    - Queries the database: Uses Recipe.find() (with no arguments) to retrieve all recipe documents from the MongoDB collection associated with the Recipe model.
+    - Handles Asynchronous Operation: Uses await to wait for the database query to complete.
+    - If successful: Sends a JSON response (res.json(recipes)) containing an array of recipe objects.
+    - If an error occurs: Sends a 500 Internal Server Error
+
+    10. Adding getRecipeById into recipe.controller.js
+    export const getRecipeById = async (req, res) => {
+        try {
+            const recipe = await Recipe.findById(req.params.id); // Find recipe by ID
+            if (!recipe) {
+                return res.status(404).json({ message: 'Recipe not found' }); 
+            }
+            res.json(recipe);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    };
+    - Receives a request (req): Gets the recipe ID from the URL parameters (req.params.id).
+    - Queries the database: Uses Recipe.findById(req.params.id) to find a single recipe document by its _id.
+    - Handles Asynchronous Operation: Uses await to wait for the database query.
+    - If found: Sends a JSON response (res.json(recipe)) containing the recipe data (status code 200 OK).
+    - If not found: Sends a 404 Not Found response.
+    - If an error occurs: Sends a 500 Internal Server Error response with an error message.
+
+    11. Adding updateRecipe into recipe.controller.js
+    export const updateRecipe = async (req, res) => {
+        try {
+            const updateRecipe = await Recipe.findByIdAndUpdate(
+                req.params.id,
+                req.body, // update with the data with the request body
+                { new: true } // return the updated doc
+            );
+            if (!updateRecipe) {
+                return res.status(404).json({ message: 'Recipe not found' });
+            }
+            res.json(updateRecipe);
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    };
+    - Receives a request (req): Gets the recipe ID from the URL parameters (req.params.id) and the update data from the request body (req.body).
+    - Finds and Updates: Uses Recipe.findByIdAndUpdate(req.params.id, req.body, { new: true }) to find a recipe by ID and update it with the provided data. The { new: true } option ensures that the updated document is returned.
+    - Handles "Not Found" Case: Checks if a recipe was actually found and updated. If not, sends a 404 Not Found response.
+    - If successful: Sends a JSON response (res.json(updatedRecipe)) containing the updated recipe data (status code 200 OK).
+    - If not found: Sends a 404 Not Found response.
+    - If an error occurs: Sends a 400 Bad Request (or potentially 500 Internal Server Error) response with an error message.
+
+
+    12. Adding deleteRecipe into recipe.controller.js
+    export const deleteRecipe = async (req, res) => {
+        try {
+            const deletedRecipe = await Recipe.findByIdAndDelete(req.params.id);
+            if (!deleteRecipe) {
+                return res.status(404).json({ message: 'Recipe not found' });
+            }
+            res.json({ message: 'Recipe deleted' });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    };
+    - Receives a request (req): Gets the recipe ID to delete from the URL parameters (req.params.id).
+    - Finds and Deletes: Uses Recipe.findByIdAndDelete(req.params.id) to find a recipe by ID and delete it.
+    - Handles "Not Found" Case: Checks if a recipe was actually found and deleted. If not, sends a 404 Not Found response.
+    - If successful: Sends a JSON response (res.json({ message: 'Recipe deleted' })) with a success message (status code 200 OK). Or you could use 204 No Content.
+    - If not found: Sends a 404 Not Found response.
+    - If an error occurs: Sends a 500 Internal Server Error response with an error message. 
