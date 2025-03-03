@@ -7,6 +7,7 @@ export default function TabLayout() {
     return (
         <Tabs 
             tabBar={props=> <TabBar {...props} />}
+            screenOptions={{headerShown: false}}
         >
             <Tabs.Screen
                 name="index"
