@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Image  } from 'react-native';
 import { Home, Utensils, Calendar, ShoppingCart } from 'lucide-react-native';
+import Pantry from "@/assets/images/Pantry.png";
+import Recipe from "@/assets/images/recipe.png";
+
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -35,14 +38,16 @@ const getTabIcon = (name) => {
   switch (name) {
     case 'home':
       return Home;
-    case 'pantry':
-      return Utensils;
     case 'calander':
       return Calendar;
+    case 'Recipe':
+      return () => <Image source={Recipe} style={{ width: 30, height: 30 }} />;
     case 'grocery':
       return ShoppingCart;
+    case 'pantry':
+      return () => <Image source={Pantry} style={{ width: 30, height: 30 }} />;
     default:
-      return Home;
+      return () => <Image source={Recipe} style={{ width: 30, height: 30 }} />; // Fallback icon for debugging
   }
 };
 
@@ -63,10 +68,11 @@ export default function TabLayout() {
       }}
       tabBar={(props) => <CustomTabBar {...props} />}
     >
-      <Tabs.Screen name="home" options={{ title: 'Home' }} />
-      <Tabs.Screen name="pantry" options={{ title: 'Pantry' }} />
-      <Tabs.Screen name="calander" options={{ title: 'Calendar' }} />
-      <Tabs.Screen name="grocery" options={{ title: 'Grocery' }} />
+      <Tabs.Screen name="Home" options={{ title: 'Home' }} />
+      <Tabs.Screen name="Calander" options={{ title: 'Calander' }} />
+      <Tabs.Screen name="Recipe" options={{ title: 'Recipe' }} />
+      <Tabs.Screen name="Grocery" options={{ title: 'Grocery' }} />
+      <Tabs.Screen name="Pantry" options={{ title: 'Pantry' }} />
     </Tabs>
   );
 }
@@ -75,7 +81,7 @@ const styles = StyleSheet.create({
   navContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#333',
+    backgroundColor: '#D7D9ED',
     paddingVertical: 12,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -85,7 +91,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   activeTab: {
-    backgroundColor: '#0F1056',
+    backgroundColor: '#9A9FFF',
     borderRadius: 15,
     paddingHorizontal: 15,
   },
