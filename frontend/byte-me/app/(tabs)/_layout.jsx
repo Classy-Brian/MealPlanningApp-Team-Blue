@@ -1,11 +1,23 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
-import { Home, Utensils, Calendar, ShoppingCart } from 'lucide-react-native';
-import Pantry from "@/assets/images/Pantry.png";
-import Recipe from "@/assets/images/recipe.png";
-import ByteMeLogo from "@/assets/images/byteme_logo_logo.png"; // Import the ByteMe logo
-import ProfileIcon from "@/assets/images/profile_icon.png"; // Import the profile icon
+import { useNavigation } from 'expo-router'; // Import navigation hook
+
+import HomeW from "@/assets/images/home_white.png";
+import CalendarW from "@/assets/images/calendar_white.png";
+import PantryW from "@/assets/images/pantry_white.png";
+import RecipeW from "@/assets/images/recipe_white.png";
+import GroceryW from "@/assets/images/grocery_white.png";
+
+import HomeB from "@/assets/images/home_black.png";
+import CalendarB from "@/assets/images/calendar_black.png";
+import PantryB from "@/assets/images/pantry_black.png";
+import RecipeB from "@/assets/images/recipe_black.png";
+import GroceryB from "@/assets/images/grocery_black.png";
+
+
+import ByteMeLogo from "@/assets/images/byteme_logo_logo.png";
+import ProfileIcon from "@/assets/images/profile_icon.png";
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -16,7 +28,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isActive = state.index === index;
-        const Icon = getTabIcon(route.name);
+        const Icon = getTabIcon(route.name, isActive);
 
         return (
           <TouchableOpacity
@@ -24,7 +36,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
             style={[styles.tab, isActive && styles.activeTab]}
             onPress={() => navigation.navigate(route.name)}
           >
-            <Icon color={isActive ? '#fff' : '#aaa'} size={24} />
+            {Icon}
             <Text style={[styles.label, isActive && styles.activeLabel]}>
               {options.title || route.name}
             </Text>
@@ -35,21 +47,33 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   );
 };
 
-const getTabIcon = (name) => {
+const getTabIcon = (name, isActive) => {
+  const iconColor = isActive ? '#fff' : '#aaa';
+
   switch (name) {
-    case 'Home':
-      return Home;
-    case 'Calendar':
-      return Calendar;
-    case 'Recipe':
-      return () => <Image source={Recipe} style={{ width: 30, height: 30 }} />;
-    case 'Grocery':
-      return ShoppingCart;
-    case 'Pantry':
-      return () => <Image source={Pantry} style={{ width: 30, height: 30 }} />;
+    case 'home':
+      return <Image source={HomeB} style={styles.iconImage} />;
+    case 'calendar':
+      return <Image source={CalendarB} style={styles.iconImage} />;
+    case 'recipe':
+      return <Image source={RecipeB} style={styles.iconImage} />;
+    case 'grocery':
+      return <Image source={GroceryB} style={styles.iconImage} />;
+    case 'pantry':
+      return <Image source={PantryB} style={styles.iconImage} />;
     default:
-      return () => <Image source={Recipe} style={{ width: 30, height: 30 }} />; // Fallback icon for debugging
+      return null; // No default, avoids unwanted fallback
   }
+};
+
+const ProfileButton = () => {
+  const navigation = useNavigation();
+  
+  return (
+    <TouchableOpacity onPress={() => navigation.navigate('profile')} style={styles.profileButton}>
+      <Image source={ProfileIcon} style={styles.profileImage} />
+    </TouchableOpacity>
+  );
 };
 
 export default function TabLayout() {
@@ -59,18 +83,11 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerStyle: { backgroundColor: '#1F508F' }, // Set header background color
+        headerStyle: { backgroundColor: '#1F508F' },
         headerTitle: () => (
-          <Image source={ByteMeLogo} style={{ width: 100, height: 30, resizeMode: 'contain' }} />
-        ), // ByteMe logo in center
-        headerRight: ({ navigation }) => (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Profile')} // Navigate to Profile screen
-            style={styles.profileButton}
-          >
-            <Image source={ProfileIcon} style={styles.profileImage} />
-          </TouchableOpacity>
-        ), // Profile button in top right
+          <Image source={ByteMeLogo} style={styles.logo} />
+        ),
+        headerRight: () => <ProfileButton />, // Profile button now works
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
@@ -85,11 +102,9 @@ export default function TabLayout() {
       <Tabs.Screen name="recipe" options={{ title: 'Recipe', headerShown: true }} />
       <Tabs.Screen name="grocery" options={{ title: 'Grocery', headerShown: true }} />
       <Tabs.Screen name="pantry" options={{ title: 'Pantry', headerShown: true }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile', headerShown: true }} />
     </Tabs>
   );
 }
-
 
 const styles = StyleSheet.create({
   navContainer: {
@@ -111,7 +126,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#aaa',
+    color: '#000000',
     marginTop: 4,
   },
   activeLabel: {
@@ -123,11 +138,15 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 35,
     height: 35,
-    borderRadius: 50, // Makes it a circle
+    borderRadius: 50,
   },
-  profileContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  logo: {
+    width: 100,
+    height: 30,
+    resizeMode: 'contain',
+  },
+  iconImage: {
+    width: 30,
+    height: 30,
   },
 });
