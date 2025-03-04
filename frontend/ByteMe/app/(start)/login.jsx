@@ -1,11 +1,12 @@
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, View, Button, TextInput, Link } from 'react-native'
 import React from 'react'
 import { colors } from '../../components/Colors'
-import { fonts } from '@/components/Fonts'
+import { textcolors} from '../../components/TextColors'
+import { fonts } from '../../components/Fonts'
 
 function HeaderLogo() {
   return (
-    <View style={styles.container}>
+    <View style={styles.titlecontainer}>
       <Image
         style={styles.stretch}
         source={require('../../assets/images/logo.png')}/>
@@ -16,8 +17,44 @@ function HeaderLogo() {
 const Login = () => {
   return (
     <View>
-      <Text style={{styles.title}}>Sign in</Text>
-      <HeaderLogo/>
+      <View>
+        <Text style={styles.title}>Log In </Text>
+        <HeaderLogo/>
+      </View>
+      
+      <View style={styles.container}>
+        <Text style={styles.heading}>Email </Text>
+        <View style={styles.inputContainer}>          
+          <TextInput
+            placeholder='Enter your email'
+            placeholderTextColor={textcolors.lightgrey}
+            style={styles.regularText} 
+            />
+        </View>
+      </View>
+      
+      <View style={styles.container}>
+        <Text style={styles.heading}>Password </Text>
+        <View style={styles.inputContainer}>          
+          <TextInput
+            placeholder='Enter your password'
+            placeholderTextColor={textcolors.lightgrey}
+            style={styles.regularText}
+            />
+          
+        </View>
+        
+      </View>
+      <View style={styles.container}>
+        <Text style={styles.forgot} >Forgot Password? </Text>
+      </View>
+      
+      <View style={styles.buttonContainer}>
+        <Button
+          title='Login'
+          color={colors.primary}
+          />
+      </View>
     </View>
   )
 }
@@ -25,7 +62,7 @@ const Login = () => {
 export default Login
 
 const styles = StyleSheet.create({
-    container: {
+    titlecontainer: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
@@ -45,5 +82,37 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 48,
         fontFamily: fonts.bold,
+    },
+    heading: {
+        fontSize: 24
+    },
+    regularText: {
+        fontSize: 15
+    },
+    forgot: {
+      fontSize: 15,
+      color: textcolors.red,
+      fontWeight: 'bold',
+    },
+    buttonContainer: {
+      marginHorizontal: 30,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+      paddingVertical: 5,
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 1,
+      paddingHorizontal: 10,
+      borderRadius: 15,
+      borderWidth: 1,
+      borderColor: textcolors.lightgrey,
+      backgroundColor: colors.white,
+    },
+    container: {
+      justifyContent: 'center',
+      marginHorizontal: 20,
+      paddingVertical: 10,
     }
 })
