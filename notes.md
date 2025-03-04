@@ -219,7 +219,8 @@ Current next step for backend:
 
 valerie's notes
 - to run android, do
-    npm run web -> a
+    npm run android
+    and you're supposed to have an android emulator
 
 download android studio (i used this link as a ref)
 https://reactnative.dev/docs/set-up-your-environment?platform=android
