@@ -73,10 +73,10 @@ export default function TabLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen name="home" options={{ title: 'Home', headerShown: false }} />
-      <Tabs.Screen name="calendar" options={{ title: 'Calendar', headerShown: true }} />
-      <Tabs.Screen name="recipe" options={{ title: 'Recipe', headerShown: true }} />
-      <Tabs.Screen name="grocery" options={{ title: 'Grocery', headerShown: true }} />
-      <Tabs.Screen name="pantry" options={{ title: 'Pantry', headerShown: true }} />
+      <Tabs.Screen name="calendar" options={{ title: 'Calendar', headerShown: false }} />
+      <Tabs.Screen name="recipe" options={{ title: 'Recipe', headerShown: false }} />
+      <Tabs.Screen name="grocery" options={{ title: 'Grocery', headerShown: false }} />
+      <Tabs.Screen name="pantry" options={{ title: 'Pantry', headerShown: false }} />
     </Tabs>
   );
 }
