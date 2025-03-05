@@ -2,10 +2,23 @@
 Look into the package.json and look for "dependencies"
 - There is one in the root and another in the frontend. Im not sure if its good practice but it's there when I started the expo project so yeah.
   - note: Im using windows so if you're not, the version might be different
+  - note: Must install Node.js and npm
   - To install my dependencies, cd into the folder with the package.json and type: npm install
+
+-- NEED TO DO --
+- Create .env file
+- Inside .env file
+    MONGO_URI=...
+    PORT=...
+    EDAMAM_APP_ID=...
+    EDAMAM_APP_KEY=....
+- Need this to be able to connect to DB
 
 -- TO RUN THE SERVER --
 type in console: npm run dev
+
+-- TO RUN THE FRONT-END --
+type in console: npx expo start
 
 -- BACKEND: Step by step what I did -- 
 
@@ -84,6 +97,116 @@ type in console: npm run dev
     connectDB();
     - Establish the connection to the MongoDB database when the server starts
 
+16. Made a MongoDB and put the connectection string in the .env
+    - I will need your email to give you access
+
+17. Creates models folder in backend
+
+18. Created receipe.model.js
+
+19. Added in receipe.model.js
+    const recipeSchema = new mongoose.Schema({
+        name: 
+        {
+            type: String,
+            required: true
+        },
+        ingredient:
+        {
+            type: String,
+            required: true
+        },
+        image: {
+            type: String,
+            required: true
+        },
+    }, {
+        timestamps: true 
+    });
+
+    const Recipe = mongoose.model('Recipe', recipeSchema);
+    export default Recipe;
+    - Defines a Mongoose schema for recipe data
+        - Probably need to add more like allergies/cooking direction
+
+20. Created user.model.js
+
+21. Added in user.model.js
+    const userSchema = new mongoose({
+        name: {
+            type: String,
+            required: true
+        },
+        email: {
+            type: String,
+            required: true,
+            unique: true
+        },
+        password: {
+            type: String,
+            required: true
+        },
+        allergies: {
+            type: String
+        }
+    }, {
+        timestamps: true 
+    });
+
+    const User = mongoose.model('User', userSchema);
+    export default User;
+    - Defines a Mongoose schema for User data
+
+22. Added in .env
+    PORT=...
+    EDAMAM_APP_ID=...
+    EDAMAM_API_KEY=...
+    - The Port variable specifies the port number where the server will run
+    - The EDAMAM_APP_ID and EDAMAM_API_KEY are obtained from the Edamam website and are used to authenticate requests to their API
+
+
+23. Added controllers folder and recipe.controller.js
+    export const getRecipes = async (req, res) => {
+        try {
+            const response = await axios.get('https://api.edamam.com/api/recipes/v2/', {
+                params: {
+                    type: 'public',
+                    q: req.query.q,
+                    app_id: process.env.EDAMAM_APP_ID,
+                    app_key: process.env.EDAMAM_APP_KEY
+                }
+            });
+            res.json(response.data);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Error fetching recipes '});
+        }
+    };
+    - The controllers folder will contain controller functions that handle API requests and logic.
+    - The getRecipes function in recipe.controller.js is responsible for fetching recipes from the Edamam API.
+    - It uses axios to make a GET request to the Edamam API, including the search query (q) from the request parameters and the API credentials from the .env file.
+    - It then sends the API response back to the client in JSON format.
+
+24. Added routes folder and recipe.route.js
+    import express from "express";
+
+    import { getRecipes } from "../controllers/recipe.controller";
+
+    const router = express.Router();
+
+    router.get("/", getRecipes);
+
+    export default router;
+    - The routes folder will contain route definitions for different parts of the API.
+    - The recipe.route.js file defines a route (/) that uses the getRecipes controller function to handle GET requests for recipes.
+
+25. Added in server.js 
+    app.use(express.json()); // Allows us to accept JSON data in the req body
+
+    app.use('/api/recipes', recipeRoutes) // Mount the recipe routes
+
+26. Tested in Postman
+
 Current next step for backend:
 - Make the MongoDB and put it in the .env
     - Then test it
@@ -102,3 +225,14 @@ Current next step for backend:
     - Start off with blank canvas
     - In the app-example was the default template
         - Could use it as a reference
+
+valerie's notes
+- to run android, do
+    npm run android
+    and you're supposed to have an android emulator
+
+download android studio (i used this link as a ref)
+https://reactnative.dev/docs/set-up-your-environment?platform=android
+
+in tsconfig.json, you need to add a line in the "include" frame,
+    which is **/*.jsx
