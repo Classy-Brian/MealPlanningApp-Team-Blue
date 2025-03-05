@@ -5,6 +5,15 @@ Look into the package.json and look for "dependencies"
   - note: Must install Node.js and npm
   - To install my dependencies, cd into the folder with the package.json and type: npm install
 
+-- NEED TO DO --
+- Create .env file
+- Inside .env file
+    MONGO_URI=...
+    PORT=...
+    EDAMAM_APP_ID=...
+    EDAMAM_APP_KEY=....
+- Need this to be able to connect to DB
+
 -- TO RUN THE SERVER --
 type in console: npm run dev
 
