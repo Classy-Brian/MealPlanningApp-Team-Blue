@@ -1,8 +1,9 @@
-import { Image, StyleSheet, Text, View, Button, TextInput, Link } from 'react-native'
+import { Image, StyleSheet, Text, View, Button, TextInput } from 'react-native'
 import React from 'react'
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
+import { Link } from "expo-router"
 
 function HeaderLogo() {
   return (
@@ -14,14 +15,25 @@ function HeaderLogo() {
   )
 }
 
-const SignUp = () => {
+const Signup = () => {
   return (
-    <View>
+    <View style={styles.screenContainer}>
       <View>
         <Text style={styles.title}>Sign Up </Text>
         <HeaderLogo/>
       </View>
       
+      <View style={styles.container}>
+        <Text style={styles.heading}>Username </Text>
+        <View style={styles.inputContainer}>          
+          <TextInput
+            placeholder='Enter a username'
+            placeholderTextColor={textcolors.lightgrey}
+            style={styles.regularText} 
+            />
+        </View>
+      </View>
+
       <View style={styles.container}>
         <Text style={styles.heading}>Email </Text>
         <View style={styles.inputContainer}>          
@@ -42,25 +54,54 @@ const SignUp = () => {
             style={styles.regularText}
             />
         </View>
-      </View>      
+      </View>
+
+      <View style={styles.container}>
+        <Text style={styles.heading}>Confirm Password </Text>
+        <View style={styles.inputContainer}>          
+          <TextInput
+            placeholder='Confirm password'
+            placeholderTextColor={textcolors.lightgrey}
+            style={styles.regularText}
+            />
+        </View>
+      </View>
+
+      {/* <View>
+        
+      </View> */}
+      
       <View style={styles.buttonContainer}>
         <Button
-          title='Create Account'
+          title='Create an Account'
           color={colors.primary}
           />
       </View>
+      <View style={styles.container}>
+        <View style={styles.littlenote}>
+          <Text style={styles.regularText}>Have an account already? </Text>
+          <Link href={"/(start)/login"} asChild>
+            <Text style={styles.createacc}>Log in</Text>
+          </Link>            
+        </View>
+      </View>
+      
     </View>
   )
 }
 
-export default SignUp
+export default Signup
 
 const styles = StyleSheet.create({
+    screenContainer: {
+        marginHorizontal: 20,
+        marginVertical: 10,
+    },
     titlecontainer: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'left',
+        justifyContent: 'center',
         backgroundColor: colors.header,
         marginHorizontal: 65,
         paddingVertical: 55,
@@ -88,11 +129,15 @@ const styles = StyleSheet.create({
       color: textcolors.red,
       fontWeight: 'bold',
     },
+    createacc: {
+      color: textcolors.blue,
+      fontSize: 15,
+    },
     buttonContainer: {
       marginHorizontal: 30,
       paddingHorizontal: 20,
       borderRadius: 10,
-      paddingVertical: 25,
+      paddingVertical: 5,
     },
     inputContainer: {
       flexDirection: 'row',
@@ -106,7 +151,10 @@ const styles = StyleSheet.create({
     },
     container: {
       justifyContent: 'center',
-      marginHorizontal: 20,
+      // marginHorizontal: 20,
       paddingVertical: 10,
-    }
+    },
+    littlenote: {
+      flexDirection: 'row'
+    },
 })

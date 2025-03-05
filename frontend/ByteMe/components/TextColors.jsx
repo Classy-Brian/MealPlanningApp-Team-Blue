@@ -3,6 +3,7 @@ export const textcolors = {
     black: '#000',
     lightgrey: '#989898',
     red: '#FE6565',
+    blue: '#648DDB',
 
 
 }

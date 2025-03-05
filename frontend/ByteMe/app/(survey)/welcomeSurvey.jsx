@@ -19,50 +19,28 @@ const Login = () => {
   return (
     <View style={styles.screenContainer}>
       <View>
-        <Text style={styles.title}>Log In </Text>
+        <Text style={styles.title}>Welcome to </Text>
         <HeaderLogo/>
       </View>
-      
-      <View style={styles.container}>
-        <Text style={styles.heading}>Email </Text>
-        <View style={styles.inputContainer}>          
-          <TextInput
-            placeholder='Enter your email'
-            placeholderTextColor={textcolors.lightgrey}
-            style={styles.regularText} 
-            />
-        </View>
-      </View>
-      
-      <View style={styles.container}>
-        <Text style={styles.heading}>Password </Text>
-        <View style={styles.inputContainer}>          
-          <TextInput
-            placeholder='Enter your password'
-            placeholderTextColor={textcolors.lightgrey}
-            style={styles.regularText}
-            />
-        </View>
-        <Link href={"/forgotPassword"} asChild >
-          <Text style={styles.forgot} >Forgot Password? </Text>
-        </Link>
+
+      <View>
+        <Text style={styles.heading}>Would you like to take a quick survey?</Text>
+        <Text style={styles.regularText}>It's so we can personally tailor your meal plan for you!</Text>
       </View>
       
       <View style={styles.buttonContainer}>
         <Button
-          title='Login'
+          title='Yes'
           color={colors.primary}
           />
       </View>
-      <View style={styles.container}>      
-        <View style={styles.littlenote}>
-          <Text style={styles.regularText}>Don't have an account yet? </Text>
-          <Link href={"/(start)/signup"} asChild>
-            <Text style={styles.createacc}>Register for free</Text>
-          </Link>
-        </View>       
+      <View style={styles.buttonContainer}>
+        <Button
+          title='Skip Survey'
+          color={colors.othergrey}
+          />
       </View>
-      
+
     </View>
   )
 }
@@ -97,12 +75,10 @@ const styles = StyleSheet.create({
         fontFamily: fonts.bold,
     },
     heading: {
-        fontSize: 24,
-        fontFamily: fonts.semiBold,
+        fontSize: 24
     },
     regularText: {
-        fontSize: 15,
-        fontFamily: fonts.regular,
+        fontSize: 15
     },
     forgot: {
       fontSize: 15,

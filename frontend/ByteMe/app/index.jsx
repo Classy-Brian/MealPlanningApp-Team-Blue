@@ -12,7 +12,10 @@ const WelcomeScreen = () => {
       <Link href={"/(start)/login"} asChild>
         <Text>Login</Text>
       </Link>
-      <Link href={"/(tabs)"}>
+      <Link href={"/(survey)/welcomeSurvey"} asChild>
+        <Text>Survey</Text>
+      </Link>
+      <Link href={"/(tabs)"} asChild>
         <Text>Homepage</Text>
       </Link>
     </View>
