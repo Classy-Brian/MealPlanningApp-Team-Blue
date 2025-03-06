@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "byte-me",
-    "slug": "byte-me",
+    "name": "byteme",
+    "slug": "byteme",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
