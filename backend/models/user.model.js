@@ -2,7 +2,11 @@ import mongoose from "mongoose";
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
-    name: {
+    firstName: {
+        type: String,
+        required: true
+    },
+    lastName: {
         type: String,
         required: true
     },
@@ -59,7 +63,7 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
     try {
         return await bcrypt.compare(enteredPassword, this.password); // Compare the entered password with the stored hashed password
     } catch (error) {
-        throw new Error(error); // <- Need to add a way to handle the error
+        return resizeBy.status(400).json({ message: "Invalid credentials"}); // <- Need to add a way to handle the error
     }
 };
 

@@ -15,7 +15,7 @@ const WelcomeScreen = () => {
       <Link href={"/(survey)/welcomeSurvey"} asChild>
         <Text>Survey</Text>
       </Link>
-      <Link href={"/(tabs)"} asChild>
+      <Link href={"/(tabs)/home"} asChild>
         <Text>Homepage</Text>
       </Link>
     </View>

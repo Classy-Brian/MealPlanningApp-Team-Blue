@@ -1,17 +1,18 @@
 import User from '../models/user.model.js'; 
+import jwt from "jsonwebtoken"
 
 export const loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+    const { email, password } = req.body;
 
-        const user = await User.findOne({ email }); // Find the user by email
+    try {
+        let user = await User.findOne({ email }); // Find the user by email
+        if (!user) return res.status(400).json({ message: "User not found"});
 
         if (user && (await user.matchPassword(password))) {
             // Generate a JWT here and send it to the client
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
+            const token = jwt.sign({ _id:user._id }, process.env.JWT_SECRET, {expiresIn: "1h"});
+            
+            res.json({ token, user: {_id: user._id, email: user.email,}
                 // other user data we want to send
                 // Need create a token: generateToken(user._id)
             });
