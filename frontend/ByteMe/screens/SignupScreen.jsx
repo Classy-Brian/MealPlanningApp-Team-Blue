@@ -1,10 +1,10 @@
-import { Image, StyleSheet, Text, View, Button, TextInput } from 'react-native'
+import { Image, Text, View, Button, TextInput } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
-import { fonts } from '../components/Fonts'
 import { Link, useRouter } from "expo-router"
 import axios from "axios"
+import { styles } from '@/components/Sheet'
 
 function HeaderLogo() {
   return (
@@ -18,14 +18,17 @@ function HeaderLogo() {
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState('');
-  const [lastname, setLastName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
 
   const handleChange = async () => {
     const PORT = process.env.PORT;
     try {
-      const res = await axios.post("http://localhost:" + PORT + "/auth/register", {firstName, lastname, email, password});
+      if (!firstName || !lastName || !email || !password ) {
+        alert("Please fill in all fields.");
+      }
+      const res = await axios.post("http://10.0.2.2:" + "8081" + "/register", {firstName, lastName, email, password});
       alert("User registered!");
       const router = useRouter();
       router.push("/LoginScreen");
@@ -36,14 +39,14 @@ const SignUp = () => {
   }
 
   return (
-    <View>
-      <View>
+    <View style={styles.screenContainer}>
+      <View >
         <Text style={styles.title}>Sign Up </Text>
         <HeaderLogo/>
       </View>
       
       <View style={styles.namecontainer}>
-        <View style={styles.container}>
+        <View style={styles.secondcontainer}>
           <Text style={styles.heading}>First Name </Text>
           <View style={styles.inputContainer}>          
             <TextInput
@@ -55,7 +58,7 @@ const SignUp = () => {
               />
           </View>
         </View>
-        <View style={styles.container}>
+        <View style={styles.secondcontainer}>
           <Text style={styles.heading}>Last Name </Text>
           <View style={styles.inputContainer}>          
             <TextInput
@@ -116,71 +119,4 @@ const SignUp = () => {
 }
 
 
-export default SignUp
-
-const styles = StyleSheet.create({
-    logocontainer: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'left',
-        backgroundColor: colors.header,
-        marginHorizontal: 65,
-        paddingVertical: 55,
-        paddingHorizontal: 20,
-        borderRadius: 30,
-    },
-    namecontainer: {
-        flexDirection: 'row',
-    },
-    stretch: {
-        width: 240,
-        height: 100,
-        resizeMode: 'stretch'
-    },
-    title: {
-        fontSize: 48,
-        fontFamily: fonts.bold,
-    },
-    heading: {
-        fontSize: 24,
-        fontFamily: fonts.semiBold,
-    },
-    regularText: {
-        fontSize: 15,
-        fontFamily: fonts.regular
-    },
-    forgot: {
-      fontSize: 15,
-      color: textcolors.red,
-      fontWeight: 'bold',
-    },
-    createacc: {
-      color: textcolors.blue,
-      fontSize: 15,
-    },
-    buttonContainer: {
-      marginHorizontal: 30,
-      paddingHorizontal: 20,
-      borderRadius: 10,
-      paddingVertical: 25,
-    },
-    inputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 1,
-      paddingHorizontal: 10,
-      borderRadius: 15,
-      borderWidth: 1,
-      borderColor: textcolors.lightgrey,
-      backgroundColor: colors.white,
-    },
-    container: {
-      justifyContent: 'center',
-      marginHorizontal: 20,
-      paddingVertical: 10,
-    },
-    littlenote: {
-      flexDirection: 'row'
-    },
-})
+export default SignUp;

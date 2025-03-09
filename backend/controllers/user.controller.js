@@ -1,5 +1,7 @@
 import User from '../models/user.model.js'; 
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -23,5 +25,25 @@ export const loginUser = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const registerUser = async (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
+
+    try {
+        let user = await User.findOne({email});
+        if (user) return res.status(400).json({msg: "User already exists with this email."});
+
+        user = new User({ firstName, lastName, email, password});
+        await user.pre();
+        await user.save();
+
+        const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: "1h"});
+        
+        res.json({ token, user: {_id: user._id, firstName, lastName, email}});
+    }
+    catch (err) {
+        res.status(500).json({msg: "Server error"});
     }
 };

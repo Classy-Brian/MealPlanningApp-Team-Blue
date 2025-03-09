@@ -2,6 +2,7 @@
 import express from 'express';
 import dotenv from "dotenv";
 import { connectDB } from './config/db.js';
+import cors from "cors"
 
 import recipeRoutes from './routes/recipe.route.js'; // Make sure the path is correct
 
@@ -11,6 +12,8 @@ const app = express(); // Initializes a new Express.js application instance
 const PORT = process.env.PORT
 
 app.use(express.json()); // Allows us to accept JSON data in the req body
+
+app.use(cors())
 
 app.use('/api/recipes', recipeRoutes) // Mount the recipe routes
 

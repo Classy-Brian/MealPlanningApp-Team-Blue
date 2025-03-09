@@ -1,26 +1,15 @@
-import { Image, StyleSheet, Text, View, Button, TextInput } from 'react-native'
+import { Image, StyleSheet, Text, View, Button, TextInput, ScrollView } from 'react-native'
 import React from 'react'
-import { colors } from '../../components/Colors'
-import { textcolors} from '../../components/TextColors'
-import { fonts } from '../../components/Fonts'
+import { colors } from '../components/Colors'
+import { textcolors} from '../components/TextColors'
+import { fonts } from '../components/Fonts'
 import { Link } from "expo-router"
 
-function HeaderLogo() {
-  return (
-    <View style={styles.titlecontainer}>
-      <Image
-        style={styles.stretch}
-        source={require('../../assets/images/logo.png')}/>
-    </View>
-  )
-}
-
-const Login = () => {
+const SurveyAllergies = () => {
   return (
     <View style={styles.screenContainer}>
       <View>
-        <Text style={styles.title}>Welcome to </Text>
-        <HeaderLogo/>
+        <Text style={styles.title}>Allergies </Text>
       </View>
 
       <View>
@@ -45,7 +34,7 @@ const Login = () => {
   )
 }
 
-export default Login
+export default SurveyAllergies
 
 const styles = StyleSheet.create({
     screenContainer: {
@@ -53,7 +42,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         marginVertical: 10,
     },
-    titlecontainer: {
+    logocontainer: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
@@ -63,8 +52,10 @@ const styles = StyleSheet.create({
         paddingVertical: 55,
         paddingHorizontal: 20,
         borderRadius: 30,
-
     },
+    namecontainer: {
+        flexDirection: 'row',
+      },
     stretch: {
         width: 240,
         height: 100,
@@ -75,10 +66,12 @@ const styles = StyleSheet.create({
         fontFamily: fonts.bold,
     },
     heading: {
-        fontSize: 24
+        fontSize: 24,
+        fontFamily: fonts.semiBold,
     },
     regularText: {
-        fontSize: 15
+        fontSize: 15,
+        fontFamily: fonts.regular
     },
     forgot: {
       fontSize: 15,
@@ -93,7 +86,7 @@ const styles = StyleSheet.create({
       marginHorizontal: 30,
       paddingHorizontal: 20,
       borderRadius: 10,
-      paddingVertical: 5,
+      paddingVertical: 25,
     },
     inputContainer: {
       flexDirection: 'row',
@@ -106,7 +99,8 @@ const styles = StyleSheet.create({
       backgroundColor: colors.white,
     },
     container: {
-      // marginHorizontal: 20,
+      justifyContent: 'center',
+      marginHorizontal: 20,
       paddingVertical: 10,
     },
     littlenote: {
