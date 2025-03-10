@@ -15,8 +15,8 @@ const WelcomeScreen = () => {
       <Link href={"/(tabs)"}>
         <Text>Homepage</Text>
       </Link>
-      <Link href={"/(tabs)/savedrecipes"} asChild>
-        <Text>Recipe</Text>
+      <Link href={"/settings"}>
+        <Text>Settings</Text>
       </Link>
     </View>
   )

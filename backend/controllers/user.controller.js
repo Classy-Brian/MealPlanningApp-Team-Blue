@@ -14,6 +14,7 @@ export const loginUser = async (req, res) => {
                 email: user.email,
                 // other user data we want to send
                 // Need create a token: generateToken(user._id)
+                // Login NOT DONE YET
             });
         } else {
             // Invalid email or password
