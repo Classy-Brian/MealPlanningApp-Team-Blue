@@ -1,2 +1,2 @@
-import SurveyAllergies from '../../screens/SurveryAllergies';
+import SurveyAllergies from '../../screens/SurveyAllergies';
 export default SurveyAllergies;

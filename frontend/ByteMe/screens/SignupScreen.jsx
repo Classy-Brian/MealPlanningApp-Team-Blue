@@ -1,4 +1,4 @@
-import { Image, Text, View, Button, TextInput } from 'react-native'
+import { Image, Text, View, TextInput, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
@@ -21,6 +21,10 @@ const SignUp = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
+  const [isFocused, setFocused] = useState(styles.inputContainer)
+  const [isFocused1, setFocused1] = useState(styles.inputContainer)    
+  const [isFocused2, setFocused2] = useState(styles.inputContainer)
+  const [isFocused3, setFocused3] = useState(styles.inputContainer)
 
   const handleChange = async () => {
     const PORT = process.env.PORT;
@@ -31,7 +35,7 @@ const SignUp = () => {
       const res = await axios.post("http://10.0.2.2:" + "8081" + "/register", {firstName, lastName, email, password});
       alert("User registered!");
       const router = useRouter();
-      router.push("/LoginScreen");
+      router.push("/(survey)/survey_1");
     }
     catch (err) {
       alert("Error signing up. Please try again.");
@@ -39,81 +43,89 @@ const SignUp = () => {
   }
 
   return (
-    <View style={styles.screenContainer}>
-      <View >
-        <Text style={styles.title}>Sign Up </Text>
-        <HeaderLogo/>
-      </View>
-      
-      <View style={styles.namecontainer}>
-        <View style={styles.secondcontainer}>
-          <Text style={styles.heading}>First Name </Text>
-          <View style={styles.inputContainer}>          
-            <TextInput
-              placeholder='Enter your first name'
-              placeholderTextColor={textcolors.lightgrey}
-              onChangeText={setFirstName}
-              // value={user.firstname}
-              style={styles.regularText} 
+    <View style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <View >
+          <Text style={styles.title}>Sign Up </Text>
+          <HeaderLogo/>
+        </View>
+        
+        <View style={styles.namecontainer}>
+          <View style={styles.secondcontainer}>
+            <Text style={styles.heading}>First Name </Text>
+            <View >          
+              <TextInput
+                placeholder='Enter your first name'
+                placeholderTextColor={textcolors.lightgrey}
+                onChangeText={setFirstName}
+                style={isFocused}
+                onFocus={() => setFocused(styles.focusedinput)}
+                onBlur={() => setFocused(styles.inputContainer)}
               />
+            </View>
+          </View>
+          <View style={styles.secondcontainer}>
+            <Text style={styles.heading}>Last Name </Text>
+            <View>          
+              <TextInput
+                placeholder='Enter your last name'
+                placeholderTextColor={textcolors.lightgrey}
+                onChangeText={setLastName}
+                style={isFocused1}
+                onFocus={() => setFocused1(styles.focusedinput)}
+                onBlur={() => setFocused1(styles.inputContainer)}
+                />
+            </View>
           </View>
         </View>
-        <View style={styles.secondcontainer}>
-          <Text style={styles.heading}>Last Name </Text>
-          <View style={styles.inputContainer}>          
-            <TextInput
-              placeholder='Enter your last name'
-              placeholderTextColor={textcolors.lightgrey}
-              onChangeText={setLastName}
-              // value={user.lastname}
-              style={styles.regularText} 
-              />
-          </View>
-        </View>
-      </View>
 
-      <View style={styles.container}>
-        <Text style={styles.heading}>Email </Text>
-        <View style={styles.inputContainer}>          
-          <TextInput
-            placeholder='Enter your email'
-            placeholderTextColor={textcolors.lightgrey}
-            onChangeText={setEmail}
-            // value={user.email}
-            style={styles.regularText} 
-            />
+        <View style={styles.container}>
+          <Text style={styles.heading}>Email </Text>
+          <View>          
+            <TextInput
+              placeholder='Enter your email'
+              placeholderTextColor={textcolors.lightgrey}
+              onChangeText={setEmail}
+              style={isFocused2} 
+              onFocus={() => setFocused2(styles.focusedinput)}
+              onBlur={() => setFocused2(styles.inputContainer)}
+              />
+          </View>
+        </View>
+        
+        <View style={styles.container}>
+          <Text style={styles.heading}>Password </Text>
+          <View>          
+            <TextInput
+              placeholder='Enter your password'
+              secureTextEntry
+              placeholderTextColor={textcolors.lightgrey}
+              onChangeText={setPass}
+              style={isFocused3}
+              onFocus={() => setFocused3(styles.focusedinput)}
+              onBlur={() => setFocused3(styles.inputContainer)}
+              />
+          </View>
+        </View> 
+
+        <TouchableOpacity onPress={handleChange}>
+          <View style={styles.buttonContainer}>
+            <Text style={styles.buttonText}>Create Account</Text>
+          </View>
+        </TouchableOpacity>
+
+        <View style={styles.container}>
+          <View style={styles.littlenote}>
+            <Text style={styles.regularText}>Have an account already? </Text>
+            <Link href={"/(start)/login"} asChild>
+              <Text style={styles.createacc}>Log in</Text>
+            </Link>            
+          </View>
         </View>
       </View>
       
-      <View style={styles.container}>
-        <Text style={styles.heading}>Password </Text>
-        <View style={styles.inputContainer}>          
-          <TextInput
-            placeholder='Enter your password'
-            secureTextEntry
-            placeholderTextColor={textcolors.lightgrey}
-            onChangeText={setPass}
-            // value={user.password}
-            style={styles.regularText}
-            />
-        </View>
-      </View>      
-      <View style={styles.buttonContainer}>
-        <Button
-          title='Create Account'
-          color={colors.primary}
-          onPress={handleChange}
-          />
-      </View>
-      <View style={styles.container}>
-        <View style={styles.littlenote}>
-          <Text style={styles.regularText}>Have an account already? </Text>
-          <Link href={"/(start)/login"} asChild>
-            <Text style={styles.createacc}>Log in</Text>
-          </Link>            
-        </View>
-      </View>
     </View>
+    
   )
 
 }

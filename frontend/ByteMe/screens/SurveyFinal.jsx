@@ -16,8 +16,8 @@ function HeaderLogo() {
   )
 }
 
-const WelcomeSurvey = ( { navigation } ) => {
-  // const router = useRouter();
+const WelcomeSurvey = () => {
+  const router = useRouter();
 
   return (
     <View style={styles.whiteBackground}>
@@ -32,7 +32,7 @@ const WelcomeSurvey = ( { navigation } ) => {
           <Text style={styles.regularText}>It's so we can personally tailor your meal plan for you!</Text>
         </View>
 
-        <TouchableOpacity onPress={() => navigation.navigate('survey2')}>
+        <TouchableOpacity onPress={() => router.push('../(survey)/survey_2')}>
           <View style={button.bluebutton}>
             <Text style={styles.buttonText}>Yes</Text>
           </View>
