@@ -12,7 +12,7 @@ const WelcomeScreen = () => {
       <Link href={"/(start)/login"} asChild>
         <Text>Login</Text>
       </Link>
-      <Link href={"/(tabs)"}>
+      <Link href={"/(tabs)/home"}>
         <Text>Homepage</Text>
       </Link>
       <Link href={"/settings"}>
