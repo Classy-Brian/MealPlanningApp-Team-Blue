@@ -12,16 +12,18 @@ export default function Recipes(){
     <View style={styles.container}>
       <Text style={styles.title} >Saved Recipes</Text>
       {/* Floating Add Button */}
-      <View style={styles.container}>
+      <View style={styles.searchContainer}>
         <View style={styles.inputContainer}>
           <TextInput
           placeholder='Search through your recipes'
           placeholderTextColor={textcolors.lightgrey}
-          style={styles.regularText}
+          style={styles.inputText}
           />
         </View>
       </View>
-      <View style={styles.rectangleView}/>
+      <View style={styles.parentContainer}>
+      <View style={styles.rectangleView} />
+      </View>
       <TouchableOpacity style={styles.addButton}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -31,6 +33,23 @@ export default function Recipes(){
 }
 
 const styles = StyleSheet.create({
+
+  parentContainer: {
+    flex: 1, 
+    justifyContent: "flex-start",
+    alignItems: "center", 
+    paddingTop: 10, 
+  },
+
+  searchContainer: {
+    flexDirection: "row", // Aligns items horizontally
+    alignItems: "center", // Keeps items aligned vertically
+    justifyContent: "space-between", // Adds space between items
+    width: "90%", // Adjust as needed
+    alignSelf: "center", // Centers in parent
+    marginTop: 20, // Adds some spacing
+  },
+
   container: {
     flex: 1,
     backgroundColor: '#fff', // full white background
@@ -141,6 +160,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
   },
   inputContainer: {
+    flex: 1, // Takes up available space
+    height: 60,
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 1,
@@ -149,15 +170,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: textcolors.lightgrey,
     backgroundColor: colors.white,
+    marginRight: 10, // Adds spacing between search bar and rectangle
   },
   rectangleView: {
+    height: 130,
     borderRadius: 10,
     backgroundColor: "rgba(31, 80, 143, 0.06)",
     borderStyle: "solid",
     borderColor: "#777",
     borderWidth: 1,
-    flex: 1,
-    width: "100%",
-    height: 105
+    width: "90%"
+  },
+  inputText: {
+    flex: 1, 
+    fontSize: 20, // Makes text bigger
+    textAlignVertical: "center", // Centers text vertically
+    paddingVertical: 10, // Ensures better spacing inside input
   }
 })
