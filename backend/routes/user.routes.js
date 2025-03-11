@@ -6,6 +6,6 @@ import {
 const router = express.Router();
 
 
-router.get("/:id", getSavedRecipes);
+router.get("/:id/savedRecipes", getSavedRecipes);
 
 export default router;

@@ -83,3 +83,22 @@ export const deleteRecipe = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// export const searchRecipes = async (req, res) => {
+//     try {
+//         const { query} = req.query;
+//         if (!query)
+//             return res.status(400).json({message: "Query is required"});
+        
+//         const APP_ID = process.env.EDAMAM_APP_ID
+//         const APP_KEY = process.env.EDAMAM_APP_KEY
+
+//         const url = `http://api.edamam.com/search?q=${query}`
+//     }
+// }
+
+// app.get('/recipes/:query', async (req, res) => {
+//     const response = await axios.get(`https://api.edamam.com/search?q=${req.params.query}&app_id=${process.env.EDAMAM_APP_ID}&app_key=${process.env.EDAMAM_API_KEY}`)
+//     console.log(response.data.hits)
+//     res.json(response.data.hits)
+// })
