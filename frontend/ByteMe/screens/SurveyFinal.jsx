@@ -1,78 +1,80 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import React from 'react'
+import { Image, StyleSheet, Text, View, Button, ScrollView, TouchableOpacity } from 'react-native'
+import React, { useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
 import { fonts } from '../components/Fonts'
-import { useRouter } from 'expo-router'
+import { Link } from "expo-router"
 import { styles } from '@/components/Sheet'
+import { Formik } from 'formik'
+import { Checkbox } from 'react-native-paper'
 
-function HeaderLogo() {
-  return (
-    <View style={styles.logocontainer}>
-      <Image
-        style={styles.stretch}
-        source={require('../assets/images/logo.png')}/>
-    </View>
-  )
-}
+const SurveyFinal = ({ navigation }) => {
+  const [selectedAllergies, setSelectedAllergies] = useState([]);
 
-const WelcomeSurvey = () => {
-  const router = useRouter();
+  const options = ['Milk', 'Egg', 'Fish', 'Shellfish', 'Tree Nuts', 'Peanuts', 'Wheat', 'Soybeans', 'Sesame'];
+
+  const toggleSelection = (option) => {
+    setSelectedAllergies((prev) =>
+      prev.includes(option) ? prev.filter((item) => item !== option) : [...prev, option]
+    );
+  };
 
   return (
     <View style={styles.whiteBackground}>
       <View style={styles.screenContainer}>
-        <View>
-          <Text style={styles.title}>Welcome to </Text>
-          <HeaderLogo/>
-        </View>
-
-        <View style={styles.container}>
-          <Text style={styles.heading}>Would you like to take a quick survey?</Text>
-          <Text style={styles.regularText}>It's so we can personally tailor your meal plan for you!</Text>
-        </View>
-
-        <TouchableOpacity onPress={() => router.push('../(survey)/survey_2')}>
-          <View style={button.bluebutton}>
-            <Text style={styles.buttonText}>Yes</Text>
+        <Text style={styles.title}>Allergies </Text>
+        <Text style={[styles.regularText, {marginBottom: 20}]}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
+        {options.map((option, index) => (
+          <View key={index} style={button.checklist}>
+            <Checkbox 
+              status={selectedAllergies.includes(option) ? 'checked' : 'unchecked'}
+              onPress={() => toggleSelection(option)}
+              color={colors.header}
+              
+            />
+            <Text style={styles.regularText}>{option}</Text>
           </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity>
-          <View style={button.greybutton}>
-            <Text style={styles.buttonText}>Skip Survey</Text>
+        ))}
+        <TouchableOpacity onPress={() => navigation.navigate('login')}>
+          <View style={[button.bluebutton, {marginTop: 30}]}>
+            <Text style={styles.buttonText}>Next</Text>
           </View>
         </TouchableOpacity>
       </View>
     </View>
-    )
-}
+    
+  );
+};
 
-export default WelcomeSurvey;
+export default SurveyFinal
 
 const button = StyleSheet.create({
-    bluebutton: {
-      flexDirection: 'row',
-      borderRadius: 20,
-      marginHorizontal: 60,
-      paddingVertical: 10,
-      backgroundColor: colors.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginVertical: 10,
-      elevation: 2,
-      shadowColor: colors.black,
-    },
-    greybutton: {
-      flexDirection: 'row',
-      borderRadius: 20,
-      marginHorizontal: 60,
-      paddingVertical: 10,
-      backgroundColor: colors.othergrey,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginVertical: 10,
-      elevation: 2,
-      shadowColor: colors.black,
-    },
+  checklist: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  bluebutton: {
+    flexDirection: 'row',
+    borderRadius: 20,
+    marginHorizontal: 60,
+    paddingVertical: 10,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    elevation: 2,
+    shadowColor: colors.black,
+  },
+  greybutton: {
+    flexDirection: 'row',
+    borderRadius: 20,
+    marginHorizontal: 60,
+    paddingVertical: 10,
+    backgroundColor: colors.othergrey,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    elevation: 2,
+    shadowColor: colors.black,
+  },
 })

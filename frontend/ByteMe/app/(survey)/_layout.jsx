@@ -6,6 +6,7 @@ import SurveyAllergies from './survey_2'
 import SurveyFinal from './survey_final'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createStackNavigator } from '@react-navigation/stack'
+import LoginScreen from '../(start)/login'
 
 
 // const Stack = createNativeStackNavigator();
@@ -25,6 +26,10 @@ const _layout = () => {
           <Stack.Screen 
             name="surveyfinal" 
             component={SurveyFinal}
+            options={{headerShown: false}} />
+            <Stack.Screen 
+            name="login" 
+            component={LoginScreen}
             options={{headerShown: false}} />
       </Stack.Navigator>
   )

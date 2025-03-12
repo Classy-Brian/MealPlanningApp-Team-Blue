@@ -35,7 +35,7 @@ const SurveyAllergies = ({ navigation }) => {
             <Text style={styles.regularText}>{option}</Text>
           </View>
         ))}
-        <TouchableOpacity onPress={() => navigation.navigate('survey2')}>
+        <TouchableOpacity onPress={() => navigation.navigate('surveyfinal')}>
           <View style={[button.bluebutton, {marginTop: 30}]}>
             <Text style={styles.buttonText}>Next</Text>
           </View>

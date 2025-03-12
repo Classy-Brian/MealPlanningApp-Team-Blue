@@ -1,4 +1,4 @@
-import { Image, Text, View, TextInput, TouchableOpacity } from 'react-native'
+import { Image, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
@@ -16,15 +16,13 @@ function HeaderLogo() {
   )
 }
 
-const SignUp = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+const SignUp = ( {navigation} ) => {
+  const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
-  const [isFocused, setFocused] = useState(styles.inputContainer)
-  const [isFocused1, setFocused1] = useState(styles.inputContainer)    
-  const [isFocused2, setFocused2] = useState(styles.inputContainer)
-  const [isFocused3, setFocused3] = useState(styles.inputContainer)
+  const [isFocused, setFocused] = useState(styles.inputContainer);
+  const [isFocused2, setFocused2] = useState(styles.inputContainer);
+  const [isFocused3, setFocused3] = useState(styles.inputContainer);
 
   const handleChange = async () => {
     const PORT = process.env.PORT;
@@ -32,13 +30,19 @@ const SignUp = () => {
       if (!firstName || !lastName || !email || !password ) {
         alert("Please fill in all fields.");
       }
-      const res = await axios.post("http://10.0.2.2:" + "8081" + "/register", {firstName, lastName, email, password});
+      const res = await axios.post("http://10.0.2.2:" + "8081" + "/api/users", {userName, email, password});
+      if (res.status === 201) {
+        Alert.alert("Success", "Registration successful!", [
+          {text: "OK", onPress: () => navigation.navigate("survey1")}
+        ]);
+      }
       alert("User registered!");
-      const router = useRouter();
-      router.push("/(survey)/survey_1");
+      // const router = useRouter();
+      // router.push("/(survey)/survey_1");
+      navigation.navigate("survey1")
     }
     catch (err) {
-      alert("Error signing up. Please try again.");
+      Alert.alert("Error signing up. Please try again.");
     }
   }
 
@@ -50,33 +54,20 @@ const SignUp = () => {
           <HeaderLogo/>
         </View>
         
-        <View style={styles.namecontainer}>
-          <View style={styles.secondcontainer}>
-            <Text style={styles.heading}>First Name </Text>
+        <View style={styles.container}>
+            <Text style={styles.heading}>Username </Text>
             <View >          
               <TextInput
-                placeholder='Enter your first name'
+                placeholder='Enter a username'
                 placeholderTextColor={textcolors.lightgrey}
-                onChangeText={setFirstName}
+                onChangeText={setUserName}
+                value={userName}
                 style={isFocused}
                 onFocus={() => setFocused(styles.focusedinput)}
                 onBlur={() => setFocused(styles.inputContainer)}
               />
             </View>
-          </View>
-          <View style={styles.secondcontainer}>
-            <Text style={styles.heading}>Last Name </Text>
-            <View>          
-              <TextInput
-                placeholder='Enter your last name'
-                placeholderTextColor={textcolors.lightgrey}
-                onChangeText={setLastName}
-                style={isFocused1}
-                onFocus={() => setFocused1(styles.focusedinput)}
-                onBlur={() => setFocused1(styles.inputContainer)}
-                />
-            </View>
-          </View>
+          
         </View>
 
         <View style={styles.container}>
@@ -86,6 +77,7 @@ const SignUp = () => {
               placeholder='Enter your email'
               placeholderTextColor={textcolors.lightgrey}
               onChangeText={setEmail}
+              value={email}
               style={isFocused2} 
               onFocus={() => setFocused2(styles.focusedinput)}
               onBlur={() => setFocused2(styles.inputContainer)}
@@ -101,6 +93,7 @@ const SignUp = () => {
               secureTextEntry
               placeholderTextColor={textcolors.lightgrey}
               onChangeText={setPass}
+              value={password}
               style={isFocused3}
               onFocus={() => setFocused3(styles.focusedinput)}
               onBlur={() => setFocused3(styles.inputContainer)}

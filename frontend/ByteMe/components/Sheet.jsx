@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
   },
   screenContainer: {
     justifyContent: 'space-between',
-    marginHorizontal: 20,
+    marginHorizontal: 25,
     marginVertical: 10,
   },
     logocontainer: {

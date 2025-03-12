@@ -18,7 +18,7 @@ function HeaderLogo() {
   )
 }
 
-const Login = () => {
+const Login = ( {navigation} ) => {
   const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
   const [isFocused, setFocused] = useState(styles.inputContainer)
@@ -32,8 +32,9 @@ const Login = () => {
       }
       const res = await axios.post("http://10.0.2.2:" + "8081" + "/login", {email, password});
       await AsyncStorage.setItem("token", res.data.token);
-      const router = useRouter();
-      router.push("/(tabs)/home");
+      // const router = useRouter();
+      // router.push("/(tabs)/home");
+      navigation.navigate("home");
       alert("Successfully signed in!")
     }
     catch (err) {
