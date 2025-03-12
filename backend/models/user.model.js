@@ -18,24 +18,29 @@ const userSchema = new mongoose.Schema({
     allergies: [{
         type: String
     }],
-    avatarUrl: {
-        type: String,
-        default: ''
-      },      
+  
+    // Profile section
     profile: {
         calories: {
         min: { type: Number, default: 0 },
         max: { type: Number, default: 0 },
         current: { type: Number, default: 0 }
-        },
+      },
         recipes: {
         tried: { type: Number, default: 0 },
         wantToTry: { type: Number, default: 0 }
-        }
-    }
-}, {
-  timestamps: true
-});
+      }
+    },
+  
+    //Recipes section - Array of Recipe IDs
+    recipes: [{
+      type: mongoose.Schema.Types.ObjectId, // Reference to Recipe model
+      ref: "Recipe"
+    }]
+  
+  }, {
+    timestamps: true
+  });
 
 // Hash the password before saving
 userSchema.pre('save', async function(next) {
