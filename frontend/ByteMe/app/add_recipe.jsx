@@ -20,6 +20,10 @@ const Add_Recipe = () => {
           />
         </View>
       </View>
+      <TouchableOpacity style= {styles.recipePhotoParent} onPress={() =>  {}}>
+        <View style={styles.overlay} />
+        <Text style={styles.recipeTitle}>Food</Text>
+      </TouchableOpacity>
     </View>
   )
 }
@@ -56,6 +60,34 @@ const styles = StyleSheet.create({
     flex: 1, 
     fontSize: 20, 
     paddingVertical: 10 
+  },
+
+  overlay: {
+    position: "absolute",
+    top: 12,
+    left: 0,
+    width: "100%",
+    height: 24,
+    backgroundColor: "rgba(31, 80, 143, 0.8)",
+    borderRadius: 10,
+  },
+
+  recipePhotoParent: {
+    marginTop: 20,
+    alignSelf: "center",
+    width: 180,
+    height: 180,
+  },
+
+  recipeTitle: {
+    position: "absolute",
+    top: 16,
+    width: "100%",
+    fontSize: 12,
+    fontWeight: "700",
+    fontFamily: "Afacad",
+    color: "#fff",
+    textAlign: "center",
   },
 
 
