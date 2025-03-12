@@ -16,8 +16,9 @@ function HeaderLogo() {
   )
 }
 
-const SignUp = ( {navigation} ) => {
-  const [userName, setUserName] = useState('');
+const SignUp = () => {
+  const route = useRouter();
+  const [name, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
   const [isFocused, setFocused] = useState(styles.inputContainer);
@@ -25,24 +26,39 @@ const SignUp = ( {navigation} ) => {
   const [isFocused3, setFocused3] = useState(styles.inputContainer);
 
   const handleChange = async () => {
-    const PORT = process.env.PORT;
+    // const PORT = 5000;
+    
     try {
-      if (!firstName || !lastName || !email || !password ) {
-        alert("Please fill in all fields.");
+      if (!name || !email || !password ) {
+        Alert.alert("Please fill in all fields.", "", [{text: "OK"}], {cancelable: true});
+        return;
       }
-      const res = await axios.post("http://10.0.2.2:" + "8081" + "/api/users", {userName, email, password});
+      console.log('Sending registration data...', {name, email, password})
+      const res = await axios.post("http://10.0.2.2:" + "5000" + "/api/users", {name, email, password});
+      
       if (res.status === 201) {
-        Alert.alert("Success", "Registration successful!", [
-          {text: "OK", onPress: () => navigation.navigate("survey1")}
-        ]);
+        setUserName('');
+        setEmail('');
+        setPass('');
+
+        setTimeout(() => {
+          Alert.alert("Success", "Registration successful!", 
+                      [{text: "OK", onPress: () => route.push("/(survey)/survey_1")}]);
+        }, 100);
       }
-      alert("User registered!");
-      // const router = useRouter();
-      // router.push("/(survey)/survey_1");
-      navigation.navigate("survey1")
+      
     }
     catch (err) {
-      Alert.alert("Error signing up. Please try again.");
+      console.log('buttons:', buttons);
+      console.error("Error", err);
+      if (err.response) {
+        console.error("Response error:", err.response.data);
+      } else if (err.request) {
+        console.error("Request:", err.request);
+      } else {
+        console.error("Message:", err.message);
+      }
+      Alert.alert("Error signing up. Please try again.", "", [{text: "OK"}], {cancelable: true});
     }
   }
 
@@ -61,7 +77,7 @@ const SignUp = ( {navigation} ) => {
                 placeholder='Enter a username'
                 placeholderTextColor={textcolors.lightgrey}
                 onChangeText={setUserName}
-                value={userName}
+                value={name}
                 style={isFocused}
                 onFocus={() => setFocused(styles.focusedinput)}
                 onBlur={() => setFocused(styles.inputContainer)}

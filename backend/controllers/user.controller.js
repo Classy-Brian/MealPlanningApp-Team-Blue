@@ -3,8 +3,11 @@ import Recipe from '../models/recipe.model.js';
 
 //CREATE: Register a new User
 export const createUser = async (req, res) => {
+  console.log("Recieved registration request:", req.body);
+  
   try {
     const { name, email, password, allergies, profile } = req.body;
+    // const { name, email, password } = req.body;
 
     // Check if user already exists by email
     const userExists = await User.findOne({ email });

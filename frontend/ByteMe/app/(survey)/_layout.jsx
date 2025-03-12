@@ -4,12 +4,10 @@ import { NavigationContainer } from '@react-navigation/native'
 import WelcomeSurvey from './survey_1'
 import SurveyAllergies from './survey_2'
 import SurveyFinal from './survey_final'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createStackNavigator } from '@react-navigation/stack'
 import LoginScreen from '../(start)/login'
 
 
-// const Stack = createNativeStackNavigator();
 const Stack = createStackNavigator();
 
 const _layout = () => {

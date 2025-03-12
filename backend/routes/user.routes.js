@@ -15,7 +15,7 @@ const router = express.Router();
 router.post('/', createUser);
 
 //READ: get all users (may want admin-only or we remove in production)
-router.get('/', getAllUsers);
+// router.get('/', getAllUsers);
 
 //READ: get single user by ID
 router.get('/:id', getUserById);

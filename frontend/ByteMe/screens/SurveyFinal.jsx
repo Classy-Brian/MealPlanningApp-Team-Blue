@@ -3,12 +3,13 @@ import React, { useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
 import { fonts } from '../components/Fonts'
-import { Link } from "expo-router"
+import { Link, useRouter } from "expo-router"
 import { styles } from '@/components/Sheet'
 import { Formik } from 'formik'
 import { Checkbox } from 'react-native-paper'
 
-const SurveyFinal = ({ navigation }) => {
+const SurveyFinal = () => {
+  const route = useRouter();
   const [selectedAllergies, setSelectedAllergies] = useState([]);
 
   const options = ['Milk', 'Egg', 'Fish', 'Shellfish', 'Tree Nuts', 'Peanuts', 'Wheat', 'Soybeans', 'Sesame'];
@@ -19,25 +20,18 @@ const SurveyFinal = ({ navigation }) => {
     );
   };
 
+  // PASS ALLERGIES FROM SURVEYALLERGIES TO THIS PAGE AND THEN UPDATE TEH USER
+
   return (
     <View style={styles.whiteBackground}>
       <View style={styles.screenContainer}>
-        <Text style={styles.title}>Allergies </Text>
-        <Text style={[styles.regularText, {marginBottom: 20}]}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
-        {options.map((option, index) => (
-          <View key={index} style={button.checklist}>
-            <Checkbox 
-              status={selectedAllergies.includes(option) ? 'checked' : 'unchecked'}
-              onPress={() => toggleSelection(option)}
-              color={colors.header}
-              
-            />
-            <Text style={styles.regularText}>{option}</Text>
-          </View>
-        ))}
-        <TouchableOpacity onPress={() => navigation.navigate('login')}>
+        <Text style={styles.title}>Finish creating account </Text>
+        <Text style={[styles.heading, {marginBottom: 20}]}>Finished signing up? You'll still be able 
+                                                                to add or edit preferences in your settings</Text>
+        
+        <TouchableOpacity onPress={() => route.push('../(start)/login')}>
           <View style={[button.bluebutton, {marginTop: 30}]}>
-            <Text style={styles.buttonText}>Next</Text>
+            <Text style={[styles.buttonText, {color: textcolors.white}]}>Finish</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -58,7 +52,7 @@ const button = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 60,
     paddingVertical: 10,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.header,
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 10,
