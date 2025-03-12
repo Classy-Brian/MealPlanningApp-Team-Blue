@@ -45,7 +45,22 @@ const _layout = () => {
           },
         }}
       />
-    </Stack>
+
+      <Stack.Screen name="add_recipe"
+        options={{
+          headerShown: true,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+  </Stack>
   );
 };
 
