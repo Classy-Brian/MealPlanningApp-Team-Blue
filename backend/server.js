@@ -15,7 +15,6 @@ dotenv.config();
 const app = express(); // Initializes a new Express.js application instance
 const PORT = process.env.PORT || 5000
 
-const __dirname = path.resolve()
 
 app.use(cors());
 app.use(express.json()); // Allows us to accept JSON data in the req body

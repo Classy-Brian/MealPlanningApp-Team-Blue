@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, ScrollView, Button, Alert } from "react-native";
+import { View, Text, Image, StyleSheet, ScrollView, Button, Alert, Linking } from "react-native";
 import axios from "axios";
-import { useLocalSearchParams } from "expo-router"; // 🚀 Use Expo Router params
+import { useLocalSearchParams } from "expo-router"; //  Use Expo Router params
 
 const RecipeDetailScreen = () => {
-    const params = useLocalSearchParams(); // 🚀 Get recipe ID from URL params
+    const params = useLocalSearchParams(); //  Get recipe ID from URL params
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isSaved, setIsSaved] = useState(false); // ✅ Tracks if recipe is saved
+    const [isSaved, setIsSaved] = useState(false); //  Tracks if recipe is saved
 
     const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
     const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
-    const USER_ID = "67c8da45f97986963147083a"; // 🚀 Replace with actual logged-in user ID
+    const USER_ID = "67c8da45f97986963147083a"; // testing user ID
 
     useEffect(() => {
         const fetchRecipeDetails = async () => {
@@ -43,14 +43,14 @@ const RecipeDetailScreen = () => {
         fetchRecipeDetails();
     }, [params.id]);
 
-    // ✅ Function to Save Recipe to User Database
+    //  Function to Save Recipe to User Database
     const saveRecipe = async () => {
         if (!recipe) return;
 
         try {
-            const response = await axios.post("https://your-api.com/api/save-recipe", {
-                userId: USER_ID, // 🚀 Replace with actual user authentication
-                recipeId: params.id, // ✅ Only send the recipe ID
+            const response = await axios.post("http://localhost:5000/api/users/save-recipe", {
+                userId: USER_ID, //  Replace with actual user authentication
+                recipeId: params.id, //  Only send the recipe ID
             });
 
             if (response.status === 200) {
@@ -75,11 +75,34 @@ const RecipeDetailScreen = () => {
 
             <Button title={isSaved ? "Recipe Saved" : "Save Recipe"} onPress={saveRecipe} disabled={isSaved} />
 
+            {/*Direction*/}
+            {recipe.url && (
+                <Button
+                    title="View Full Recipe"
+                    onPress={() => Linking.openURL(recipe.url)}
+                    color="#4CAF50"
+                />
+            )}
+
+            {/* Ingredients */}
             <Text style={styles.sectionTitle}>Ingredients</Text>
             {recipe.ingredientLines.map((ingredient, index) => (
                 <Text key={index} style={styles.ingredient}>{ingredient}</Text>
             ))}
 
+            {/* Allergy Warnings (Health Labels) */}
+            {recipe.healthLabels.length > 0 && (
+                <>
+                    <Text style={styles.sectionTitle}>Allergy Warnings</Text>
+                    <View style={styles.allergyContainer}>
+                        {recipe.healthLabels.map((label, index) => (
+                            <Text key={index} style={styles.allergyLabel}>{label}</Text>
+                        ))}
+                    </View>
+                </>
+            )}
+
+            {/* Nutrients */}
             <Text style={styles.sectionTitle}>Nutrients</Text>
             {recipe.totalNutrients ? (
                 Object.keys(recipe.totalNutrients).map((key) => (

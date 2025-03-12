@@ -33,9 +33,8 @@ const userSchema = new mongoose.Schema({
         wantToTry: { type: Number, default: 0 }
         }
     },
-    savedRecipes: [{
-        type: mongoose.Schema.Types.ObjectId, ref:"Recipe"
-}]
+    savedRecipes: 
+    [{type: String }]
 }, {
   timestamps: true
 });
