@@ -5,9 +5,11 @@ import {
   addRecipeToUser,
   getAllUsers,
   getUserById,
+  updateUserPreferences,
   updateUser,
   deleteUser
 } from '../controllers/user.controller.js';
+import authenticateJWT from './authMiddleware.js';
 
 const router = express.Router();
 
@@ -15,7 +17,7 @@ const router = express.Router();
 router.post('/', createUser);
 
 //READ: get all users (may want admin-only or we remove in production)
-router.get('/', getAllUsers);
+// router.get('/', getAllUsers);
 
 //READ: get single user by ID
 router.get('/dev/:id', getUserById);
@@ -24,6 +26,9 @@ router.get('/dev/:id', getUserById);
 //UPDATE: user by ID
 router.patch('/dev/:id', updateUser);
 // router.patch('/:id', updateUser);
+
+//UPDATE: user allergies by ID
+router.put('/preferences', authenticateJWT, updateUserPreferences);
 
 //DELETE: user by ID
 router.delete('/:id', deleteUser);

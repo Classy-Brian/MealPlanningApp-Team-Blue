@@ -1,9 +1,21 @@
 import User from '../models/user.model.js'; 
 import Recipe from '../models/recipe.model.js';
 import asyncHandler from 'express-async-handler';
+import jwt from 'jsonwebtoken';
+import dotenv from "dotenv";
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// GENERATE a JWT token
+const generateToken = (userId, time) => {
+  return jwt.sign({_id: userId}, JWT_SECRET, {expiresIn: time});
+}
+
 
 //CREATE: Register a new User
 export const createUser = async (req, res) => {
+  console.log("Recieved registration request:", req.body);
+  
   try {
     const { name, email, password, allergies, profile } = req.body;
 
@@ -22,14 +34,22 @@ export const createUser = async (req, res) => {
       profile
     });
 
+    // Create a JSON web token
+    const token = generateToken(user._id, '1h') // The token expires in 1 hour
+    user.token = token;
+    await user.save();
+
     // Return the created user
     return res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      allergies: user.allergies,
-      profile: user.profile,
-      recipes: user.recipes
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        allergies: user.allergies,
+        profile: user.profile,
+        recipes: user.recipes,
+      },
+      token,
     });
   } catch (error) {
     console.error(error);
@@ -90,6 +110,19 @@ export const getUserById = asyncHandler(async (req, res) => {
   }
   res.json(user);
 });
+
+export const updateUserPreferences = async (req, res) => {
+  const { allergies } = req.body;
+  const userId = req.user._id;  // Extracted from token
+
+  try {
+    await User.findByIdAndUpdate(userId, { allergies }, { new: true });
+    return res.status(200).json({ message: 'Allergies updated successfully'});
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error'});
+  }
+};
 
 //UPDATE: Update User by ID (Patch or Put)
 //need to create a seperate route for password changes later
@@ -158,13 +191,21 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email }); // Find the user by email
 
     if (user && (await user.matchPassword(password))) {
-      // will need to generate a JWT here and send it to the client
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        // for later: token: generateToken(user._id),
+      const token = generateToken(user._id, '7d');
+      user.token = token;
+      await user.save();
+      return res.status(200).json({
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          allergies: user.allergies,
+          profile: user.profile,
+          recipes: user.recipes,
+        },
+        token,
       });
+      
     } else {
       // Invalid email or password
       res.status(401).json({ message: 'Invalid email or password' }); // 401 Unauthorized
