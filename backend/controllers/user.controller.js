@@ -1,5 +1,6 @@
 import User from '../models/user.model.js'; 
 import Recipe from '../models/recipe.model.js';
+import asyncHandler from 'express-async-handler';
 
 //CREATE: Register a new User
 export const createUser = async (req, res) => {
@@ -50,26 +51,46 @@ export const getAllUsers = async (req, res) => {
 };
 
 //READ: Get Single User by ID
-export const getUserById = async (req, res) => {
-  try {
-    const { id } = req.params;
+// export const getUserById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
 
-    // Populate 'recipes' to get actual recipe documents if needed. otherwise returns the id.
-    // .populate('recipes')
-    const user = await User.findById(id)
-    .select('-password')
-    .populate('recipes')
-    ;
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+//     // Populate 'recipes' to get actual recipe documents if needed. otherwise returns the id.
+//     // .populate('recipes')
+//     const user = await User.findById(id)
+//     .select('-password')
+//     .populate('recipes')
+//     ;
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
 
-    return res.json(user);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+//     return res.json(user);
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: 'Server error' });
+//   }
+// };
+export const getUserById = asyncHandler(async (req, res) => {
+  console.log("getUserById called");
+  console.log("req.params:", req.params); // Log the parameters
+  console.log("req.user:", req.user);     // Log the user (should be undefined)
+
+  const id = req.params.id; // Get ID from params for the /dev/:id route
+  console.log("Extracted id:", id);
+
+  const user = await User.findById(id).select('-password'); //Don't populate recipes
+  // Removed populate since it is not needed
+
+  console.log("findById result:", user);
+
+  if (!user) {
+      console.log("User not found, returning 404");
+      res.status(404);
+      throw new Error('User not found'); // Throw for asyncHandler
   }
-};
+  res.json(user);
+});
 
 //UPDATE: Update User by ID (Patch or Put)
 //need to create a seperate route for password changes later

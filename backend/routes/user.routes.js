@@ -18,10 +18,12 @@ router.post('/', createUser);
 router.get('/', getAllUsers);
 
 //READ: get single user by ID
-router.get('/:id', getUserById);
+router.get('/dev/:id', getUserById);
+// router.get('/:id', getUserById);
 
 //UPDATE: user by ID
-router.patch('/:id', updateUser);
+router.patch('/dev/:id', updateUser);
+// router.patch('/:id', updateUser);
 
 //DELETE: user by ID
 router.delete('/:id', deleteUser);

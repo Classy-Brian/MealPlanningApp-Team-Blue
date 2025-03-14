@@ -21,7 +21,7 @@ const ALLERGY_OPTIONS = [
 const PreferenceSettingsScreen = () => {
     const [selectedAllergies, setSelectedAllergies] = useState([]); // Array of IDs
     const [loading, setLoading] = useState(true);
-    const [userId, setUserId] = useState('67c3fb884ece0f7446647ec1_rdm_user_ID'); // <- Replace later
+    const [userId, setUserId] = useState('67d207aaef33b585393e6770'); // <- Replace later
     const [error, setError] = useState(null);
     const params = useLocalSearchParams();
     const router = useRouter();
@@ -31,28 +31,17 @@ const PreferenceSettingsScreen = () => {
         const fetchUserData = async () => {
             try {
                 setLoading(true);
-                // const response = await axios.get(`http://localhost:5000/api/users/${userId}`); //Uncomment
-                // const allergyNames = response.data.allergies;
+                console.log("Fetching user data for ID:", userId);
+                const response = await axios.get(`http://localhost:5000/api/users/dev/${userId}`);
+                const allergyNames = response.data.allergies;
 
-                // // Convert names to IDs
-                // const allergyIds = allergyNames.map(name => {
-                //  const found = ALLERGY_OPTIONS.find(option => option.label === name);
-                //     return found ? found.id : null; // Return the ID, or null if not found
-                // }).filter(id => id !== null); // Remove any null values
+                // Convert names to IDs
+                const allergyIds = allergyNames.map(name => {
+                 const found = ALLERGY_OPTIONS.find(option => option.label === name);
+                    return found ? found.id : null; // Return the ID, or null if not found
+                }).filter(id => id !== null); // Remove any null values
 
-                // setSelectedAllergies(allergyIds);
-
-                //FOR TESTING PURPOSES
-                  const allergyNames = ["Peanuts", "Dairy"];
-
-                  // Convert names to IDs
-                    const allergyIds = allergyNames.map(name => {
-                    const found = ALLERGY_OPTIONS.find(option => option.label === name);
-                        return found ? found.id : null; // Return the ID, or null if not found
-                    }).filter(id => id !== null); // Remove any null values
-
-                    setSelectedAllergies(allergyIds);
-
+                setSelectedAllergies(allergyIds);
                 setError(null);
             } catch (err) {
                 console.error("Error fetching user data:", err);
@@ -87,16 +76,16 @@ const PreferenceSettingsScreen = () => {
     const saveAllergies = async () => {
          try {
          // Convert IDs to allergy names before sending
-          const allergiesToSend = selectedAllergies.map(id => {
+         const allergiesToSend = selectedAllergies.map(id => {
             const found = ALLERGY_OPTIONS.find(option => option.id === id);
             return found ? found.label : null; // Convert back to name
-            }).filter(name => name !== null);
-
-          const updatedUser = await axios.put(`http://localhost:5000/api/users/${userId}`, {
-             allergies: allergiesToSend, // Send the updated array
-           });
-           //You don't necessarily need to do anything with the response.
-           // setAllergies(updatedUser.data.allergies); // You *could* update local state, but it's usually better to refetch.
+        }).filter(name => name !== null);
+        
+        console.log("allergiesToSend:", allergiesToSend); // ADD THIS
+        
+        const updatedUser = await axios.patch(`http://localhost:5000/api/users/dev/${userId}`, {
+            allergies: allergiesToSend, // Send the updated array
+        });
             Alert.alert("Success", "Allergies updated successfully!");
             
 
@@ -161,12 +150,12 @@ const styles = StyleSheet.create({
     },
     allergyItem: {
         flexDirection: 'row',
-        alignItems: 'center', // Align checkbox and text vertically
-        marginBottom: 10, // Add some spacing between items
+        alignItems: 'center', 
+        marginBottom: 10, 
     },
     allergyText: {
         fontSize: 16,
-        marginLeft: 10, // Add some space between the checkbox and the text
+        marginLeft: 10, 
     },
 });
 
