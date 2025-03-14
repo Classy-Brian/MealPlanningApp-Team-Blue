@@ -23,7 +23,7 @@ const PreferenceSettingsScreen = () => {
     // State variables using the useState hook:
     const [selectedAllergies, setSelectedAllergies] = useState([]); // Stores the *IDs* of selected allergies.
     const [loading, setLoading] = useState(true); // Indicates whether data is being loaded.
-    const [userId, setUserId] = useState('67d207aaef33b585393e6770'); //  Replace with user's id to change allergy
+    const [userId, setUserId] = useState('67d3a9717c654c6be6f07502'); //  Replace with user's id to change allergy
     const [error, setError] = useState(null); // Stores any error messages.
 
     // --- expo-router hooks ---
@@ -39,7 +39,7 @@ const PreferenceSettingsScreen = () => {
                 console.log("Fetching user data for ID:", userId); // Debugging log
 
                 // Fetch user data from the backend.  Uses the /dev/:id route for now.
-                const response = await axios.get(`/api/users/dev/${userId}`);
+                const response = await axios.get(`http://localhost:5000/api/users/dev/${userId}`);
 
                 // Extract allergy names from the response.
                 const allergyNames = response.data.allergies;
@@ -108,7 +108,7 @@ const PreferenceSettingsScreen = () => {
             console.log("allergiesToSend:", allergiesToSend); // Debugging log
 
             // Send a PATCH request to update the user's allergies.
-            await axios.patch(`/api/users/dev/${userId}`, {
+            await axios.patch(`http://localhost:5000/api/users/dev/${userId}`, {
                 allergies: allergiesToSend, // Send the array of allergy *names*.
             });
 

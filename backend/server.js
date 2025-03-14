@@ -12,9 +12,6 @@ import userRoutes from './routes/user.routes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for all origins (for development - temporary)
-app.use(cors());
-
 app.use(express.json()); // Allows us to accept JSON data in the req body
 app.use(cors());
 
