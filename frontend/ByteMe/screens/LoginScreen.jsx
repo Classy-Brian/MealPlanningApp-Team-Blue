@@ -1,4 +1,4 @@
-import { Image, Text, View, TextInput, TouchableOpacity} from 'react-native'
+import { Image, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
@@ -19,6 +19,7 @@ function HeaderLogo() {
 }
 
 const Login = ( {navigation} ) => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
   const [isFocused, setFocused] = useState(styles.inputContainer)
@@ -31,14 +32,31 @@ const Login = ( {navigation} ) => {
         alert("Please fill in all fields.");
       }
       const res = await axios.post("http://10.0.2.2:" + "5000" + "/api/users/login", {email, password});
-      await AsyncStorage.setItem("token", res.data.token);
-      // const router = useRouter();
-      // router.push("/(tabs)/home");
-      navigation.navigate("home");
-      alert("Successfully signed in!")
+      await AsyncStorage.setItem('authToken', res.data.token);
+      if (res.status === 200) {
+        setEmail('');
+        setPass('');
+
+        setTimeout(() => {
+          Alert.alert("Success", "You're signed in now!", [{text: "OK"}], {cancelable: true});
+        }, 100);
+        router.push('/(tabs)/home');
+      }
     }
     catch (err) {
-      alert("Login failed. Please try again.");
+      if (__DEV__) {
+        console.error("Error", err);
+      }
+      if (err.response) {
+        console.error("Response error:", err.response.data);
+      } else if (err.request) {
+        console.error("Request:", err.request);
+      } else {
+        console.error("Message:", err.message);
+      }
+      if (err.response && err.response.status === 500) {
+        Alert.alert("Error signing up. Please try again.", "", [{text: "OK"}], {cancelable: true});
+      }
     }
   }
 

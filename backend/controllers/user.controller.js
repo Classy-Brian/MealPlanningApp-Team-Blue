@@ -171,13 +171,21 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email }); // Find the user by email
 
     if (user && (await user.matchPassword(password))) {
-      // will need to generate a JWT here and send it to the client
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        // for later: token: generateToken(user._id),
+      const token = generateToken(user._id, '7d');
+      user.token = token;
+      await user.save();
+      return res.status(200).json({
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          allergies: user.allergies,
+          profile: user.profile,
+          recipes: user.recipes,
+        },
+        token,
       });
+      
     } else {
       // Invalid email or password
       res.status(401).json({ message: 'Invalid email or password' }); // 401 Unauthorized
