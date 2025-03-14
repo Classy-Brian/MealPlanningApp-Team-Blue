@@ -5,9 +5,11 @@ import {
   addRecipeToUser,
   getAllUsers,
   getUserById,
+  updateUserPreferences,
   updateUser,
   deleteUser
 } from '../controllers/user.controller.js';
+import authenticateJWT from './authMiddleware.js';
 
 const router = express.Router();
 
@@ -22,6 +24,9 @@ router.get('/:id', getUserById);
 
 //UPDATE: user by ID
 router.patch('/:id', updateUser);
+
+//UPDATE: user allergies by ID
+router.put('/preferences', authenticateJWT, updateUserPreferences);
 
 //DELETE: user by ID
 router.delete('/:id', deleteUser);

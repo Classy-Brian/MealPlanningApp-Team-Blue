@@ -25,12 +25,12 @@ const Login = ( {navigation} ) => {
   const [isFocused1, setFocused1] = useState(styles.inputContainer)
 
   const handleLogin = async () => {
-    const PORT = process.env.PORT;
+    // const PORT = process.env.PORT;
     try {
       if (!email || !password ) {
         alert("Please fill in all fields.");
       }
-      const res = await axios.post("http://10.0.2.2:" + PORT + "/api/users/login", {email, password});
+      const res = await axios.post("http://10.0.2.2:" + "5000" + "/api/users/login", {email, password});
       await AsyncStorage.setItem("token", res.data.token);
       // const router = useRouter();
       // router.push("/(tabs)/home");

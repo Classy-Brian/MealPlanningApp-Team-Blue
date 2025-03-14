@@ -1,5 +1,15 @@
 import User from '../models/user.model.js'; 
 import Recipe from '../models/recipe.model.js';
+import jwt from 'jsonwebtoken';
+import dotenv from "dotenv";
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// GENERATE a JWT token
+const generateToken = (userId, time) => {
+  return jwt.sign({_id: userId}, JWT_SECRET, {expiresIn: time});
+}
+
 
 //CREATE: Register a new User
 export const createUser = async (req, res) => {
@@ -7,7 +17,6 @@ export const createUser = async (req, res) => {
   
   try {
     const { name, email, password, allergies, profile } = req.body;
-    // const { name, email, password } = req.body;
 
     // Check if user already exists by email
     const userExists = await User.findOne({ email });
@@ -24,14 +33,22 @@ export const createUser = async (req, res) => {
       profile
     });
 
+    // Create a JSON web token
+    const token = generateToken(user._id, '1h') // The token expires in 1 hour
+    user.token = token;
+    await user.save();
+
     // Return the created user
     return res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      allergies: user.allergies,
-      profile: user.profile,
-      recipes: user.recipes
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        allergies: user.allergies,
+        profile: user.profile,
+        recipes: user.recipes,
+      },
+      token,
     });
   } catch (error) {
     console.error(error);
@@ -71,6 +88,19 @@ export const getUserById = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const updateUserPreferences = async (req, res) => {
+  const { allergies } = req.body;
+  const userId = req.user._id;  // Extracted from token
+
+  try {
+    await User.findByIdAndUpdate(userId, { allergies }, { new: true });
+    return res.status(200).json({ message: 'Allergies updated successfully'});
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error'});
   }
 };
 

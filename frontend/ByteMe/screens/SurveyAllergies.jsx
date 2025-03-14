@@ -9,7 +9,7 @@ import { Formik } from 'formik'
 import { Checkbox } from 'react-native-paper'
 
 const SurveyAllergies = ({ navigation }) => {
-  const [selectedAllergies, setSelectedAllergies] = useState([]);
+  const [allergies, setSelectedAllergies] = useState([]);
 
   const options = ['Milk', 'Egg', 'Fish', 'Shellfish', 'Tree Nuts', 'Peanuts', 'Wheat', 'Soybeans', 'Sesame'];
 
@@ -17,6 +17,10 @@ const SurveyAllergies = ({ navigation }) => {
     setSelectedAllergies((prev) =>
       prev.includes(option) ? prev.filter((item) => item !== option) : [...prev, option]
     );
+  };
+
+  const nextPage = () => {
+    navigation.navigate('surveyfinal', {allergies});
   };
 
   return (
@@ -27,7 +31,7 @@ const SurveyAllergies = ({ navigation }) => {
         {options.map((option, index) => (
           <View key={index} style={button.checklist}>
             <Checkbox 
-              status={selectedAllergies.includes(option) ? 'checked' : 'unchecked'}
+              status={allergies.includes(option) ? 'checked' : 'unchecked'}
               onPress={() => toggleSelection(option)}
               color={colors.header}
               
@@ -35,7 +39,7 @@ const SurveyAllergies = ({ navigation }) => {
             <Text style={styles.regularText}>{option}</Text>
           </View>
         ))}
-        <TouchableOpacity onPress={() => navigation.navigate('surveyfinal')}>
+        <TouchableOpacity onPress={nextPage}>
           <View style={[button.bluebutton, {marginTop: 30}]}>
             <Text style={styles.buttonText}>Next</Text>
           </View>

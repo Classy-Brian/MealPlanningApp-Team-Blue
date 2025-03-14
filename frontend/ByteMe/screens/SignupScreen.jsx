@@ -5,6 +5,7 @@ import { textcolors} from '../components/TextColors'
 import { Link, useRouter } from "expo-router"
 import axios from "axios"
 import { styles } from '@/components/Sheet'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 function HeaderLogo() {
   return (
@@ -35,6 +36,14 @@ const SignUp = () => {
       }
       console.log('Sending registration data...', {name, email, password})
       const res = await axios.post("http://10.0.2.2:" + "5000" + "/api/users", {name, email, password});
+
+      
+
+      const token = res.data.token;
+      if (!token) {
+        throw new Error('Token not received');
+      }
+      await AsyncStorage.setItem('authToken', token);
       
       if (res.status === 201) {
         setUserName('');
@@ -49,8 +58,21 @@ const SignUp = () => {
       
     }
     catch (err) {
-      console.log('buttons:', buttons);
-      console.error("Error", err);
+      if (__DEV__) {
+        console.error("Error", err);
+      }
+      
+      if (err.response && err.response.status === 400) {
+        // setUserName('');
+        // setEmail('');
+        // setPass('');
+
+        setTimeout(() => {
+          Alert.alert("This email is already registered!", "Please try signing up again with a different email.", 
+            [{text: "OK"}], {cancelable: true});
+        }, 100);
+        return;
+      }
       if (err.response) {
         console.error("Response error:", err.response.data);
       } else if (err.request) {
@@ -58,7 +80,9 @@ const SignUp = () => {
       } else {
         console.error("Message:", err.message);
       }
-      Alert.alert("Error signing up. Please try again.", "", [{text: "OK"}], {cancelable: true});
+      if (err.response && err.response.status === 500) {
+        Alert.alert("Error signing up. Please try again.", "", [{text: "OK"}], {cancelable: true});
+      }
     }
   }
 
