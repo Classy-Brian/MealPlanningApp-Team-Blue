@@ -5,6 +5,7 @@ import HomeB from "@/assets/images/active.png";
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
 import { fonts } from '../components/Fonts';
+import Back_butt from "@/assets/images/backbutton.png";
 
 const initialData = [
   { id: "1", title: "Croque Monsieur", imageUri: null },
@@ -19,7 +20,7 @@ const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 const RecipeCard = ({ imageUri, title, onPress }) => {
   return (
     <TouchableOpacity style={styles.recipeContainer} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.recipeWrapper}> 
+      <View style={styles.recipeWrapper}>
         <Image
           style={styles.recipePhoto}
           resizeMode="cover"
@@ -63,22 +64,22 @@ const Add_Recipe = () => {
 
   return (
     <View style={styles.container}>
-      {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>Back</Text>
-      </TouchableOpacity>
-
+      {/* Scrollable Content */} {/*(Back Button) */}
       <FlatList
         data={recipes}
         keyExtractor={(item) => item.id}
-        numColumns={2} 
+        numColumns={2}
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
           <View style={styles.header}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("recipe")}>
+              <Image source={Back_butt} style={styles.backIcon} />
+              <Text style={styles.backText}>Recipes</Text>
+            </TouchableOpacity>
             <Text style={styles.title}>Search Recipes</Text>
             <View style={styles.searchContainer}>
               <TextInput
-                placeholder="Search recipes"
+                placeholder="Search Recipes"
                 placeholderTextColor={textcolors.lightgrey}
                 style={styles.inputText}
               />
@@ -86,11 +87,13 @@ const Add_Recipe = () => {
           </View>
         }
         renderItem={({ item }) => (
-        <RecipeCard title={item.title} 
-        imageUri={item.imageUri} 
-        onPress={() => goToRecipeDetails(item)} // Navigate to details screen/>}
-        />
+          <RecipeCard 
+            title={item.title} 
+            imageUri={item.imageUri} 
+            onPress={() => goToRecipeDetails(item)} 
+          />
         )}
+        contentContainerStyle={{ paddingTop: 60 }}
       />
     </View>
   );
@@ -99,19 +102,52 @@ const Add_Recipe = () => {
 export default Add_Recipe;
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: 20,
+    paddingTop: 50, // Ensures content starts below the fixed header
+  }, 
+
+  headerContainer: {
+    position: "absolute",
+    top: 10,
+    left: 15,
+    zIndex: 10,
+    backgroundColor: "transparent", // Ensure it doesn't block anything
+  },
+  
+
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "absolute",
+    top: 20,
+    left: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: "#1F508F",
+    borderRadius: 5,
+    zIndex: 10,
   },
 
   backButton: {
-    marginTop: 20,  // Move it into the normal flow of the screen
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: "#1F508F",
+    flexDirection: "row",
+    alignItems: "center",
+    position: "absolute",
+    top: 20,
+    left: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: "#D7E2F1",
     borderRadius: 5,
-    zIndex: 1, // Ensures it's above other elements
+    zIndex: 10,
+  },
+
+  backButtonText: {
+    fontSize:30,
+    color: '#fff'
   },
 
   backText: {
@@ -161,7 +197,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderWidth: 3, 
-    borderColor: "#1F508F", 
+    borderColor: "#000000", 
     borderRadius: 10, 
     overflow: "hidden",
   },
@@ -173,20 +209,22 @@ const styles = StyleSheet.create({
 
   overlay: {
     position: "absolute",
-    bottom: 0,
+    top: 0,
     backgroundColor: "rgba(31, 80, 143, 0.8)",
     width: "100%",
     height: 40,
+    opacity: 0.8,
   },
 
   recipeTitle: {
     position: "absolute",
-    bottom: 10,
+    top: 10,
     width: "100%",
     fontSize: 14,
     fontWeight: "700",
     fontFamily: "Afacad",
     color: "#fff",
     textAlign: "center",
+    opacity: 0.8,
   },
 });
