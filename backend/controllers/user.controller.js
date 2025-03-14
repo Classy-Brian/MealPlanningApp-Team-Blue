@@ -79,15 +79,14 @@ export const getUserById = asyncHandler(async (req, res) => {
   const id = req.params.id; // Get ID from params for the /dev/:id route
   console.log("Extracted id:", id);
 
-  const user = await User.findById(id).select('-password'); //Don't populate recipes
-  // Removed populate since it is not needed
+  const user = await User.findById(id).select('-password'); 
 
   console.log("findById result:", user);
 
   if (!user) {
       console.log("User not found, returning 404");
       res.status(404);
-      throw new Error('User not found'); // Throw for asyncHandler
+      throw new Error('User not found'); 
   }
   res.json(user);
 });

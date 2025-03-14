@@ -1,11 +1,11 @@
-// frontend/byte-me/screens/PreferenceSettingsScreen.js
+// Import necessary modules from React and React Native.
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, CheckBox } from 'react-native';
-import axios from 'axios';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import axios from 'axios';  // For making HTTP requests.
+import { useLocalSearchParams, useRouter } from 'expo-router'; // Import useRouter
 
-// Defines an array of objects, each representing an allergy option
-// Probably move this to backend? 
+// Defines an array of allergy options.  Each option is an object with an 'id' and a 'label'.
+// (e.g., constants/allergies.js)
 const ALLERGY_OPTIONS = [
     { id: 'milk', label: 'Milk' },
     { id: 'egg', label: 'Egg' },
@@ -18,53 +18,73 @@ const ALLERGY_OPTIONS = [
     { id: 'sesame', label: 'Sesame' },
 ];
 
+// Main functional component for the Preference Settings screen.
 const PreferenceSettingsScreen = () => {
-    const [selectedAllergies, setSelectedAllergies] = useState([]); // Array of IDs
-    const [loading, setLoading] = useState(true);
-    const [userId, setUserId] = useState('67d207aaef33b585393e6770'); // <- Replace later
-    const [error, setError] = useState(null);
-    const params = useLocalSearchParams();
-    const router = useRouter();
-    const { from } = params;
+    // State variables using the useState hook:
+    const [selectedAllergies, setSelectedAllergies] = useState([]); // Stores the *IDs* of selected allergies.
+    const [loading, setLoading] = useState(true); // Indicates whether data is being loaded.
+    const [userId, setUserId] = useState('67d207aaef33b585393e6770'); //  Replace with user's id to change allergy
+    const [error, setError] = useState(null); // Stores any error messages.
 
+    // --- expo-router hooks ---
+    const params = useLocalSearchParams(); // Get parameters passed to this route
+    const router = useRouter(); // Access to the router object (not used here, but good to have)
+    const { from } = params; // Extract a specific parameter (title of page)
+
+    // useEffect hook to fetch user data when the component mounts (or userId changes).
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                setLoading(true);
-                console.log("Fetching user data for ID:", userId);
-                const response = await axios.get(`http://localhost:5000/api/users/dev/${userId}`);
+                setLoading(true); // Show loading indicator.
+                console.log("Fetching user data for ID:", userId); // Debugging log
+
+                // Fetch user data from the backend.  Uses the /dev/:id route for now.
+                const response = await axios.get(`/api/users/dev/${userId}`);
+
+                // Extract allergy names from the response.
                 const allergyNames = response.data.allergies;
 
-                // Convert names to IDs
+                // Convert the allergy *names* (from the backend) to allergy *IDs* (for internal use).
                 const allergyIds = allergyNames.map(name => {
-                 const found = ALLERGY_OPTIONS.find(option => option.label === name);
-                    return found ? found.id : null; // Return the ID, or null if not found
-                }).filter(id => id !== null); // Remove any null values
+                    const found = ALLERGY_OPTIONS.find(option => option.label === name);
+                    return found ? found.id : null; // Return null if not found (shouldn't happen with valid data).
+                }).filter(id => id !== null); // Remove any null values (handles cases where the name doesn't match).
 
-                setSelectedAllergies(allergyIds);
-                setError(null);
+                setSelectedAllergies(allergyIds); // Update the state with the selected allergy IDs.
+                setError(null);  // Clear any previous errors.
+
             } catch (err) {
                 console.error("Error fetching user data:", err);
-                setError(err.message || "Failed to fetch user data.");
-                Alert.alert("Error", "Could not load user data. Please check your connection and try again.");
+                // More specific error handling, checking for 404.
+                if (err.response && err.response.status === 404) {
+                    setError("User not found.");
+                    Alert.alert("Error", "User not found.");
+                } else {
+                    setError(err.message || "Failed to fetch user data.");
+                    Alert.alert("Error", "Could not load user data. Please check your connection and try again.");
+                }
             } finally {
-                setLoading(false);
+                setLoading(false); // Hide loading indicator (always executed).
             }
         };
 
-        fetchUserData();
-    }, [userId]);
+        if(userId) { // Ensure that the user is is available
+          fetchUserData();
+        }
+    }, [userId]); // Dependency array: refetch when userId changes
 
+
+    // Function to render a single allergy item in the FlatList.
     const renderAllergyItem = ({ item }) => (
         <View style={styles.allergyItem}>
             <CheckBox
-                value={selectedAllergies.includes(item.id)}
+                value={selectedAllergies.includes(item.id)} // Check the box if the ID of this allergy is in the list of selected allergy IDs
                 onValueChange={(newValue) => {
                     if (newValue) {
-                        // Add to selected allergies
+                        // Add to selected allergies (if checked)
                         setSelectedAllergies([...selectedAllergies, item.id]);
                     } else {
-                        // Remove from selected allergies
+                        // Remove from selected allergies (if unchecked)
                         setSelectedAllergies(selectedAllergies.filter((id) => id !== item.id));
                     }
                 }}
@@ -73,29 +93,39 @@ const PreferenceSettingsScreen = () => {
         </View>
     );
 
+    // Function to save the selected allergies to the backend.
     const saveAllergies = async () => {
-         try {
-         // Convert IDs to allergy names before sending
-         const allergiesToSend = selectedAllergies.map(id => {
-            const found = ALLERGY_OPTIONS.find(option => option.id === id);
-            return found ? found.label : null; // Convert back to name
-        }).filter(name => name !== null);
-        
-        console.log("allergiesToSend:", allergiesToSend); // ADD THIS
-        
-        const updatedUser = await axios.patch(`http://localhost:5000/api/users/dev/${userId}`, {
-            allergies: allergiesToSend, // Send the updated array
-        });
-            Alert.alert("Success", "Allergies updated successfully!");
-            
+        try {
+            setLoading(true); // Show loading indicator
+            setError(null);    // Clear any previous errors
 
-           } catch (err) {
-                console.error("Error updating allergies:", err);
-                 setError(err.message || "Failed to update allergies."); // Set a user-friendly error message
-                 Alert.alert("Error", "Could not update allergies. Please try again.");
-             }
+            // Convert the selected allergy *IDs* back to *names* for sending to the backend.
+            const allergiesToSend = selectedAllergies.map(id => {
+                const found = ALLERGY_OPTIONS.find(option => option.id === id);
+                return found ? found.label : null;
+            }).filter(name => name !== null);
+
+            console.log("allergiesToSend:", allergiesToSend); // Debugging log
+
+            // Send a PATCH request to update the user's allergies.
+            await axios.patch(`/api/users/dev/${userId}`, {
+                allergies: allergiesToSend, // Send the array of allergy *names*.
+            });
+
+            Alert.alert("Success", "Allergies updated successfully!"); // Provide user feedback
+            fetchUserData(); // Re-fetch the user data to update the UI
+
+        } catch (err) {
+            console.error("Error updating allergies:", err);
+            setError(err.message || "Failed to update allergies.");
+            Alert.alert("Error", "Could not update allergies. Please try again.");
+        } finally {
+            setLoading(false);  // Hide loading indicator
+        }
     };
 
+
+    // Conditional rendering: Show loading indicator while fetching data.
     if (loading) {
         return (
             <SafeAreaView style={styles.safeArea}>
@@ -106,6 +136,7 @@ const PreferenceSettingsScreen = () => {
         );
     }
 
+    // Conditional rendering: Show error message if there was an error.
     if (error) {
         return (
             <SafeAreaView style={styles.safeArea}>
@@ -116,14 +147,16 @@ const PreferenceSettingsScreen = () => {
         );
     }
 
+    // Main UI rendering:
     return (
         <SafeAreaView style={styles.safeArea}>
-             <View style={styles.container}>
+            <View style={styles.container}>
                 <Text style={styles.title}>{from}</Text>
-                 <FlatList
-                    data={ALLERGY_OPTIONS}
-                    renderItem={renderAllergyItem}
-                    keyExtractor={(item) => item.id}
+
+                <FlatList
+                    data={ALLERGY_OPTIONS} // Use the ALLERGY_OPTIONS array as the data source.
+                    renderItem={renderAllergyItem} // Use the renderAllergyItem function to render each item.
+                    keyExtractor={(item) => item.id} // Use the 'id' as the unique key for each item.
                     style={styles.list}
                 />
                 <Button title="Save" onPress={saveAllergies} />
@@ -131,6 +164,8 @@ const PreferenceSettingsScreen = () => {
         </SafeAreaView>
     );
 };
+
+// Styles for the components.
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
