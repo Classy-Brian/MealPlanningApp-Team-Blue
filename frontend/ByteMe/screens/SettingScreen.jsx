@@ -1,8 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Button } from 'react-native';
+import { Link, useRouter } from 'expo-router';
 
 const SettingsScreen = () => {
+    const router = useRouter();
+
+    const handleLogout = () => {
+        // Clear JWT
+        // Clear user data
+        router.replace('/(start)/login')
+    }
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
@@ -15,6 +23,7 @@ const SettingsScreen = () => {
                 </Link>
 
                 {/* Add other setting options here later (Account, Notifications) */}
+                <Button title="Log Out" onPress={handleLogout} color="red" />
             </View>
         </SafeAreaView>
     );
