@@ -63,10 +63,10 @@ const RecipeSearch = () => {
   };
 
   const goToRecipeDetails = (recipe) => {
-    navigation.navigate('recipe_details', {
+    navigation.navigate('RecipeDetailsScreen', {
       title: recipe.recipe.label,
       ingredients: recipe.recipe.ingredientLines,
-      directions: recipe.recipe.instructions,
+      directions: recipe.recipe.instructions || 'Directions not available',
     });
   };
 
@@ -79,7 +79,7 @@ const RecipeSearch = () => {
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack('/SavedRecipesScreen')}>
               <Image source={Back_butt} style={styles.backIcon} />
               <Text style={styles.backText}>Recipes</Text>
             </TouchableOpacity>
