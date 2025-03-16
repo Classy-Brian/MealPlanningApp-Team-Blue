@@ -13,27 +13,10 @@ export const styles = StyleSheet.create({
     marginHorizontal: 25,
     marginVertical: 10,
   },
-    logocontainer: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.header,
-        marginHorizontal: 65,
-        paddingVertical: 55,
-        paddingHorizontal: 20,
-        borderRadius: 30,
-        marginBottom: 30,
-    },
     namecontainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingHorizontal: 25,
-    },
-    stretch: {
-        width: 240,
-        height: 100,
-        resizeMode: 'stretch'
     },
     title: {
         fontSize: 48,
@@ -54,7 +37,7 @@ export const styles = StyleSheet.create({
       fontWeight: 'bold',
     },
     createacc: {
-      color: textcolors.blue,
+      color: textcolors.link,
       fontSize: 16,
     },
     buttonContainer: {
@@ -106,6 +89,8 @@ export const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'center',
       marginTop: 50,
+      position: 'absolute',
+      right: 0,
     },
     bluebottombar: {
       backgroundColor: colors.header,

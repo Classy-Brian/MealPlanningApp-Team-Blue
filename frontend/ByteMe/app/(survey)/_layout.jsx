@@ -5,30 +5,23 @@ import WelcomeSurvey from './survey_1'
 import SurveyAllergies from './survey_2'
 import SurveyFinal from './survey_final'
 import { createStackNavigator } from '@react-navigation/stack'
-import LoginScreen from '../(start)/login'
+import { styles } from '@/components/Sheet'
 
 
 const Stack = createStackNavigator();
 
 const _layout = () => {
   return (
-      <Stack.Navigator>
+      <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen 
             name="survey1" 
-            component={WelcomeSurvey}
-            options={{headerShown: false}} />
+            component={WelcomeSurvey} />
           <Stack.Screen 
             name="survey2" 
-            component={SurveyAllergies} 
-            options={{headerShown: false}} />
+            component={SurveyAllergies} />
           <Stack.Screen 
             name="surveyfinal" 
-            component={SurveyFinal}
-            options={{headerShown: false}} />
-            <Stack.Screen 
-            name="login" 
-            component={LoginScreen}
-            options={{headerShown: false}} />
+            component={SurveyFinal} />
       </Stack.Navigator>
   )
 }

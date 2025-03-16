@@ -12,7 +12,7 @@ const WelcomeScreen = () => {
       <Link href={"/(start)/login"} asChild>
         <Text style={{fontSize: 18}}>Login</Text>
       </Link>
-      <Link href={"/(survey)/survey_1"} asChild>
+      <Link href={"/(survey)/survey_1"} >
         <Text style={{fontSize: 18}}>Survey</Text>
       </Link>
       <Link href={"/(tabs)/home"} asChild>
@@ -31,3 +31,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     }
 })
+
+// import SignupScreen from "./(start)/signup";
+// export default SignupScreen;

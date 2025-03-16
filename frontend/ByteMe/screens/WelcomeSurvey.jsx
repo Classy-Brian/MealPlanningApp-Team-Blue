@@ -8,39 +8,41 @@ import { styles } from '@/components/Sheet'
 
 function HeaderLogo() {
   return (
-    <View style={styles.logocontainer}>
+    <View style={[button.logocontainer]}>
       <Image
-        style={styles.stretch}
+        style={button.stretch}
         source={require('../assets/images/logo.png')}/>
     </View>
   )
 }
 
 const WelcomeSurvey = ( { navigation } ) => {
-  // const router = useRouter();
+  const router = useRouter();
 
   return (
     <View style={styles.whiteBackground}>
-      <View style={styles.screenContainer}>
+      <View style={[styles.screenContainer, ]}>
         <View>
-          <Text style={styles.title}>Welcome to </Text>
+          <View style={button.greybox}>
+            <Text style={[styles.title]}>Welcome to </Text>
+          </View>
           <HeaderLogo/>
         </View>
 
-        <View style={styles.container}>
-          <Text style={styles.heading}>Would you like to take a quick survey?</Text>
-          <Text style={styles.regularText}>It's so we can personally tailor your meal plan for you!</Text>
+        <View style={[{marginTop: 180, marginBottom: 120}]}>
+          <Text style={button.othergreybox}>Would you like to take a quick survey?</Text>
+          <Text style={button.othertext}>It's so we can personally tailor your meal plan for you!</Text>
         </View>
 
         <TouchableOpacity onPress={() => navigation.navigate('survey2')}>
           <View style={button.bluebutton}>
-            <Text style={styles.buttonText}>Yes</Text>
+            <Text style={[styles.buttonText, {fontSize: 20, color: colors.white}]}>Yes</Text>
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('surveyfinal', { allergies: [] })}>
           <View style={button.greybutton}>
-            <Text style={styles.buttonText}>Skip Survey</Text>
+            <Text style={[styles.buttonText, {fontSize: 20,}]}>Skip Survey</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -54,9 +56,9 @@ const button = StyleSheet.create({
     bluebutton: {
       flexDirection: 'row',
       borderRadius: 20,
-      marginHorizontal: 60,
+      marginHorizontal: 100,
       paddingVertical: 10,
-      backgroundColor: colors.primary,
+      backgroundColor: colors.header,
       alignItems: 'center',
       justifyContent: 'center',
       marginVertical: 10,
@@ -68,11 +70,58 @@ const button = StyleSheet.create({
       borderRadius: 20,
       marginHorizontal: 60,
       paddingVertical: 10,
-      backgroundColor: colors.othergrey,
+      backgroundColor: colors.grey,
       alignItems: 'center',
       justifyContent: 'center',
       marginVertical: 10,
       elevation: 2,
       shadowColor: colors.black,
     },
+    greybox: {
+      flexDirection: 'row',
+      alignItems: 'left',
+      justifyContent: 'center',
+      backgroundColor: colors.othergrey,
+      borderRadius: 30,
+      paddingVertical: 10,
+      marginRight: 70,
+      marginTop: 20,
+    },
+    logocontainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.header,
+      paddingHorizontal: 5,
+      borderRadius: 30,
+      position: 'absolute',
+      marginLeft: 60,
+      marginTop: 95
+    },
+    stretch: {
+      width: 240,
+      height: 100,
+      resizeMode: 'stretch'
+    },
+    othergreybox: {
+      backgroundColor: colors.othergrey, 
+      fontSize: 30, 
+      textAlign: 'center',
+      borderRadius: 40,
+      paddingHorizontal: 5,
+      paddingTop: 10,
+      paddingBottom: 60,
+      marginRight: 40,
+    },
+    othertext: {
+      backgroundColor: '#91A9C8', 
+      textAlign: 'center',
+      fontSize: 22,
+      borderRadius: 20,
+      paddingHorizontal: 5,
+      paddingVertical: 10,
+      position: 'absolute',
+      marginLeft: 50,
+      marginTop: 100,
+    }
 })
