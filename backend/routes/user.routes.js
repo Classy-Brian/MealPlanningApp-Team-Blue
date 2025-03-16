@@ -20,12 +20,10 @@ router.post('/', createUser);
 // router.get('/', getAllUsers);
 
 //READ: get single user by ID
-router.get('/dev/:id', getUserById);
-// router.get('/:id', getUserById);
+router.get('/:id', getUserById);
 
 //UPDATE: user by ID
-router.patch('/dev/:id', updateUser);
-// router.patch('/:id', updateUser);
+router.patch('/:id', updateUser);
 
 //UPDATE: user allergies by ID
 router.put('/preferences', authenticateJWT, updateUserPreferences);
