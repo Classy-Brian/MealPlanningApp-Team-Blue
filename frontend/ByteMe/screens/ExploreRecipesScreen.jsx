@@ -1,72 +1,62 @@
 import { Image, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation for navigation
-import HomeB from "@/assets/images/active.png"; // Placeholder image
+import { useNavigation } from '@react-navigation/native';
+import HomeB from "@/assets/images/active.png";
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
 import { fonts } from '../components/Fonts';
-import Back_butt from "@/assets/images/backbutton.png"; // Back button image
+import Back_butt from "@/assets/images/backbutton.png";
 
-const RecipeCard = ({ imageUri, title, onPress }) => {
-  return (
-    <TouchableOpacity style={styles.recipeContainer} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.recipeWrapper}>
-        <Image
-          style={styles.recipePhoto}
-          resizeMode="cover"
-          source={imageUri ? { uri: imageUri } : HomeB} 
-        />
-        <View style={styles.overlay} />
-        <Text style={styles.recipeTitle}>{title}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
+const RecipeCard = ({ imageUri, title, onPress }) => (
+  <TouchableOpacity style={styles.recipeContainer} onPress={onPress} activeOpacity={0.7}>
+    <View style={styles.recipeWrapper}>
+      <Image style={styles.recipePhoto} resizeMode="cover" source={imageUri ? { uri: imageUri } : HomeB} />
+      <View style={styles.overlay} />
+      <Text style={styles.recipeTitle}>{title}</Text>
+    </View>
+  </TouchableOpacity>
+);
 
 const RecipeSearch = () => {
-  const [recipes, setRecipes] = useState([]); // To store fetched recipes
-  const [searchQuery, setSearchQuery] = useState(''); // Search query (empty initially for random)
-  const [loading, setLoading] = useState(false); // Track loading state
-  const [error, setError] = useState(null); // Store any errors
-  const navigation = useNavigation(); // Initialize navigation
+  const [recipes, setRecipes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigation = useNavigation();
 
-  // Fetch recipes from the Edamam API
   useEffect(() => {
-    // Fetch random recipes on initial load (empty search query)
     fetchRecipes('');
   }, []);
 
   const fetchRecipes = async (query) => {
-    const API_ID = '54d92af4'; // Replace with your API ID from Edamam
-    const API_KEY = '8dc992649f27e7cabc68db7dcc8d605b'; // Replace with your API Key from Edamam
+    const API_ID ='54d92af4';
+    const API_KEY = '8dc992649f27e7cabc68db7dcc8d605b';
 
     setLoading(true);
-    setError(null); // Reset error state before starting a new fetch
+    setError(null);
 
     try {
       const response = await axios.get(
         `https://api.edamam.com/search?q=${encodeURIComponent(query)}&app_id=${API_ID}&app_key=${API_KEY}`
       );
       
-      if (response.data.hits.length > 0) {
-        setRecipes(response.data.hits); // Update state with fetched recipes
-      } else {
-        setRecipes([]); // Clear recipes if no results
-      }
+      setRecipes(response.data.hits.length > 0 ? response.data.hits : []);
     } catch (err) {
       console.error('Error fetching recipes:', err);
       setError('Failed to fetch recipes. Please try again later.');
     } finally {
-      setLoading(false); // Stop loading once the fetch is complete
+      setLoading(false);
     }
   };
 
   const goToRecipeDetails = (recipe) => {
-    navigation.navigate('RecipeDetailsScreen', {
+    navigation.navigate('recipedetails', {
+      recipeId: recipe.recipe.uri,
       title: recipe.recipe.label,
       ingredients: recipe.recipe.ingredientLines,
-      directions: recipe.recipe.instructions || 'Directions not available',
+      directions: recipe.recipe.url,
+      imageUri: recipe.recipe.image,
     });
   };
 
@@ -79,7 +69,7 @@ const RecipeSearch = () => {
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack('/SavedRecipesScreen')}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
               <Image source={Back_butt} style={styles.backIcon} />
               <Text style={styles.backText}>Recipes</Text>
             </TouchableOpacity>
@@ -91,8 +81,8 @@ const RecipeSearch = () => {
                 style={styles.inputText}
                 value={searchQuery}
                 onChangeText={(text) => {
-                  setSearchQuery(text); // Update search query
-                  fetchRecipes(text); // Trigger search immediately when user types
+                  setSearchQuery(text);
+                  fetchRecipes(text);
                 }} 
               />
             </View>
