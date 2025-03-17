@@ -45,9 +45,42 @@ const _layout = () => {
           },
         }}
       />
+
+      <Stack.Screen name="explorerecipes"
+        options={{
+          headerShown: true,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+
+      <Stack.Screen name="recipedetails"
+        options={{
+          headerShown: true,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
     </Stack>
+    
   );
 };
+
+
 
 
 const styles = StyleSheet.create({
