@@ -1,15 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Button } from 'react-native';
 import { Link, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SettingsScreen = () => {
     const router = useRouter();
 
-    const handleLogout = () => {
-        // Clear JWT
-        // Clear user data
-        router.replace('/(start)/login')
-    }
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.removeItem('authToken');
+            router.replace('/(start)/login')
+        } catch (error) {
+            console.error("Error logging out:", error)
+            Alert.alert("Error", "Could not log out. Please try again.")
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>

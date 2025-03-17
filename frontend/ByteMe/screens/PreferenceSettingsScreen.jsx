@@ -48,7 +48,7 @@ const PreferenceSettingsScreen = () => {
             const axiosInstance = axios.create({
                 baseURL: 'http://localhost:5000',
                 headers: {
-                    // Authorization: `Bearer ${token}`, 
+                    Authorization: `Bearer ${token}`, 
                 },
             });
 
