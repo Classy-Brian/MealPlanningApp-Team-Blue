@@ -85,22 +85,32 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update fields if provided
+    // Update top-level fields if provided
     if (name !== undefined) user.name = name;
     if (email !== undefined) user.email = email;
     if (avatar !== undefined) user.avatar = avatar;
     if (allergies !== undefined) user.allergies = allergies;
-    if (profile !== undefined) {
-      //can do a deep merge or just replace
-      user.profile = {
-        ...user.profile,
-        ...profile
-      };
+
+    // Safely update profile subfields
+    if (profile) {
+      if (profile.calories) {
+        user.profile.calories = {
+          ...user.profile.calories,
+          ...profile.calories
+        };
+      }
+      if (profile.recipes) {
+        user.profile.recipes = {
+          ...user.profile.recipes,
+          ...profile.recipes
+        };
+      }
+      // Add more sub-objects as needed
     }
 
     const updatedUser = await user.save();
 
-    // Return sanitized user
+    // Return the updated user
     return res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
@@ -116,6 +126,7 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 //DELETE: Remove a User by ID
 export const deleteUser = async (req, res) => {

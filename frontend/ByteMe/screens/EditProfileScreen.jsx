@@ -14,7 +14,7 @@ export default function EditProfile() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch(`http://192.168.1.65:5677/api/users/${userId}`);
+        const response = await fetch(`http://192.168.1.65:5005/api/users/${userId}`);
         const data = await response.json();
 
         setUsername(data.name || '');
@@ -29,7 +29,7 @@ export default function EditProfile() {
     }
   }, [userId]);
 
-  // Remove avatar by setting an empty string
+  // Remove avatar
   const handleRemoveAvatar = () => {
     setAvatar('');
   };
@@ -37,7 +37,7 @@ export default function EditProfile() {
   // Save updated user data
   const handleSaveChanges = async () => {
     try {
-      await fetch(`http://192.168.1.65:5677/api/users/${userId}`, {
+      await fetch(`http://192.168.1.65:5005/api/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: username, avatar: avatar }),
@@ -50,8 +50,16 @@ export default function EditProfile() {
     }
   };
 
+  const handleCancel = () => {
+    router.back();
+  };
+
   return (
     <View style={styles.container}>
+    {/* A back arrow*/}
+      <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
+        <Text style={styles.backButtonText}>{"< Profile"}</Text>
+      </TouchableOpacity>
 
       <Text style={styles.title}>Edit Profile</Text>
 
@@ -71,6 +79,7 @@ export default function EditProfile() {
         placeholder="Enter image URL"
       />
 
+      {/* Remove Avatar Button */}
       <TouchableOpacity style={styles.removeAvatarButton} onPress={handleRemoveAvatar}>
         <Text style={styles.removeAvatarButtonText}>Remove Avatar</Text>
       </TouchableOpacity>

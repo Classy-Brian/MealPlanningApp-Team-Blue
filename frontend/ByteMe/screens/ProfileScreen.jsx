@@ -1,13 +1,12 @@
-// screens/ProfileScreen.jsx
-
-import React, { useState, useCallback  } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
+  Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -15,7 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 export default function ProfileScreen() {
   const router = useRouter();
 
-  // hard coded id
+  // Hard-coded userId will need to replace with real ID or retrieve from auth context
   const userId = '67d775c23cae84324cbe0bd0';
 
   // State for storing fetched user data
@@ -24,7 +23,7 @@ export default function ProfileScreen() {
   // Fetch the user from backend
   const fetchUser = async () => {
     try {
-      const response = await fetch(`http://192.168.1.65:5677/api/users/${userId}`);
+      const response = await fetch(`http://192.168.1.65:5005/api/users/${userId}`);
       const data = await response.json();
       setUserData(data);
     } catch (error) {
@@ -34,7 +33,7 @@ export default function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchUser(); // Refetch user data when returning to the screen to show updates
+      fetchUser(); // Refetch user data when returning to the screen
     }, [])
   );
 
@@ -42,6 +41,107 @@ export default function ProfileScreen() {
   const avatarSource = userData?.avatar
     ? { uri: userData.avatar }
     : require('../assets/images/profile.png');
+
+  // Helper to remove a specific goal (e.g., calorie or recipe)
+  const removeGoal = async (goalType) => {
+    try {
+      let updatedProfile = { ...userData.profile };
+
+      if (goalType === 'calories') {
+        // Reset the calorie goals to 0
+        updatedProfile.calories = { min: 0, max: 0, current: 0 };
+      } else if (goalType === 'recipes') {
+        // Reset the recipe "wantToTry" (or both tried/wantToTry) to 0
+        updatedProfile.recipes = { tried: 0, wantToTry: 0 };
+      }
+
+      // Send PATCH request to update user profile
+      await fetch(`http://192.168.1.65:5005/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile: updatedProfile })
+      });
+
+      // Refresh user data
+      fetchUser();
+    } catch (error) {
+      console.error('Error removing goal:', error);
+      Alert.alert('Error', 'Could not remove goal.');
+    }
+  };
+
+  // Render the calorie intake goal card if min/max are set
+  const renderCalorieGoalCard = () => {
+    const { min, max, current } = userData.profile.calories;
+    // If both min and max are 0, we assume no calorie goal
+    if (min === 0 && max === 0) return null;
+
+    // Calculate a rough percentage for current in relation to max
+    const totalRange = max - min;
+    const progress = totalRange > 0 ? ((current - min) / totalRange) * 100 : 0;
+    const clampedProgress = Math.max(0, Math.min(progress, 100));
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Calorie Intake</Text>
+        <View style={styles.calorieBar}>
+          <View
+            style={[
+              styles.calorieFill,
+              { width: `${clampedProgress}%` }
+            ]}
+          />
+        </View>
+        <View style={styles.calorieLabels}>
+          <Text>{min}</Text>
+          <Text>{max}</Text>
+        </View>
+        <Text style={styles.currentText}>Current: {current}</Text>
+
+        <TouchableOpacity
+          style={styles.removeButton}
+          onPress={() => removeGoal('calories')}
+        >
+          <Text style={styles.removeButtonText}>Remove Goal</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Render the new recipes tried goal card if wantToTry > 0
+  const renderRecipesGoalCard = () => {
+    const { tried, wantToTry } = userData.profile.recipes;
+    if (wantToTry === 0) return null;
+
+    // Calculate a rough percentage for tried in relation to wantToTry
+    const progress = (tried / wantToTry) * 100;
+    const clampedProgress = Math.max(0, Math.min(progress, 100));
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>New Recipes Tried</Text>
+        <View style={styles.recipeProgress}>
+          <View
+            style={[
+              styles.recipeFill,
+              { width: `${clampedProgress}%` }
+            ]}
+          />
+        </View>
+        <View style={styles.recipeLabels}>
+          <Text>{tried}</Text>
+          <Text>{wantToTry}</Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.removeButton}
+          onPress={() => removeGoal('recipes')}
+        >
+          <Text style={styles.removeButtonText}>Remove Goal</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -66,37 +166,19 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Goals For the Week</Text>
-
-        {/* Calorie Intake */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Calorie Intake</Text>
-          <View style={styles.calorieBar}>
-            <View style={styles.calorieLow} />
-            <View style={styles.calorieMid} />
-            <View style={styles.calorieHigh} />
-          </View>
-          <View style={styles.calorieLabels}>
-            <Text>12000</Text>
-            <Text>13700</Text>
-            <Text>15000</Text>
-          </View>
-        </View>
-
-        {/* New Recipes Tried */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>New Recipes Tried</Text>
-          <View style={styles.recipeProgress}>
-            <View style={styles.recipeFill} />
-          </View>
-          <View style={styles.recipeLabels}>
-            <Text>2</Text>
-            <Text>5</Text>
-          </View>
-        </View>
+        {userData && userData.profile && (
+          <>
+            {renderCalorieGoalCard()}
+            {renderRecipesGoalCard()}
+          </>
+        )}
       </ScrollView>
 
-      {/* Floating Add Button */}
-      <TouchableOpacity style={styles.addButton}>
+      {/* Floating Add Button -> navigates to AddGoals screen */}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => router.push(`addgoals?userId=${userId}`)}
+      >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
     </View>
@@ -106,7 +188,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff', 
+    backgroundColor: '#fff',
   },
   scrollContent: {
     alignItems: 'center',
@@ -156,24 +238,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 20,
     borderRadius: 10,
+    backgroundColor: '#ddd',
+    marginBottom: 5,
     overflow: 'hidden',
   },
-  calorieLow: {
-    flex: 1,
-    backgroundColor: '#B93E3E',
-  },
-  calorieMid: {
-    flex: 1,
-    backgroundColor: '#7EB77F',
-  },
-  calorieHigh: {
-    flex: 1,
-    backgroundColor: '#B93E3E',
+  calorieFill: {
+    height: '100%',
+    backgroundColor: '#A9BCD0',
   },
   calorieLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 5,
+  },
+  currentText: {
+    textAlign: 'center',
+    marginTop: 10,
   },
   recipeProgress: {
     height: 20,
@@ -184,7 +264,6 @@ const styles = StyleSheet.create({
     borderColor: '#A9BCD0',
   },
   recipeFill: {
-    width: '40%',
     backgroundColor: '#A9BCD0',
     height: '100%',
   },
@@ -192,6 +271,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 5,
+  },
+  removeButton: {
+    backgroundColor: '#B93E3E',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   addButton: {
     position: 'absolute',
