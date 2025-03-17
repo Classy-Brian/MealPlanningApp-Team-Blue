@@ -4,7 +4,7 @@ import Recipe from '../models/recipe.model.js';
 //CREATE: Register a new User
 export const createUser = async (req, res) => {
   try {
-    const { name, email, password, allergies, profile } = req.body;
+    const { name, email, password, allergies, profile, avatar } = req.body;
 
     // Check if user already exists by email
     const userExists = await User.findOne({ email });
@@ -16,6 +16,7 @@ export const createUser = async (req, res) => {
     const user = await User.create({
       name,
       email,
+      avatar,
       password,
       allergies,
       profile
@@ -26,6 +27,7 @@ export const createUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      avatar: user.avatar,
       allergies: user.allergies,
       profile: user.profile,
       recipes: user.recipes
@@ -76,7 +78,7 @@ export const getUserById = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, allergies, profile } = req.body;
+    const { name, email, allergies, profile, avatar } = req.body;
 
     const user = await User.findById(id);
     if (!user) {
@@ -86,6 +88,7 @@ export const updateUser = async (req, res) => {
     // Update fields if provided
     if (name !== undefined) user.name = name;
     if (email !== undefined) user.email = email;
+    if (avatar !== undefined) user.avatar = avatar;
     if (allergies !== undefined) user.allergies = allergies;
     if (profile !== undefined) {
       //can do a deep merge or just replace
@@ -102,6 +105,7 @@ export const updateUser = async (req, res) => {
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
+      avatar: updatedUser.avatar,
       allergies: updatedUser.allergies,
       profile: updatedUser.profile,
       recipes: updatedUser.recipes,
