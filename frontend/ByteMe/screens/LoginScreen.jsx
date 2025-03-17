@@ -31,7 +31,8 @@ const Login = ( {navigation} ) => {
       if (!email || !password ) {
         alert("Please fill in all fields.");
       }
-      const res = await axios.post("http://10.0.2.2:" + "5000" + "/api/users/login", {email, password});
+      // const res = await axios.post("http://10.0.2.2:" + "5000" + "/api/users/login", {email, password});
+      const res = await axios.post(" http://localhost:5000/api/users/login", {email, password});
       await AsyncStorage.setItem('authToken', res.data.token);
       if (res.status === 200) {
         setEmail('');

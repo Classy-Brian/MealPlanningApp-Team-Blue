@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, CheckBox } from 'react-native';
 import axios from 'axios';  // For making HTTP requests.
 import { useLocalSearchParams, useRouter } from 'expo-router'; // Import useRouter
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Defines an array of allergy options.  Each option is an object with an 'id' and a 'label'.
 // (e.g., constants/allergies.js)
@@ -23,7 +24,6 @@ const PreferenceSettingsScreen = () => {
     // State variables using the useState hook:
     const [selectedAllergies, setSelectedAllergies] = useState([]); // Stores the *IDs* of selected allergies.
     const [loading, setLoading] = useState(true); // Indicates whether data is being loaded.
-    const [userId, setUserId] = useState('67d707443e103bc6dd61a7f7'); //  Replace with user's id to change allergy
     const [error, setError] = useState(null); // Stores any error messages.
 
     // --- expo-router hooks ---
@@ -31,22 +31,29 @@ const PreferenceSettingsScreen = () => {
     const router = useRouter(); // Access to the router object (not used here, but good to have)
     const { from } = params; // Extract a specific parameter (title of page)
 
-    const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2Q3MDc0NDNlMTAzYmM2ZGQ2MWE3ZjciLCJpYXQiOjE3NDIxNDU0MjgsImV4cCI6MTc0Mjc1MDIyOH0.NxVgQm_HgWU74lc72KgoylBmHHV_RiKqK1qZpKLn5Y0";
-
-    const axiosInstance = axios.create({
-        baseURL: '/', // Use relative paths
-        headers: {
-            Authorization: `Bearer ${jwtToken}`, // Include the token
-        },
-    })
-
     const fetchUserData = async () => {
         try {
             setLoading(true); // Show loading indicator.
-            console.log("Fetching user data for ID:", userId); // Debugging log
+            console.log("Fetching user data")
 
-            // Fetch user data from the backend.
-            const response = await axiosInstance.get(`http://localhost:5000/api/users/${userId}`);
+            const token = await AsyncStorage.getItem('authToken');
+            if (!token) {
+                // Handle the case where there's no token
+                setError("Not logged in.")
+                Alert.alert("Error", "Not logged in. Please log in first.");
+                setLoading(false);
+                return;
+            }
+
+            const axiosInstance = axios.create({
+                baseURL: 'http://localhost:5000',
+                headers: {
+                    Authorization: `Bearer ${token}`, 
+                },
+            });
+
+            // const response = await axiosInstance.get(`/api/users/profile`);
+            const response = await axios.get("http://localhost:5000/api/users/67d78371c86e85a49ca88567")
 
             // Extract allergy names from the response.
             const allergyNames = response.data.allergies;
@@ -76,12 +83,8 @@ const PreferenceSettingsScreen = () => {
     };
 
     useEffect(() => {
-
-        if(jwtToken) { // Ensure that the user is is available
-          fetchUserData();
-        }
-    }, [jwtToken]); // Dependency array: refetch when userId changes
-
+        fetchUserData(); // Fetch data when the component mounts
+    }, []); 
 
     // Function to render a single allergy item in the FlatList.
     const renderAllergyItem = ({ item }) => (
@@ -116,7 +119,23 @@ const PreferenceSettingsScreen = () => {
 
             console.log("allergiesToSend:", allergiesToSend); // Debugging log
 
-            await axiosInstance.put(`http://localhost:5000/api/users/preferences`, { allergies: allergiesToSend });
+            const token = await AsyncStorage.getItem('authToken');
+            if (!token) {
+                // Handle the case where there's no token
+                setError("Not logged in.")
+                Alert.alert("Error", "Not logged in. Please log in first.");
+                setLoading(false);
+                return;
+            }
+
+            const axiosInstance = axios.create({
+                baseURL: 'http://localhost:5000',
+                headers: {
+                    Authorization: `Bearer ${token}`, 
+                },
+            });
+
+            await axiosInstance.put(`/api/users/preferences`, { allergies: allergiesToSend });
 
             Alert.alert("Success", "Allergies updated successfully!"); // Provide user feedback
             fetchUserData();

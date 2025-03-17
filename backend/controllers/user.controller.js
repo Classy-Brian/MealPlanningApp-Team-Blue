@@ -3,6 +3,7 @@ import Recipe from '../models/recipe.model.js';
 import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
+
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -89,6 +90,20 @@ export const getUserById = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getUserProfile = async (req, res) => {
+  console.log("getUserProfile called");
+  console.log("req.user:", req.user);
+
+  const user = await User.findById(req.user._id).select('-password');
+
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404);
+    throw new Error('User not found');
   }
 };
 

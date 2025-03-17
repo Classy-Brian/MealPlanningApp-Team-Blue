@@ -20,7 +20,9 @@ const SurveyFinal = ( { route } ) => {
         return;
       }
 
-      const res = await axios.put("http://10.0.2.2:" + "5000" + "/api/users/preferences", { allergies },
+      // const res = await axios.put("http://10.0.2.2:" + "5000" + "/api/users/preferences", { allergies },
+      //                             { headers: { Authorization: `Bearer ${token}`}});
+      const res = await axios.put("http://localhost:5000/api/users/preferences", { allergies },
                                   { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
