@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View, Button, ScrollView, TouchableOpacity, Alert } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
 import { fonts } from '../components/Fonts'
@@ -8,15 +8,31 @@ import { styles } from '@/components/Sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 
-const SurveyFinal = ( { route } ) => {
+const SurveyFinal = ( { navigation, route } ) => {
   const router = useRouter();
-  const { allergies } = route.params;
+  // const { allergies } = route.params;
+  const [allergies, setAllergies] = useState([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const savedAllergies = await AsyncStorage.getItem('allergies');
+      if (savedAllergies) {
+        setAllergies(JSON.parse(savedAllergies));
+      }
+    };
+
+    if (route.params?.allergies) {
+      setAllergies(route.params.allergies);
+    } else {
+      load();
+    }
+  }, []);
 
   const handleSubmitSurvey = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');    // Retrieves the token
       if (!token) {
-        console.error("TOKEN IS MISSING");
+        console.error("AUTHENTICATION TOKEN IS MISSING");
         return;
       }
 
@@ -27,7 +43,9 @@ const SurveyFinal = ( { route } ) => {
       console.log('Survey saved:', res.data);
 
       if (res.status === 200) {
-        router.push('../(start)/login');
+        await AsyncStorage.removeItem('authToken');
+        await AsyncStorage.removeItem('allergies')
+        router.replace('../(start)/login');
       }
     } catch (err) {
       if (__DEV__) {
@@ -47,18 +65,31 @@ const SurveyFinal = ( { route } ) => {
       }
   }
 
-  // PASS ALLERGIES FROM SURVEYALLERGIES TO THIS PAGE AND THEN UPDATE TEH USER
+  const prevPage = () => {
+    navigation.navigate('survey2', { allergies });
+  }
 
   return (
     <View style={styles.whiteBackground}>
       <View style={styles.screenContainer}>
-        <Text style={styles.title}>Finish creating account </Text>
-        <Text style={[styles.heading, {marginBottom: 20}]}>Finished signing up? You'll still be able 
-                                                                to add or edit preferences in your settings</Text>
+
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <TouchableOpacity onPress={prevPage}>
+            <View style={[button.greybutton, ]}>
+              <Image style={{marginRight:10}}
+                      source={require('../assets/images/back_arrow_navigate.png')}/>
+              <Text style={styles.regularText}>Back</Text>
+            </View>
+          </TouchableOpacity>      
+        </View>
+
+        <Text style={[styles.title, {marginBottom: 80}]}>Finish Sign Up </Text>
+        <Text style={[styles.heading, button.greybox, {fontSize: 30, textAlign: 'center'}]}>Finished signing up? You'll still be able 
+                      to add or edit preferences in your settings.</Text>
         
         <TouchableOpacity onPress={handleSubmitSurvey}>
           <View style={[button.bluebutton, {marginTop: 30}]}>
-            <Text style={[styles.buttonText, {color: textcolors.white}]}>Finish</Text>
+            <Text style={[styles.buttonText, {fontSize: 20, color: textcolors.white}]}>Finish</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -77,7 +108,7 @@ const button = StyleSheet.create({
   bluebutton: {
     flexDirection: 'row',
     borderRadius: 20,
-    marginHorizontal: 60,
+    marginHorizontal: 100,
     paddingVertical: 10,
     backgroundColor: colors.header,
     alignItems: 'center',
@@ -86,4 +117,24 @@ const button = StyleSheet.create({
     elevation: 2,
     shadowColor: colors.black,
   },
+  greybutton: {
+    flexDirection: 'row',
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    backgroundColor: colors.othergrey,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 20,
+    elevation: 2,
+    shadowColor: colors.black,
+  },
+  greybox: {
+    backgroundColor: colors.othergrey,
+    borderRadius: 30,
+    paddingHorizontal: 10,
+    marginHorizontal: 10,
+    paddingVertical: 20, 
+    marginBottom: 120
+  }
 })

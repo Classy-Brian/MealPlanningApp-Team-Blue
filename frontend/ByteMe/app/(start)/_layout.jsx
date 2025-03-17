@@ -5,8 +5,6 @@ import { NavigationContainer } from '@react-navigation/native'
 import LoginScreen from './login'
 import SignupScreen from './signup'
 import ForgotPasswordScreen from './forgotPassword'
-import WelcomeSurvey from '../(survey)/survey_1'
-import Homepage from '../(tabs)/home'
 
 const Stack = createStackNavigator();
 
@@ -23,16 +21,7 @@ const _layout = () => {
             options={{headerShown: false}} />
           <Stack.Screen 
             name="forgotpassword" 
-            component={ForgotPasswordScreen}
-            options={{headerShown: false}} />
-          <Stack.Screen 
-          name="survey1" 
-          component={WelcomeSurvey}
-          options={{headerShown: false}} />
-          <Stack.Screen 
-          name="home" 
-          component={Homepage}
-          options={{headerShown: false}} />
+            component={ForgotPasswordScreen} />
       </Stack.Navigator>
   )
 }
