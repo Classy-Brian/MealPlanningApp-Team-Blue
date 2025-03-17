@@ -18,16 +18,14 @@ const userSchema = new mongoose.Schema({
     allergies: [{
         type: String
     }],
-    avatarUrl: {
-        type: String,
-        default: ''
-      },      
+  
+    // Profile section
     profile: {
         calories: {
         min: { type: Number, default: 0 },
         max: { type: Number, default: 0 },
         current: { type: Number, default: 0 }
-        },
+      },
         recipes: {
         tried: { type: Number, default: 0 },
         wantToTry: { type: Number, default: 0 }

@@ -15,7 +15,7 @@ const WelcomeScreen = () => {
       <Link href={"/(tabs)/home"}>
         <Text>Homepage</Text>
       </Link>
-      <Link href={"/settings"}>
+      <Link href={"/(settings)/settings"}>
         <Text>Settings</Text>
       </Link>
     </View>
