@@ -30,8 +30,8 @@ const RecipeSearch = () => {
   }, []);
 
   const fetchRecipes = async (query) => {
-    const API_ID ='54d92af4';
-    const API_KEY = '8dc992649f27e7cabc68db7dcc8d605b';
+    const API_ID = process.env.EDAMAM_APP_ID;
+    const API_KEY = process.env.EDAMAM_API_KEY;
 
     setLoading(true);
     setError(null);
