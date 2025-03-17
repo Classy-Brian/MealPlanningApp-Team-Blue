@@ -1,10 +1,11 @@
 import { Image, StyleSheet, Text, View, Button, ScrollView, TouchableOpacity, Dimensions } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
 import { fonts } from '../components/Fonts'
 import { styles } from '@/components/Sheet'
 import { Checkbox } from 'react-native-paper'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 function NextButton() {
   return (
@@ -28,13 +29,27 @@ const SurveyAllergies = ({ navigation }) => {
     );
   };
 
-  const nextPage = () => {
+    useEffect(() => {
+    const load = async () => {
+      const savedAllergies = await AsyncStorage.getItem('allergies');
+      if (savedAllergies) {
+        setSelectedAllergies(JSON.parse(savedAllergies));
+      }
+    };
+    load();
+  }, []);
+
+  const nextPage = async () => {
+    await AsyncStorage.setItem('allergies', JSON.stringify(allergies));
     navigation.navigate('surveyfinal', {allergies});
   };
 
-  const prevPage = () => {
+  const prevPage = async () => {
+    await AsyncStorage.setItem('allergies', JSON.stringify(allergies));
     navigation.navigate('survey1', { allergies });
   }
+
+
 
   return (
     <View style={styles.whiteBackground}>

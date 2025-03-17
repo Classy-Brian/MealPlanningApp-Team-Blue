@@ -35,6 +35,7 @@ const _layout = () => {
         options={{
           headerShown: true,
           headerLeft: () => null,
+          headerBackVisible: false,
           headerTitle: () => <HeaderLogo />,
           headerRight: () => <ProfileIcon />,
           headerStyle: {

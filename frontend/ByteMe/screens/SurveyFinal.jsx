@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View, Button, ScrollView, TouchableOpacity, Alert } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { colors } from '../components/Colors'
 import { textcolors} from '../components/TextColors'
 import { fonts } from '../components/Fonts'
@@ -10,13 +10,29 @@ import axios from 'axios'
 
 const SurveyFinal = ( { navigation, route } ) => {
   const router = useRouter();
-  const { allergies } = route.params || {};
+  // const { allergies } = route.params;
+  const [allergies, setAllergies] = useState([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const savedAllergies = await AsyncStorage.getItem('allergies');
+      if (savedAllergies) {
+        setAllergies(JSON.parse(savedAllergies));
+      }
+    };
+
+    if (route.params?.allergies) {
+      setAllergies(route.params.allergies);
+    } else {
+      load();
+    }
+  }, []);
 
   const handleSubmitSurvey = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');    // Retrieves the token
       if (!token) {
-        console.error("TOKEN IS MISSING");
+        console.error("AUTHENTICATION TOKEN IS MISSING");
         return;
       }
 
@@ -25,6 +41,8 @@ const SurveyFinal = ( { navigation, route } ) => {
       console.log('Survey saved:', res.data);
 
       if (res.status === 200) {
+        await AsyncStorage.removeItem('authToken');
+        await AsyncStorage.removeItem('allergies')
         router.replace('../(start)/login');
       }
     } catch (err) {
