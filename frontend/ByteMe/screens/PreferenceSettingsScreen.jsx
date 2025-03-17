@@ -48,12 +48,12 @@ const PreferenceSettingsScreen = () => {
             const axiosInstance = axios.create({
                 baseURL: 'http://localhost:5000',
                 headers: {
-                    Authorization: `Bearer ${token}`, 
+                    // Authorization: `Bearer ${token}`, 
                 },
             });
 
-            // const response = await axiosInstance.get(`/api/users/profile`);
-            const response = await axios.get("http://localhost:5000/api/users/67d78371c86e85a49ca88567")
+            const response = await axiosInstance.get(`/api/users/profile/${token}`);
+            // const response = await axios.get("http://localhost:5000/api/users/67d78371c86e85a49ca88567")
 
             // Extract allergy names from the response.
             const allergyNames = response.data.allergies;

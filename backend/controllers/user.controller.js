@@ -93,17 +93,50 @@ export const getUserById = async (req, res) => {
   }
 };
 
+// export const getUserProfile = async (req, res) => {
+//   console.log("getUserProfile called");
+//   console.log("req.user:", req.user);
+
+//   const user = await User.findById(req.user._id).select('-password');
+
+//   if (user) {
+//     res.json(user);
+//   } else {
+//     res.status(404);
+//     throw new Error('User not found');
+//   }
+// };
+
 export const getUserProfile = async (req, res) => {
   console.log("getUserProfile called");
-  console.log("req.user:", req.user);
+  const token = req.params.token; // Get token from URL parameter
+  console.log("Token from URL:", token);
 
-  const user = await User.findById(req.user._id).select('-password');
+  if (!token) {
+      res.status(401);
+      throw new Error('No token provided'); 
+  }
 
-  if (user) {
-    res.json(user);
-  } else {
-    res.status(404);
-    throw new Error('User not found');
+  try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify token
+      console.log("Decoded token:", decoded);
+      const userId = decoded._id; // Extract user ID
+      console.log("Extracted userId:", userId);
+
+      const user = await User.findById(userId).select('-password');
+      console.log("User found:", user);
+
+      if (!user) {
+          res.status(404);
+          throw new Error('User not found'); 
+      }
+
+      res.json(user); // Return the user data
+
+  } catch (error) {
+      console.error("Error in getUserProfile:", error);
+      res.status(401); // 401 for invalid token
+      throw new Error('Invalid token');
   }
 };
 

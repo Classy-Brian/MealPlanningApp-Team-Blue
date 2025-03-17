@@ -21,7 +21,8 @@ router.post('/', createUser);
 // router.get('/', getAllUsers);
 
 //READ: get single user by ID
-router.get('/:id', getUserById);
+// router.get('/:id', getUserById);
+router.get('/profile/:token', getUserProfile); // TEMPORARY - Remove authenticateJWT <- Not protected and unsafe
 
 // READ: Get current user's profile by JWT
 router.get('/profile', authenticateJWT, getUserProfile);
