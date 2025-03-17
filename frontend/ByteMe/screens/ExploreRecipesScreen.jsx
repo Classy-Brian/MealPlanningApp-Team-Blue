@@ -26,7 +26,7 @@ const RecipeSearch = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    fetchRecipes('');
+    setRecipes([{ recipe: { label: "Test Recipe", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe1", ingredientLines: ["1 Cup of flour", "2 Eggs"], url: "https://example.com" }}]);
   }, []);
 
   const fetchRecipes = async (query) => {
@@ -40,7 +40,6 @@ const RecipeSearch = () => {
       const response = await axios.get(
         `https://api.edamam.com/search?q=${encodeURIComponent(query)}&app_id=${API_ID}&app_key=${API_KEY}`
       );
-      
       setRecipes(response.data.hits.length > 0 ? response.data.hits : []);
     } catch (err) {
       console.error('Error fetching recipes:', err);
@@ -58,6 +57,10 @@ const RecipeSearch = () => {
       directions: recipe.recipe.url,
       imageUri: recipe.recipe.image,
     });
+  };
+
+  const handleSearchSubmit = () => {
+    fetchRecipes(searchQuery); // Fetch recipes when "Enter" is pressed
   };
 
   return (
@@ -80,19 +83,18 @@ const RecipeSearch = () => {
                 placeholderTextColor={textcolors.lightgrey}
                 style={styles.inputText}
                 value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                  fetchRecipes(text);
-                }} 
+                onChangeText={(text) => setSearchQuery(text)} // Update the state without fetching
+                onSubmitEditing={handleSearchSubmit} // Fetch when user presses "Enter"
+                returnKeyType="search" // Change the return key to 'search' for better UX
               />
             </View>
           </View>
         }
         renderItem={({ item }) => (
-          <RecipeCard 
-            title={item.recipe.label} 
-            imageUri={item.recipe.image} 
-            onPress={() => goToRecipeDetails(item)} 
+          <RecipeCard
+            title={item.recipe.label}
+            imageUri={item.recipe.image}
+            onPress={() => goToRecipeDetails(item)}
           />
         )}
         ListFooterComponent={loading && <Text>Loading...</Text>}
@@ -113,10 +115,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15, // Adjusted for a compact button
     backgroundColor: "#D7E2F1",
-    borderRadius: 5,
+    borderRadius: 10,
     marginBottom: 10,
+    alignSelf: 'flex-start', // Keeps it aligned to the left
   },
   backIcon: {
     width: 20,
@@ -150,6 +153,19 @@ const styles = StyleSheet.create({
   inputText: {
     fontSize: 20,
     paddingVertical: 10,
+    flex: 1,
+  },
+  searchButton: {
+    backgroundColor: colors.primary, // Choose any color for the button
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   row: {
     justifyContent: "space-between",
