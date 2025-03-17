@@ -1,198 +1,121 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
-import axios from "axios";
-import { useRouter } from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { colors } from '../components/Colors'
+import { textcolors} from '../components/TextColors'
+import { fonts } from '../components/Fonts'
 
-const savedRecipesScreen = ({ navigation }) => {
-    const [query, setQuery] = useState("");
-    const [recipes, setRecipes] = useState([]); //Searched Recipes
-    const [savedRecipes, setSavedRecipes] = useState([]); //User'S Saved Recipes
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const router = useRouter();
+export default function Recipes(){
+  const router = useRouter();
+  const [recipes, setRecipes] = useState([]);
 
-    const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
-    const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
-    const USER_ID = "67c8da45f97986963147083a"; // testing 
-    
-    const fetchSavedRecipes = async () => {
-        setLoading(true);
-        try{
-            const response = await axios.get(`http://localhost:5000/api/users/${USER_ID}/get-saved-recipes`);
-            console.log("Response Data:", response.data); // Debugging
-            
-            if (!response.data) {
-                console.warn("No saved recipes found in response.");
-                setSavedRecipes([]);
-                setLoading(false);
-                return;
-            }
-    
-            const savedRecipe = response.data;
-            console.log("Saved Recipe URIs:", savedRecipe);
-
-            //Fetch full recipe details from Edamam API
-            const recipeDetailsPromises = savedRecipe.map((uri) =>
-                axios.get(`https://api.edamam.com/search?r=${encodeURIComponent(uri)}&app_id=${API_ID}&app_key=${API_KEY}`)
-            );
-
-            const recipeDetailsResponses = await Promise.all(recipeDetailsPromises);
-            const detailedRecipes = recipeDetailsResponses.map(res => res.data[0]); // Extract first item from each response
-
-            console.log("Fetched Recipe Details:", detailedRecipes); // Debugging
-
-            setSavedRecipes(detailedRecipes);
-            setError(null);
-        } catch (err){
-            console.error("Error fetching saved recipes:", err);
-            setError("Failed to load saved recipes.");
-            Alert.alert("Error", "Could not load saved recipes.");
-        } finally {
-            setLoading(false);
-        }
+  const addRecipe = () => {
+    const newRecipe = {
+      id: recipes.length + 1,
+      title: `Recipe ${recipes.length + 1}`,
+      description: `This is a short description of Recipe ${recipes.length + 1}.`,
     };
-    useEffect(() => {
-        fetchSavedRecipes();
-    }, []);
+    setRecipes([...recipes, newRecipe]);
+  };
 
-    if (loading) return <ActivityIndicator size="large" />;
-    if (error) return <Text style={styles.error}>{error}</Text>;
+  return (
+    
+    <View style={styles.container}>
+      <Text style={styles.title} >Saved Recipes</Text>
 
-    // Fetch recipes from Edamam API based on query
-    const searchRecipes = async () => {
-        if (!query.trim()) {
-            alert("Please enter a search term.");
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            const response = await axios.get(
-                `https://api.edamam.com/search?q=${query}&app_id=${API_ID}&app_key=${API_KEY}`
-            );
-            setRecipes(response.data.hits);
-        } catch (err) {
-            console.error("Error fetching recipes:", err);
-            setError("Failed to fetch recipes. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Saved Recipes</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Search for more recipes"
-                value={query}
-                onChangeText={setQuery}
-            />
-            <Button title="Search" onPress={searchRecipes} />
-
-            {loading && <ActivityIndicator size="large" color="#0000ff" />}
-            {error && <Text style={styles.error}>{error}</Text>}
-
-            {/*  Display Saved Recipes */}
-            <Text style={styles.sectionTitle}>Your Saved Recipes</Text>
-            {savedRecipes.length === 0 ? (
-                <Text style={styles.noRecipes}>No saved recipes found.</Text>
-            ) : (
-                <FlatList
-                    data={savedRecipes}
-                    keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={styles.recipeItem}
-                            onPress={() =>
-                                router.push(`../non-tab/recipe-detail?id=${encodeURIComponent(item.uri)}&label=${encodeURIComponent(item.label)}&image=${encodeURIComponent(item.image)}`)
-                            }
-                        >
-                            <Image source={{ uri: item.image }} style={styles.recipeImage} />
-                            <Text style={styles.recipeTitle}>{item.label}</Text>
-                        </TouchableOpacity>
-                    )}
-                />
-            )}
-
-            {/* ✅ Display Searched Recipes */}
-            {recipes.length > 0 && (
-                <>
-                    <Text style={styles.sectionTitle}>Search Results</Text>
-                    <FlatList
-                        data={recipes}
-                        keyExtractor={(item) => item.recipe.uri}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                style={styles.recipeItem}
-                                onPress={() =>
-                                    router.push(`../non-tab/recipe-detail?id=${encodeURIComponent(item.recipe.uri)}&label=${encodeURIComponent(item.recipe.label)}&image=${encodeURIComponent(item.recipe.image)}`)
-                                }
-                            >
-                                <Image source={{ uri: item.recipe.image }} style={styles.recipeImage} />
-                                <Text style={styles.recipeTitle}>{item.recipe.label}</Text>
-                            </TouchableOpacity>
-                        )}
-                    />
-                </>
-            )}
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.inputContainer}>
+          <TextInput
+          placeholder='Search through your recipes'
+          placeholderTextColor={textcolors.lightgrey}
+          style={styles.inputText}
+          />
         </View>
-    );
-};
+      </View>
 
+      <View style={styles.parentContainer}>
+      <View style={styles.rectangleView} />
+      </View>
+      {/* Floating Add Button*/
+      }
+      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
+  );
+}
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: "#f8f8f8",
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 10,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        marginTop: 15,
-        marginBottom: 5,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: "#ccc",
-        padding: 10,
-        marginBottom: 10,
-        borderRadius: 5,
-    },
-    error: {
-        color: "red",
-        marginBottom: 10,
-    },
-    recipeItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
-    },
-    recipeImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 5,
-        marginRight: 10,
-    },
-    recipeTitle: {
-        fontSize: 16,
-    },
-    noRecipes: {
-        fontSize: 18,
-        color: "#666",
-        textAlign: "center",
-        marginTop: 20,
-    },
-});
 
-export default savedRecipesScreen;
+  container: {
+    flex: 1,
+    backgroundColor: '#fff'
+  },
+
+  parentContainer: {
+    alignItems: "center", 
+    paddingTop: 10, 
+  },
+
+  inputContainer: {
+    flex: 1,
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: textcolors.lightgrey,
+    backgroundColor: colors.white,
+  },
+  
+  inputText: { flex: 1, 
+    fontSize: 20, 
+    paddingVertical: 10 
+  },
+
+  rectangleView: {
+    height: 130,
+    borderRadius: 10,
+    backgroundColor: "rgba(31, 80, 143, 0.06)",
+    borderColor: "#777",
+    borderWidth: 1,
+    width: "90%",
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  recipeTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#133E7C",
+  },
+
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#133E7C',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
+
+  addButtonText: {
+    fontSize:30,
+    color: '#fff'
+  },
+
+  title: {
+    fontSize:36,
+    frontFamily:fonts.bold,
+    textAlign: "center",
+    marginVertical: 10
+  }
+
+})
