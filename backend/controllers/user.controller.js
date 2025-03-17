@@ -49,27 +49,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-//READ: Get Single User by ID
-export const getUserById = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    // Populate 'recipes' to get actual recipe documents if needed. otherwise returns the id.
-    // .populate('recipes')
-    const user = await User.findById(id)
-    .select('-password')
-    .populate('recipes')
-    ;
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    return res.json(user);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
 
 //UPDATE: Update User by ID (Patch or Put)
 //need to create a seperate route for password changes later
