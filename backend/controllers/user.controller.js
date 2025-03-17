@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 
 dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = `${process.env.JWT_SECRET}` 
 
 // GENERATE a JWT token
 const generateToken = (userId, time) => {
@@ -220,7 +220,7 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email }); // Find the user by email
 
     if (user && (await user.matchPassword(password))) {
-      const token = generateToken(user._id, '7d');
+      const token = generateToken(user._id, '7d'); // <- Error happens here
       user.token = token;
       await user.save();
       return res.status(200).json({
