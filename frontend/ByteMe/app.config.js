@@ -41,7 +41,7 @@ export default {
         eas: {
           projectId: '8150e5d4-8cd0-4c80-b8f6-d7d3e69f3b6b' // Replace with *actual* projectId later!
         },
-        proxy: "http://localhost:5000" // Proxy configuration
+        proxy: "http://192.168.1.65:5005" // Proxy configuration
       },
        updates: {
           url: "https://u.expo.dev/8150e5d4-8cd0-4c80-b8f6-d7d3e69f3b6b"  
