@@ -17,24 +17,15 @@ const RecipeDetailsScreen = ({ navigation }) => {
 
   const [activeSection, setActiveSection] = useState(0);
 
-  const sections = [
-    { title: 'Ingredients' },
-    { title: 'Allergies' },
-    { title: 'Directions' },
-    { title: 'Nutrition Facts' },
-  ];
+  const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition Facts'];
 
   const handleSaveRecipe = () => {
-    // Save the recipe logic here (e.g., saving to local storage, context, or state)
     const savedRecipe = { recipeId, title, ingredients, directions, imageUri };
-
-    // Navigate to SavedRecipesScreen after saving
-    navigation.navigate('SavedRecipeScreen', { savedRecipe });
+    navigation.navigate('savedrecipes', { savedRecipe });
   };
 
   return (
     <View style={styles.container}>
-      {/* Header with Back Button */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('RecipeList')}>
           <Image source={Back_butt} style={styles.backIcon} />
@@ -42,60 +33,57 @@ const RecipeDetailsScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Recipe Image without Overlay */}
       {imageUri && (
         <View style={styles.recipeWrapper}>
           <Image source={{ uri: imageUri }} style={styles.recipeImage} />
         </View>
       )}
 
-      {/* Title */}
       <Text style={styles.title}>{title}</Text>
 
-      {/* Save Button */}
       <TouchableOpacity style={styles.saveButton} onPress={handleSaveRecipe}>
         <Text style={styles.saveButtonText}>Add Recipe</Text>
       </TouchableOpacity>
 
-      {/* Sections (Tabs) Row - Horizontal Scroll */}
+      {/* Horizontal Scroll for Section Titles */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionContainer}>
-        {sections.map((item, index) => (
+        {sections.map((section, index) => (
           <TouchableOpacity
             key={index}
             style={[styles.sectionButton, index === activeSection && styles.activeSection]}
             onPress={() => setActiveSection(index)}
           >
-            <Text style={styles.sectionTitle}>{item.title}</Text>
+            <Text style={styles.sectionTitle}>{section}</Text>
             {index === activeSection && <View style={styles.activeLine} />}
           </TouchableOpacity>
         ))}
       </ScrollView>
 
-      {/* Space below the sections */}
+      {/* Display content for the active section */}
       <View style={styles.contentWrapper}>
-        {/* Display content based on active section */}
         <ScrollView style={styles.sectionContentWrapper}>
           {activeSection === 0 && (
             <View style={styles.sectionContent}>
               <Text style={styles.sectionContentText}>Ingredients:</Text>
               {ingredients.map((ingredient, index) => (
-                <Text key={index} style={styles.sectionContentText}>
-                  - {ingredient}
-                </Text>
+                <Text key={index} style={styles.sectionContentText}>- {ingredient}</Text>
               ))}
             </View>
           )}
+
           {activeSection === 1 && (
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Allergies content coming soon!</Text>
+              <Text style={styles.sectionContentText}>Allergy information coming soon!</Text>
             </View>
           )}
+
           {activeSection === 2 && (
             <View style={styles.sectionContent}>
               <Text style={styles.sectionContentText}>Directions:</Text>
               <Text style={styles.sectionContentText}>{directions}</Text>
             </View>
           )}
+
           {activeSection === 3 && (
             <View style={styles.sectionContent}>
               <Text style={styles.sectionContentText}>Nutrition facts coming soon!</Text>
@@ -107,7 +95,6 @@ const RecipeDetailsScreen = ({ navigation }) => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -122,12 +109,12 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10, // Add padding to make it look more like the save button
-    paddingHorizontal: 30, // Make it consistent with the save button width
-    borderRadius: 10, // Round the corners
-    backgroundColor: '#d7e2f1', // Add background color to match the save button
-    marginBottom: 10, // Add space at the bottom for consistency
-    alignSelf: 'center', // Center the button
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    backgroundColor: '#d7e2f1',
+    marginBottom: 10,
+    alignSelf: 'center',
   },
   backIcon: {
     width: 24,
@@ -137,7 +124,7 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000', // Keep the text color dark for visibility
+    color: '#000',
   },
   title: {
     fontSize: 28,
@@ -161,7 +148,7 @@ const styles = StyleSheet.create({
   },
   recipeWrapper: {
     width: '100%',
-    height: 250, // Set this to your desired image height or adjust accordingly
+    height: 250,
     borderWidth: 3,
     borderColor: '#000000',
     borderRadius: 10,
@@ -173,7 +160,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#f0f0f0',
-    resizeMode: 'cover', // Ensures image covers the entire container
+    resizeMode: 'cover',
   },
   sectionContainer: {
     marginTop: 30,
@@ -206,7 +193,7 @@ const styles = StyleSheet.create({
   },
   sectionContentWrapper: {
     flex: 1,
-    paddingBottom: 170, // Space at the bottom for scroll
+    paddingBottom: 170,
   },
   sectionContent: {
     flex: 1,

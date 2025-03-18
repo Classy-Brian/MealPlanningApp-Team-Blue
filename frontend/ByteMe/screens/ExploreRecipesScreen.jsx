@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import HomeB from "@/assets/images/active.png";
+import maglass from "@/assets/images/magnifyingglass.png";
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
 import { fonts } from '../components/Fonts';
@@ -76,8 +77,11 @@ const RecipeSearch = () => {
               <Image source={Back_butt} style={styles.backIcon} />
               <Text style={styles.backText}>Recipes</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>Search Recipes</Text>
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Search Recipes</Text>
+            </View>
             <View style={styles.searchContainer}>
+              <Image source={maglass} style={styles.magnifyingGlassIcon} />
               <TextInput
                 placeholder="Search Recipes"
                 placeholderTextColor={textcolors.lightgrey}
@@ -85,7 +89,7 @@ const RecipeSearch = () => {
                 value={searchQuery}
                 onChangeText={(text) => setSearchQuery(text)} // Update the state without fetching
                 onSubmitEditing={handleSearchSubmit} // Fetch when user presses "Enter"
-                returnKeyType="search" // Change the return key to 'search' for better UX
+                returnKeyType="search"
               />
             </View>
           </View>
@@ -126,9 +130,10 @@ const styles = StyleSheet.create({
     height: 20,
   },
   backText: {
-    color: "#fff",
+    color: "#000",
     fontSize: 16,
     fontWeight: "600",
+    fontVariant: "Afacad",
     marginLeft: 5,
   },
   header: {
@@ -139,21 +144,31 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     textAlign: "center",
     marginVertical: 10,
+    flex: 1,
   },
   searchContainer: {
+    flexDirection: 'row', // Align the image and input text horizontally
+    alignItems: 'center', // Center items vertically
     height: 50,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: textcolors.lightgrey,
-    backgroundColor: colors.white,
-    justifyContent: 'center',
+    borderRadius: 20,
+    borderWidth: 2, // Black border width
+    borderColor: 'black', // Set border color to black
+    backgroundColor: "#D3D3D3", // The background color can stay as it is or be changed
     paddingHorizontal: 10,
     marginBottom: 10,
+    flex: 1,
   },
+  
+  magnifyingGlassIcon: {
+    width: 30,
+    height: 30,
+    marginRight: 15, // Space between the icon and input
+  },
+  
   inputText: {
     fontSize: 20,
     paddingVertical: 10,
-    flex: 1,
+    flex: 1, // Take up the remaining space
   },
   searchButton: {
     backgroundColor: colors.primary, // Choose any color for the button
@@ -179,8 +194,8 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderWidth: 3,
-    borderColor: "#000000",
-    borderRadius: 10,
+    borderColor: "#000",
+    borderRadius: 15,
     overflow: "hidden",
   },
   recipePhoto: {

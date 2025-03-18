@@ -1,13 +1,20 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Pressable } from 'react-native';
+import { Image, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Pressable } from 'react-native';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { colors } from '../components/Colors'
-import { textcolors} from '../components/TextColors'
-import { fonts } from '../components/Fonts'
+import { colors } from '../components/Colors';
+import { textcolors } from '../components/TextColors';
+import { fonts } from '../components/Fonts';
+import maglass from "@/assets/images/magnifyingglass.png";
 
-export default function Recipes(){
+export default function Recipes() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState(''); // Initialize searchQuery state
   const [recipes, setRecipes] = useState([]);
+
+  const handleSearchSubmit = () => {
+    // Logic for search submit
+    console.log('Search submitted for:', searchQuery);
+  };
 
   const addRecipe = () => {
     const newRecipe = {
@@ -19,78 +26,83 @@ export default function Recipes(){
   };
 
   return (
-    
     <View style={styles.container}>
-      <Text style={styles.title} >Saved Recipes</Text>
+      <Text style={styles.title}>Saved Recipes</Text>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <View style={styles.inputContainer}>
-          <TextInput
-          placeholder='Search through your recipes'
+        <Image source={maglass} style={styles.magnifyingGlassIcon} />
+        <TextInput
+          placeholder="Search through your recipes"
           placeholderTextColor={textcolors.lightgrey}
           style={styles.inputText}
-          />
-        </View>
+          value={searchQuery} // Bind TextInput value to searchQuery
+          onChangeText={(text) => setSearchQuery(text)} // Update state on input change
+          onSubmitEditing={handleSearchSubmit} // Trigger search on 'Enter'
+          returnKeyType="search" // Change return key to 'search'
+        />
       </View>
 
       <View style={styles.parentContainer}>
-      <View style={styles.rectangleView} />
+        <View style={styles.rectangleView} />
       </View>
-      {/* Floating Add Button*/
-      }
+
+      {/* Floating Add Button */}
       <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
     </View>
-
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 50,
   },
 
   parentContainer: {
-    alignItems: "center", 
-    paddingTop: 10, 
+    alignItems: 'center',
+    paddingTop: 10,
   },
 
-  inputContainer: {
-    flex: 1,
-    height: 60,
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    height: 50, // Explicitly set the height
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: textcolors.lightgrey,
-    backgroundColor: colors.white,
+    borderColor: 'black',
+    backgroundColor: '#D3D3D3',
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    width: '100%', // Ensure full width of the container
   },
-  
-  inputText: { flex: 1, 
-    fontSize: 20, 
-    paddingVertical: 10 
+
+  magnifyingGlassIcon: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+  },
+
+  inputText: {
+    flex: 1,
+    fontSize: 20,
+    paddingVertical: 10,
   },
 
   rectangleView: {
     height: 130,
     borderRadius: 10,
-    backgroundColor: "rgba(31, 80, 143, 0.06)",
-    borderColor: "#777",
+    backgroundColor: 'rgba(31, 80, 143, 0.06)',
+    borderColor: '#777',
     borderWidth: 1,
-    width: "90%",
+    width: '90%',
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 5,
-  },
-  recipeTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#133E7C",
   },
 
   addButton: {
@@ -107,15 +119,15 @@ const styles = StyleSheet.create({
   },
 
   addButtonText: {
-    fontSize:30,
-    color: '#fff'
+    fontSize: 30,
+    color: '#fff',
   },
 
   title: {
-    fontSize:36,
-    frontFamily:fonts.bold,
-    textAlign: "center",
-    marginVertical: 10
-  }
-
-})
+    fontSize: 36,
+    fontFamily: fonts.bold,
+    textAlign: 'flex-start',
+    marginVertical: 10,
+    color: '#000000',
+  },
+});
