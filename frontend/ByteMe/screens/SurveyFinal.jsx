@@ -38,8 +38,10 @@ const SurveyFinal = ( { navigation, route } ) => {
 
       // const res = await axios.put("http://10.0.2.2:" + "5005" + "/api/users/preferences", { allergies },
       //                             { headers: { Authorization: `Bearer ${token}`}});
-      const res = await axios.put("http://192.168.1.65:5005/api/users/preferences", { allergies },
-                                  { headers: { Authorization: `Bearer ${token}`}});
+      // const res = await axios.put("http://192.168.1.65:5005/api/users/preferences", { allergies },
+      //                             { headers: { Authorization: `Bearer ${token}`}});
+      const res = await axios.put("http://localhost:5000/api/users/preferences", { allergies },
+        { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
       if (res.status === 200) {

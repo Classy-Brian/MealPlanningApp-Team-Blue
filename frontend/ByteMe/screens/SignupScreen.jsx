@@ -46,7 +46,8 @@ const SignUp = () => {
 
       console.log('Sending registration data...', {name, email, password})
       // const res = await axios.post("http://10.0.2.2:" + "5005" + "/api/users", {name, email, password});
-      const res = await axios.post("http://192.168.1.65:5005/api/users", {name, email, password});
+      // const res = await axios.post("http://192.168.1.65:5005/api/users", {name, email, password});
+      const res = await axios.post("http://localhost:5000/api/users", {name, email, password});
 
       const token = res.data.token;
       if (!token) {

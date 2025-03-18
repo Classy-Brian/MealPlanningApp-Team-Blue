@@ -25,8 +25,14 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'Not logged in.');
         return;
       }
+      // const response = await fetch(
+      //   `http://192.168.1.65:5005/api/users/profile/${token}`,
+      //   {
+      //     headers: { Authorization: `Bearer ${token}` }
+      //   }
+      // );
       const response = await fetch(
-        `http://192.168.1.65:5005/api/users/profile/${token}`,
+        `http://localhost:5000/api/users/profile/${token}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -60,8 +66,20 @@ export default function ProfileScreen() {
         updatedProfile.recipes = { tried: 0, wantToTry: 0 };
       }
 
+      // const response = await fetch(
+      //   `http://192.168.1.65:5005/api/users/${userData._id}`,
+      //   {
+      //     method: 'PATCH',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       Authorization: `Bearer ${token}`
+      //     },
+      //     body: JSON.stringify({ profile: updatedProfile })
+      //   }
+      // );
+
       const response = await fetch(
-        `http://192.168.1.65:5005/api/users/${userData._id}`,
+        `http://localhost:5000/api/users/${userData._id}`,
         {
           method: 'PATCH',
           headers: {

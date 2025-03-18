@@ -19,7 +19,20 @@ export default function NewRecipesGoalScreen() {
     try {
       const parsedWantToTry = parseInt(wantToTry, 10) || 0;
 
-      await fetch(`http://192.168.1.65:5005/api/users/${userId}`, {
+      // await fetch(`http://192.168.1.65:5005/api/users/${userId}`, {
+      //   method: 'PATCH',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     profile: {
+      //       recipes: {
+      //         tried: 0,
+      //         wantToTry: parsedWantToTry
+      //       }
+      //     }
+      //   })
+      // });
+
+      await fetch(`http://localhost:5000/api/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

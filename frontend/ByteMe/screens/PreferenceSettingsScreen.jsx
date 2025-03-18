@@ -47,15 +47,21 @@ const PreferenceSettingsScreen = () => {
                 return;
             }
 
+            // const axiosInstance = axios.create({
+            //     baseURL: 'http://192.168.1.65:5005',
+            //     headers: {
+            //         Authorization: `Bearer ${token}`, 
+            //     },
+            // });
+
             const axiosInstance = axios.create({
-                baseURL: 'http://192.168.1.65:5005',
+                baseURL: 'http://localhost:5000',
                 headers: {
                     Authorization: `Bearer ${token}`, 
                 },
             });
 
             const response = await axiosInstance.get(`/api/users/profile/${token}`);
-            // const response = await axios.get("http://192.168.1.65:5005/api/users/67d78371c86e85a49ca88567")
 
             // Extract allergy names from the response.
             const allergyNames = response.data.allergies;
@@ -130,8 +136,15 @@ const PreferenceSettingsScreen = () => {
                 return;
             }
 
+            // const axiosInstance = axios.create({
+            //     baseURL: 'http://192.168.1.65:5005',
+            //     headers: {
+            //         Authorization: `Bearer ${token}`, 
+            //     },
+            // });
+
             const axiosInstance = axios.create({
-                baseURL: 'http://192.168.1.65:5005',
+                baseURL: 'http://localhost:5000',
                 headers: {
                     Authorization: `Bearer ${token}`, 
                 },
