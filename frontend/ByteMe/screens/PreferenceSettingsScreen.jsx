@@ -1,9 +1,11 @@
 // Import necessary modules from React and React Native.
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, CheckBox } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, CheckBox, TouchableOpacity } from 'react-native';
 import axios from 'axios';  // For making HTTP requests.
-import { useLocalSearchParams, useRouter } from 'expo-router'; // Import useRouter
+import { useLocalSearchParams, useRouter, Link } from 'expo-router'; // Import useRouter
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { MaterialIcons, Ionicons } from '@expo/vector-icons'; // Import icons
 
 // Defines an array of allergy options.  Each option is an object with an 'id' and a 'label'.
 // (e.g., constants/allergies.js)
@@ -181,9 +183,20 @@ const PreferenceSettingsScreen = () => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                <Text style={styles.title}>{from}</Text>
 
-                <FlatList
+                <View style={styles.header}>
+                    <Link href="/settings" asChild>
+                        <TouchableOpacity style={styles.settingsButton}>
+                                <Ionicons name="arrow-back" size={24} color="black" />
+                                <Text style={styles.settingsText}>Settings</Text>
+                        </TouchableOpacity>
+                    </Link>
+                </View>
+
+                <Text style={styles.title}>{from}</Text>
+                <Text style={styles.normalText}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
+
+                <FlatList 
                     data={ALLERGY_OPTIONS} // Use the ALLERGY_OPTIONS array as the data source.
                     renderItem={renderAllergyItem} // Use the renderAllergyItem function to render each item.
                     keyExtractor={(item) => item.id} // Use the 'id' as the unique key for each item.
@@ -205,9 +218,21 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
     },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        position: 'relative',   
+        height: 40, 
+        marginBottom: 20, 
+    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    normalText: {
+        fontSize: 16,
         marginBottom: 20,
     },
     list: {
@@ -221,6 +246,17 @@ const styles = StyleSheet.create({
     allergyText: {
         fontSize: 16,
         marginLeft: 10, 
+    },
+    settingsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        position: 'absolute', 
+        left: 0,
+        top: 0,
+    },
+    settingsText: {
+        fontSize: 20,
+        marginLeft: 5,
     },
 });
 
