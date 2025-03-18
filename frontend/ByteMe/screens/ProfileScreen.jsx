@@ -11,6 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -154,6 +155,14 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Settings Button in the top-right */}
+      <TouchableOpacity
+        style={styles.settingsButton}
+        onPress={() => router.push('settings')}
+      >
+        <Ionicons name="settings-sharp" size={30} color="#333" />
+      </TouchableOpacity>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Profile Image */}
         <Image source={avatarSource} style={styles.profileImage} />
@@ -194,9 +203,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  // Settings button positioned in the top-right
+  settingsButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 1, // ensure it appears above other elements
+    padding: 10,
+  },
+  settingsButtonText: {
+    fontSize: 24
+  },
   scrollContent: {
     alignItems: 'center',
     paddingVertical: 20,
+    paddingTop: 80, // add padding so content doesn't hide behind settings button
   },
   profileImage: {
     width: 120,
