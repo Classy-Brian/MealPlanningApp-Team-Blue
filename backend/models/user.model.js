@@ -39,7 +39,12 @@ const userSchema = new mongoose.Schema({
     recipes: [{
       type: mongoose.Schema.Types.ObjectId, // Reference to Recipe model
       ref: "Recipe"
-    }]
+    }],
+    
+    // JWT token is stored here
+    token: {            
+        type: String,
+    },
   
   }, {
     timestamps: true
@@ -67,7 +72,7 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
     try {
         return await bcrypt.compare(enteredPassword, this.password); // Compare the entered password with the stored hashed password
     } catch (error) {
-        throw new Error(error); // <- Need to add a way to handle the error
+        return resizeBy.status(400).json({ message: "Invalid credentials"}); // <- Need to add a way to handle the error
     }
 };
 

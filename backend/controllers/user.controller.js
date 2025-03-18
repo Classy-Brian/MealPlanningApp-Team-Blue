@@ -1,8 +1,22 @@
 import User from '../models/user.model.js'; 
 import Recipe from '../models/recipe.model.js';
+import asyncHandler from 'express-async-handler';
+import jwt from 'jsonwebtoken';
+import dotenv from "dotenv";
+
+dotenv.config();
+const JWT_SECRET = `${process.env.JWT_SECRET}` 
+
+// GENERATE a JWT token
+const generateToken = (userId, time) => {
+  return jwt.sign({_id: userId}, JWT_SECRET, {expiresIn: time});
+}
+
 
 //CREATE: Register a new User
 export const createUser = async (req, res) => {
+  console.log("Recieved registration request:", req.body);
+  
   try {
     const { name, email, password, allergies, profile, avatar } = req.body;
 
@@ -22,15 +36,23 @@ export const createUser = async (req, res) => {
       profile
     });
 
+    // Create a JSON web token
+    const token = generateToken(user._id, '1h') // The token expires in 1 hour
+    user.token = token;
+    await user.save();
+
     // Return the created user
     return res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      allergies: user.allergies,
-      profile: user.profile,
-      recipes: user.recipes
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        allergies: user.allergies,
+        profile: user.profile,
+        recipes: user.recipes,
+      },
+      token,
     });
   } catch (error) {
     console.error(error);
@@ -70,6 +92,66 @@ export const getUserById = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// export const getUserProfile = async (req, res) => {
+//   console.log("getUserProfile called");
+//   console.log("req.user:", req.user);
+
+//   const user = await User.findById(req.user._id).select('-password');
+
+//   if (user) {
+//     res.json(user);
+//   } else {
+//     res.status(404);
+//     throw new Error('User not found');
+//   }
+// };
+
+export const getUserProfile = async (req, res) => {
+  console.log("getUserProfile called");
+  const token = req.params.token; // Get token from URL parameter
+  console.log("Token from URL:", token);
+
+  if (!token) {
+      res.status(401);
+      throw new Error('No token provided'); 
+  }
+
+  try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify token
+      console.log("Decoded token:", decoded);
+      const userId = decoded._id; // Extract user ID
+      console.log("Extracted userId:", userId);
+
+      const user = await User.findById(userId).select('-password');
+      console.log("User found:", user);
+
+      if (!user) {
+          res.status(404);
+          throw new Error('User not found'); 
+      }
+
+      res.json(user); // Return the user data
+
+  } catch (error) {
+      console.error("Error in getUserProfile:", error);
+      res.status(401); // 401 for invalid token
+      throw new Error('Invalid token');
+  }
+};
+
+export const updateUserPreferences = async (req, res) => {
+  const { allergies } = req.body;
+  const userId = req.user._id;  // Extracted from token
+
+  try {
+    await User.findByIdAndUpdate(userId, { allergies }, { new: true });
+    return res.status(200).json({ message: 'Allergies updated successfully'});
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error'});
   }
 };
 
@@ -153,13 +235,21 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email }); // Find the user by email
 
     if (user && (await user.matchPassword(password))) {
-      // will need to generate a JWT here and send it to the client
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        // for later: token: generateToken(user._id),
+      const token = generateToken(user._id, '7d'); // <- Error happens here
+      user.token = token;
+      await user.save();
+      return res.status(200).json({
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          allergies: user.allergies,
+          profile: user.profile,
+          recipes: user.recipes,
+        },
+        token,
       });
+      
     } else {
       // Invalid email or password
       res.status(401).json({ message: 'Invalid email or password' }); // 401 Unauthorized
