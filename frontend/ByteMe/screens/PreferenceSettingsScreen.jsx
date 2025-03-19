@@ -1,9 +1,11 @@
 // Import necessary modules from React and React Native.
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, CheckBox, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, TouchableOpacity } from 'react-native';
 import axios from 'axios';  // For making HTTP requests.
 import { useLocalSearchParams, useRouter, Link } from 'expo-router'; // Import useRouter
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { Checkbox } from 'react-native-paper';
 
 import { MaterialIcons, Ionicons } from '@expo/vector-icons'; // Import icons
 
@@ -47,15 +49,8 @@ const PreferenceSettingsScreen = () => {
                 return;
             }
 
-            // const axiosInstance = axios.create({
-            //     baseURL: 'http://192.168.1.65:5005',
-            //     headers: {
-            //         Authorization: `Bearer ${token}`, 
-            //     },
-            // });
-
             const axiosInstance = axios.create({
-                baseURL: 'http://localhost:5000',
+                baseURL: 'http://192.168.4.66:5005',
                 headers: {
                     Authorization: `Bearer ${token}`, 
                 },
@@ -97,21 +92,22 @@ const PreferenceSettingsScreen = () => {
     // Function to render a single allergy item in the FlatList.
     const renderAllergyItem = ({ item }) => (
         <View style={styles.allergyItem}>
-            <CheckBox
-                value={selectedAllergies.includes(item.id)} // Check the box if the ID of this allergy is in the list of selected allergy IDs
-                onValueChange={(newValue) => {
-                    if (newValue) {
-                        // Add to selected allergies (if checked)
-                        setSelectedAllergies([...selectedAllergies, item.id]);
-                    } else {
-                        // Remove from selected allergies (if unchecked)
-                        setSelectedAllergies(selectedAllergies.filter((id) => id !== item.id));
-                    }
-                }}
+            <Checkbox.Android
+                status={selectedAllergies.includes(item.id) ? 'checked' : 'unchecked'}
+                onPress={() => toggleSelection(item.id)}
+                color="#284B63"
             />
             <Text style={styles.allergyText}>{item.label}</Text>
         </View>
     );
+    
+    const toggleSelection = (allergyLabel) => {
+        setSelectedAllergies(prevSelected =>
+            prevSelected.includes(allergyLabel)
+                ? prevSelected.filter(item => item !== allergyLabel)
+                : [...prevSelected, allergyLabel]
+        );
+    };
 
     // Function to save the selected allergies to the backend.
     const saveAllergies = async () => {
@@ -136,15 +132,8 @@ const PreferenceSettingsScreen = () => {
                 return;
             }
 
-            // const axiosInstance = axios.create({
-            //     baseURL: 'http://192.168.1.65:5005',
-            //     headers: {
-            //         Authorization: `Bearer ${token}`, 
-            //     },
-            // });
-
             const axiosInstance = axios.create({
-                baseURL: 'http://localhost:5000',
+                baseURL: 'http://192.168.4.66:5005',
                 headers: {
                     Authorization: `Bearer ${token}`, 
                 },
@@ -168,7 +157,6 @@ const PreferenceSettingsScreen = () => {
             setLoading(false);  // Hide loading indicator
         }
     };
-
 
     // Conditional rendering: Show loading indicator while fetching data.
     if (loading) {
@@ -209,16 +197,23 @@ const PreferenceSettingsScreen = () => {
                 <Text style={styles.title}>{from}</Text>
                 <Text style={styles.normalText}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
 
-                <FlatList 
-                    data={ALLERGY_OPTIONS} // Use the ALLERGY_OPTIONS array as the data source.
-                    renderItem={renderAllergyItem} // Use the renderAllergyItem function to render each item.
-                    keyExtractor={(item) => item.id} // Use the 'id' as the unique key for each item.
-                    style={styles.list}
-                />
-                <Button title="Save" onPress={saveAllergies} />
+            <FlatList
+                data={ALLERGY_OPTIONS}
+                renderItem={renderAllergyItem}
+                keyExtractor={(item) => item.id}
+                style={styles.list}
+            />
+
+                <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={saveAllergies}
+                >
+                    <Text style={styles.saveButtonText}>Save</Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
+    
 };
 
 // Styles for the components.

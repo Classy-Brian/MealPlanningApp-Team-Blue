@@ -14,8 +14,7 @@ export default function EditProfile() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        // const response = await fetch(`http://192.168.1.65:5005/api/users/${userId}`);
-        const response = await fetch(`http://localhost:5000/api/users/${userId}`);
+        const response = await fetch(`http://192.168.4.66:5005/api/users/${userId}`);
         const data = await response.json();
 
         setUsername(data.name || '');
