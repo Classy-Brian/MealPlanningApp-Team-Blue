@@ -11,6 +11,9 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    avatar: { 
+        type: String 
+    },
     password: {
         type: String,
         required: true
@@ -29,13 +32,23 @@ const userSchema = new mongoose.Schema({
         recipes: {
         tried: { type: Number, default: 0 },
         wantToTry: { type: Number, default: 0 }
-        }
+      }
     },
-    savedRecipes: 
-    [{type: String }]
-}, {
-  timestamps: true
-});
+  
+    //Recipes section - Array of Recipe IDs
+    recipes: [{
+      type: mongoose.Schema.Types.ObjectId, // Reference to Recipe model
+      ref: "Recipe"
+    }],
+    
+    // JWT token is stored here
+    token: {            
+        type: String,
+    },
+  
+  }, {
+    timestamps: true
+  });
 
 // Hash the password before saving
 userSchema.pre('save', async function(next) {
@@ -59,7 +72,7 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
     try {
         return await bcrypt.compare(enteredPassword, this.password); // Compare the entered password with the stored hashed password
     } catch (error) {
-        throw new Error(error); // <- Need to add a way to handle the error
+        return resizeBy.status(400).json({ message: "Invalid credentials"}); // <- Need to add a way to handle the error
     }
 };
 

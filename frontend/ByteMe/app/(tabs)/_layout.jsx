@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
 import { useNavigation } from 'expo-router'; // Import navigation hook
 
@@ -15,11 +15,10 @@ import PantryB from "@/assets/images/pantry_black.png";
 import RecipeB from "@/assets/images/recipe_black.png"; 
 import GroceryB from "@/assets/images/grocery_black.png";
 
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Animatable from 'react-native-animatable';
 
 
-
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
@@ -32,10 +31,25 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         return (
           <TouchableOpacity
             key={route.key}
-            style={[styles.tab, isActive && styles.activeTab]}
+            style={[styles.tab]}
             onPress={() => navigation.navigate(route.name)}
           >
-            {Icon}
+            <Animatable.View style={styles.iconContainer}>
+              {isActive ? (
+                <LinearGradient
+                  colors={['#0F1056', '#9A9FFF']}
+                  start={{x: 0, y: 1}}
+                  end={{x: 1, y:0}}
+                  style={styles.activeTab}
+                >
+                  {Icon}
+                </LinearGradient>
+              ) : (
+                <>
+                  {Icon}
+                </>
+              )}
+            </Animatable.View>
             <Text style={[styles.label, isActive && styles.activeLabel]}>
               {options.title || route.name}
             </Text>
@@ -47,26 +61,27 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 };
 
 const getTabIcon = (name, isActive) => {
-  const iconColor = isActive ? '#fff' : '#aaa';
+  const iconColor = isActive ? '#fff' : '#505050';
+  const w = isActive ? 45 : 40;
+  const h = isActive ? 45 : 40;
 
   switch (name) {
     case 'home':
-      return <Image source={HomeB} style={styles.iconImage} />;
+      return <Image source={isActive ? HomeW : HomeB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'calendar':
-      return <Image source={CalendarB} style={styles.iconImage} />;
-    case 'recipe':
-      return <Image source={RecipeB} style={styles.iconImage} />;
+      return <Image source={isActive ? CalendarW : CalendarB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
+    case 'savedrecipes':
+      return <Image source={isActive ? RecipeW : RecipeB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'grocery':
-      return <Image source={GroceryB} style={styles.iconImage} />;
+      return <Image source={isActive ? GroceryW : GroceryB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'pantry':
-      return <Image source={PantryB} style={styles.iconImage} />;
+      return <Image source={isActive ? PantryW : PantryB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     default:
       return null; // No default, avoids unwanted fallback
   }
 };
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
 
   return (
     <Tabs    
@@ -74,7 +89,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="home" options={{ title: 'Home', headerShown: false }} />
       <Tabs.Screen name="calendar" options={{ title: 'Calendar', headerShown: false }} />
-      <Tabs.Screen name="recipe" options={{ title: 'Recipe', headerShown: false }} />
+      <Tabs.Screen name="savedrecipes" options={{ title: 'Recipe', headerShown: false }} />
       <Tabs.Screen name="grocery" options={{ title: 'Grocery', headerShown: false }} />
       <Tabs.Screen name="pantry" options={{ title: 'Pantry', headerShown: false }} />
     </Tabs>
@@ -86,34 +101,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     backgroundColor: '#D7D9ED',
-    paddingVertical: 12,
+    paddingVertical: 2,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
   tab: {
     alignItems: 'center',
+    justifyContent: 'center',
     padding: 10,
+    width: 80,
   },
   activeTab: {
-    backgroundColor: '#9A9FFF',
-    borderRadius: 15,
+    borderRadius: 200,
     paddingHorizontal: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 70,
+    width: 70,
+    borderColor: '#D7D9ED',
+    borderWidth: 5,
+
   },
   label: {
     fontSize: 14,
-    color: '#000000',
+    color: '#505050',
     marginTop: 4,
   },
   activeLabel: {
     color: '#0065EA',
-  },
-  profileButton: {
-    marginRight: 15,
-  },
-  profileImage: {
-    width: 35,
-    height: 35,
-    borderRadius: 50,
+    fontWeight: 'bold',
+    transform: [{translateY: 5}]
   },
   logo: {
     width: 100,
@@ -121,7 +138,12 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   iconImage: {
-    width: 30,
-    height: 30,
+    resizeMode: 'contain',
   },
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
+  }
 });

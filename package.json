@@ -19,22 +19,16 @@
   },
   "homepage": "https://github.com/Classy-Brian/MealPlanningApp-Team-Blue#readme",
   "dependencies": {
-    "@chakra-ui/react": "^3.9.0",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@react-native-async-storage/async-storage": "^2.1.2",
-    "axios": "^1.8.2",
+    "axios": "^1.8.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "expo": "^52.0.37",
     "express": "^4.21.2",
-    "framer-motion": "^12.4.10",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.11.0"
   },
   "devDependencies": {
-    "@types/react": "~18.3.12",
-    "nodemon": "^3.1.9",
-    "typescript": "^5.3.3"
+    "nodemon": "^3.1.9"
   }
 }

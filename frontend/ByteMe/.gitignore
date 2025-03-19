@@ -36,8 +36,5 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
-
-
-# Ignore all environment files
 /backend/.env
 /frontend/ByteMe/.env

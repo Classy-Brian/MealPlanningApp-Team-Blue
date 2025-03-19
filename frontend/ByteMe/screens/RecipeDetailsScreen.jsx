@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import Back_butt from '@/assets/images/backbutton.png';
+import ExploreRecipesScreen from '@/app/explorerecipes';
 
 const USER_ID = "67c8da45f97986963147083a"; // Temporary test user ID
 
-
-const RecipeDetailsScreen = ({ navigation }) => {
+const RecipeDetailsScreen = ({}) => {
   const route = useRoute();
+  const navigation = useNavigation();
 
   console.log("Route Params:", route.params);  // Debugging log
 
@@ -16,28 +17,13 @@ const RecipeDetailsScreen = ({ navigation }) => {
   const {
     recipeId = '',
     title = '',
+    ingredients = [],  // ✅ Directly use the array from route params
     directions = "No directions available.",
     imageUri = '',
+    allergies = [], // ✅ Directly use the array
+    nutrition = {}, // ✅ Directly use the object
   } = route.params || {};
 
-  const nutrition = route.params?.nutrition && typeof route.params.nutrition === "string"
-  ? JSON.parse(route.params.nutrition)  // Parse only if it's a string
-  : route.params.nutrition || {}; // Otherwise, use it directly
-
-const ingredients = route.params?.ingredients
-  ? (typeof route.params.ingredients === "string" 
-      ? JSON.parse(route.params.ingredients) // Parse if string
-      : route.params.ingredients) 
-  : [];
-
-const allergies = route.params?.allergies
-  ? (typeof route.params.allergies === "string" 
-      ? JSON.parse(route.params.allergies) // Parse if string
-      : route.params.allergies) 
-  : [];
-
-
-  console.log(route.params);
   if (!recipeId || !title || ingredients.length === 0 || !directions) {
     return (
       <View style={styles.container}>
@@ -77,7 +63,7 @@ const allergies = route.params?.allergies
     <View style={styles.container}>
       {/* Header with Back Button */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('explorerecipes')}>
           <Image source={Back_butt} style={styles.backIcon} />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
@@ -116,19 +102,19 @@ const allergies = route.params?.allergies
       </View>
 
       {/* Section Content */}
-      <View style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.sectionContent}>
           {activeSection === 0 && (
-            <View style={styles.sectionContent}>
+            <>
               <Text style={styles.sectionTitle}>Ingredients:</Text>
               {ingredients.map((ingredient, index) => (
                 <Text key={index} style={styles.sectionText}>- {ingredient}</Text>
               ))}
-            </View>
+            </>
           )}
 
           {activeSection === 1 && (
-            <View style={styles.sectionContent}>
+            <>
               <Text style={styles.sectionTitle}>Allergy Information:</Text>
               {allergies.length > 0 ? (
                 allergies.map((allergy, index) => (
@@ -137,18 +123,18 @@ const allergies = route.params?.allergies
               ) : (
                 <Text style={styles.sectionText}>No allergy information available.</Text>
               )}
-            </View>
+            </>
           )}
 
           {activeSection === 2 && (
-            <View style={styles.sectionContent}>
+            <>
               <Text style={styles.sectionTitle}>Directions:</Text>
               <Text style={styles.sectionText}>{directions}</Text>
-            </View>
+            </>
           )}
 
           {activeSection === 3 && (
-            <View style={styles.sectionContent}>
+            <>
               <Text style={styles.sectionTitle}>Nutrition Facts:</Text>
               {nutrition ? (
                 <>
@@ -160,10 +146,10 @@ const allergies = route.params?.allergies
               ) : (
                 <Text style={styles.sectionText}>No nutrition data available.</Text>
               )}
-            </View>
+            </>
           )}
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -272,6 +258,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     marginVertical: 2,
+  },
+  scrollContent: {
+    flexGrow: 1, 
+    justifyContent: 'flex-start',  // Ensures content starts at the top
   },
 });
 
