@@ -44,11 +44,17 @@ export default function Recipes() {
         return {
           uri: res.data[0].uri,
           label: res.data[0].label,
-          image: res.data[0].image || res.data[0].images?.THUMBNAIL?.url || "https://via.placeholder.com/150",
-          directions: res.data[0].url || "No directions available.", //  Get directions
-          ingredients: res.data[0].ingredientLines || [], //  Get ingredients
-          allergies: res.data[0].healthLabels || [], //  Get allergies
-          nutrition: res.data[0].totalNutrients || {}, //  Get nutrition
+          image: res.data[0].image || "https://via.placeholder.com/150",
+          directions: res.data[0].url || "No directions available.",
+          ingredients: Array.isArray(res.data[0].ingredientLines) 
+            ? res.data[0].ingredientLines 
+            : JSON.parse(res.data[0].ingredientLines || "[]"), // Ensure array format
+          allergies: Array.isArray(res.data[0].healthLabels) 
+            ? res.data[0].healthLabels 
+            : JSON.parse(res.data[0].healthLabels || "[]"), // Ensure array format
+          nutrition: typeof res.data[0].totalNutrients === "object"
+            ? res.data[0].totalNutrients
+            : JSON.parse(res.data[0].totalNutrients || "{}"), // Ensure object format
         };
       }).filter(Boolean);  // Remove null values
 

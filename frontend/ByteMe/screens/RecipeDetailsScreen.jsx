@@ -16,14 +16,28 @@ const RecipeDetailsScreen = ({ navigation }) => {
   const {
     recipeId = '',
     title = '',
-    ingredients = [],  // ✅ Directly use the array from route params
     directions = "No directions available.",
     imageUri = '',
-    allergies = [], // ✅ Directly use the array
-    nutrition = {}, // ✅ Directly use the object
   } = route.params || {};
 
-  
+  const nutrition = route.params?.nutrition && typeof route.params.nutrition === "string"
+  ? JSON.parse(route.params.nutrition)  // Parse only if it's a string
+  : route.params.nutrition || {}; // Otherwise, use it directly
+
+const ingredients = route.params?.ingredients
+  ? (typeof route.params.ingredients === "string" 
+      ? JSON.parse(route.params.ingredients) // Parse if string
+      : route.params.ingredients) 
+  : [];
+
+const allergies = route.params?.allergies
+  ? (typeof route.params.allergies === "string" 
+      ? JSON.parse(route.params.allergies) // Parse if string
+      : route.params.allergies) 
+  : [];
+
+
+  console.log(route.params);
   if (!recipeId || !title || ingredients.length === 0 || !directions) {
     return (
       <View style={styles.container}>
