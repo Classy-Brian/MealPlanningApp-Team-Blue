@@ -1,24 +1,10 @@
 import User from '../models/user.model.js'; 
 import Recipe from '../models/recipe.model.js';
-import asyncHandler from 'express-async-handler';
-import jwt from 'jsonwebtoken';
-import dotenv from "dotenv";
-
-dotenv.config();
-const JWT_SECRET = `${process.env.JWT_SECRET}` 
-
-// GENERATE a JWT token
-const generateToken = (userId, time) => {
-  return jwt.sign({_id: userId}, JWT_SECRET, {expiresIn: time});
-}
-
 
 //CREATE: Register a new User
 export const createUser = async (req, res) => {
-  console.log("Recieved registration request:", req.body);
-  
   try {
-    const { name, email, password, allergies, profile, avatar } = req.body;
+    const { name, email, password, allergies, profile } = req.body;
 
     // Check if user already exists by email
     const userExists = await User.findOne({ email });
@@ -30,29 +16,19 @@ export const createUser = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      avatar,
       password,
       allergies,
       profile
     });
 
-    // Create a JSON web token
-    const token = generateToken(user._id, '1h') // The token expires in 1 hour
-    user.token = token;
-    await user.save();
-
     // Return the created user
     return res.status(201).json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        allergies: user.allergies,
-        profile: user.profile,
-        recipes: user.recipes,
-      },
-      token,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      allergies: user.allergies,
+      profile: user.profile,
+      recipes: user.recipes
     });
   } catch (error) {
     console.error(error);
@@ -75,109 +51,37 @@ export const getAllUsers = async (req, res) => {
 
 
 
-// export const getUserProfile = async (req, res) => {
-//   console.log("getUserProfile called");
-//   console.log("req.user:", req.user);
-
-//   const user = await User.findById(req.user._id).select('-password');
-
-//   if (user) {
-//     res.json(user);
-//   } else {
-//     res.status(404);
-//     throw new Error('User not found');
-//   }
-// };
-
-export const getUserProfile = async (req, res) => {
-  console.log("getUserProfile called");
-  const token = req.params.token; // Get token from URL parameter
-  console.log("Token from URL:", token);
-
-  if (!token) {
-      res.status(401);
-      throw new Error('No token provided'); 
-  }
-
-  try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify token
-      console.log("Decoded token:", decoded);
-      const userId = decoded._id; // Extract user ID
-      console.log("Extracted userId:", userId);
-
-      const user = await User.findById(userId).select('-password');
-      console.log("User found:", user);
-
-      if (!user) {
-          res.status(404);
-          throw new Error('User not found'); 
-      }
-
-      res.json(user); // Return the user data
-
-  } catch (error) {
-      console.error("Error in getUserProfile:", error);
-      res.status(401); // 401 for invalid token
-      throw new Error('Invalid token');
-  }
-};
-
-export const updateUserPreferences = async (req, res) => {
-  const { allergies } = req.body;
-  const userId = req.user._id;  // Extracted from token
-
-  try {
-    await User.findByIdAndUpdate(userId, { allergies }, { new: true });
-    return res.status(200).json({ message: 'Allergies updated successfully'});
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Server error'});
-  }
-};
-
 //UPDATE: Update User by ID (Patch or Put)
 //need to create a seperate route for password changes later
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, allergies, profile, avatar } = req.body;
+    const { name, email, allergies, profile } = req.body;
 
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update top-level fields if provided
+    // Update fields if provided
     if (name !== undefined) user.name = name;
     if (email !== undefined) user.email = email;
-    if (avatar !== undefined) user.avatar = avatar;
     if (allergies !== undefined) user.allergies = allergies;
-
-    // Safely update profile subfields
-    if (profile) {
-      if (profile.calories) {
-        user.profile.calories = {
-          ...user.profile.calories,
-          ...profile.calories
-        };
-      }
-      if (profile.recipes) {
-        user.profile.recipes = {
-          ...user.profile.recipes,
-          ...profile.recipes
-        };
-      }
-      // Add more sub-objects as needed
+    if (profile !== undefined) {
+      //can do a deep merge or just replace
+      user.profile = {
+        ...user.profile,
+        ...profile
+      };
     }
 
     const updatedUser = await user.save();
 
-    // Return the updated user
+    // Return sanitized user
     return res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
-      avatar: updatedUser.avatar,
       allergies: updatedUser.allergies,
       profile: updatedUser.profile,
       recipes: updatedUser.recipes,
@@ -188,7 +92,6 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 //DELETE: Remove a User by ID
 export const deleteUser = async (req, res) => {
@@ -215,21 +118,13 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email }); // Find the user by email
 
     if (user && (await user.matchPassword(password))) {
-      const token = generateToken(user._id, '7d'); // <- Error happens here
-      user.token = token;
-      await user.save();
-      return res.status(200).json({
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          allergies: user.allergies,
-          profile: user.profile,
-          recipes: user.recipes,
-        },
-        token,
+      // will need to generate a JWT here and send it to the client
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        // for later: token: generateToken(user._id),
       });
-      
     } else {
       // Invalid email or password
       res.status(401).json({ message: 'Invalid email or password' }); // 401 Unauthorized
