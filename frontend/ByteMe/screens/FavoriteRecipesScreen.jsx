@@ -70,7 +70,7 @@ const RecipeDetailsScreen = () => {
         disabled={isSavedRecipe} // Prevent resaving if already saved
       >
         <Image
-          source={isSavedRecipe ? heartIcon : emptyHeartIcon}
+          source={isSavedRecipe ? emptyHeartIcon : heartIcon}
           style={styles.heartIcon}
         />
       </TouchableOpacity>
