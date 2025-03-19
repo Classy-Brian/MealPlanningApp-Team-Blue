@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import Back_butt from '@/assets/images/backbutton.png';
 
-const RecipeDetailsScreen = ({ navigation }) => {
+const RecipeDetailsScreen = () => {
   const route = useRoute();
-  const { recipeId, title, ingredients, directions, imageUri } = route.params || {};
+  const navigation = useNavigation();
+
+  const { recipeId, title, ingredients, directions, imageUri, allergies, nutritionFacts } = route.params || {};
 
   if (!recipeId || !title || !ingredients || !directions) {
     return (
@@ -16,18 +18,17 @@ const RecipeDetailsScreen = ({ navigation }) => {
   }
 
   const [activeSection, setActiveSection] = useState(0);
-
   const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition Facts'];
 
   const handleSaveRecipe = () => {
     const savedRecipe = { recipeId, title, ingredients, directions, imageUri };
-    navigation.navigate('savedrecipes', { savedRecipe });
+    navigation.navigate('savedrecipes', { newRecipe: savedRecipe });
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('RecipeList')}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('explorerecipes')}>
           <Image source={Back_butt} style={styles.backIcon} />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
@@ -45,7 +46,6 @@ const RecipeDetailsScreen = ({ navigation }) => {
         <Text style={styles.saveButtonText}>Add Recipe</Text>
       </TouchableOpacity>
 
-      {/* Horizontal Scroll for Section Titles */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionContainer}>
         {sections.map((section, index) => (
           <TouchableOpacity
@@ -59,7 +59,6 @@ const RecipeDetailsScreen = ({ navigation }) => {
         ))}
       </ScrollView>
 
-      {/* Display content for the active section */}
       <View style={styles.contentWrapper}>
         <ScrollView style={styles.sectionContentWrapper}>
           {activeSection === 0 && (
@@ -70,20 +69,17 @@ const RecipeDetailsScreen = ({ navigation }) => {
               ))}
             </View>
           )}
-
           {activeSection === 1 && (
             <View style={styles.sectionContent}>
               <Text style={styles.sectionContentText}>Allergy information coming soon!</Text>
             </View>
           )}
-
           {activeSection === 2 && (
             <View style={styles.sectionContent}>
               <Text style={styles.sectionContentText}>Directions:</Text>
               <Text style={styles.sectionContentText}>{directions}</Text>
             </View>
           )}
-
           {activeSection === 3 && (
             <View style={styles.sectionContent}>
               <Text style={styles.sectionContentText}>Nutrition facts coming soon!</Text>
@@ -154,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   recipeImage: {
     width: '100%',
@@ -163,7 +159,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   sectionContainer: {
-    marginTop: 30,
+    marginTop: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,

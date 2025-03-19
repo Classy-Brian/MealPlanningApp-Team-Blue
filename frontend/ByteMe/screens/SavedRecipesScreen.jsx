@@ -1,6 +1,6 @@
-import { Image, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Pressable } from 'react-native';
-import React, { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { Image, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
 import { fonts } from '../components/Fonts';
@@ -8,26 +8,33 @@ import maglass from "@/assets/images/magnifyingglass.png";
 
 export default function Recipes() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState(''); // Initialize searchQuery state
-  const [recipes, setRecipes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [savedRecipes, setSavedRecipes] = useState([]);
 
-  const handleSearchSubmit = () => {
-    // Logic for search submit
-    console.log('Search submitted for:', searchQuery);
-  };
+  // Retrieve recipe data from params
+  const params = useLocalSearchParams();
+  useEffect(() => {
+    if (params.title && params.description) {
+      setSavedRecipes((prevRecipes) => [
+        ...prevRecipes,
+        { id: Date.now(), title: params.title, description: params.description },
+      ]);
+    }
+  }, [params]);
 
-  const addRecipe = () => {
-    const newRecipe = {
-      id: recipes.length + 1,
-      title: `Recipe ${recipes.length + 1}`,
-      description: `This is a short description of Recipe ${recipes.length + 1}.`,
-    };
-    setRecipes([...recipes, newRecipe]);
+  // Rectangle Component directly inside Recipes.js
+  const Rectangle = ({ title, description }) => {
+    return (
+      <View style={styles.rectangleView}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.description}>{description}</Text>
+      </View>
+    );
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Saved Recipes</Text>
+      <Text style={styles.pageTitle}>Saved Recipes</Text>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
@@ -36,19 +43,26 @@ export default function Recipes() {
           placeholder="Search through your recipes"
           placeholderTextColor={textcolors.lightgrey}
           style={styles.inputText}
-          value={searchQuery} // Bind TextInput value to searchQuery
-          onChangeText={(text) => setSearchQuery(text)} // Update state on input change
-          onSubmitEditing={handleSearchSubmit} // Trigger search on 'Enter'
-          returnKeyType="search" // Change return key to 'search'
+          value={searchQuery}
+          onChangeText={(text) => setSearchQuery(text)}
+          returnKeyType="search"
         />
       </View>
 
-      <View style={styles.parentContainer}>
-        <View style={styles.rectangleView} />
-      </View>
+      {/* Recipes List */}
+      <FlatList
+        data={savedRecipes}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <Rectangle title={item.title} description={item.description} />
+        )}
+      />
 
       {/* Floating Add Button */}
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
+      <TouchableOpacity 
+        style={styles.addButton} 
+        onPress={() => router.push('/explorerecipes')}
+      >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
     </View>
@@ -63,22 +77,24 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
 
-  parentContainer: {
-    alignItems: 'center',
-    paddingTop: 10,
+  pageTitle: {
+    fontSize: 36,
+    fontFamily: fonts.bold,
+    marginVertical: 10,
+    color: '#000000',
   },
 
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 50, // Explicitly set the height
+    height: 50,
     borderRadius: 15,
     borderWidth: 1,
     borderColor: 'black',
     backgroundColor: '#D3D3D3',
     paddingHorizontal: 10,
     marginBottom: 10,
-    width: '100%', // Ensure full width of the container
+    width: '100%',
   },
 
   magnifyingGlassIcon: {
@@ -94,15 +110,23 @@ const styles = StyleSheet.create({
   },
 
   rectangleView: {
-    height: 130,
     borderRadius: 10,
-    backgroundColor: 'rgba(31, 80, 143, 0.06)',
-    borderColor: '#777',
+    backgroundColor: "rgba(31, 80, 143, 0.06)",
+    borderStyle: "solid",
+    borderColor: "#777",
     borderWidth: 1,
-    width: '90%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 10,
     marginVertical: 5,
+  },
+
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  description: {
+    fontSize: 14,
+    color: "#555",
   },
 
   addButton: {
@@ -121,13 +145,5 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 30,
     color: '#fff',
-  },
-
-  title: {
-    fontSize: 36,
-    fontFamily: fonts.bold,
-    textAlign: 'flex-start',
-    marginVertical: 10,
-    color: '#000000',
   },
 });

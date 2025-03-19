@@ -34,6 +34,8 @@ const _layout = () => {
       <Stack.Screen name="(tabs)"
         options={{
           headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
           headerTitle: () => <HeaderLogo />,
           headerRight: () => <ProfileIcon />,
           headerStyle: {
@@ -45,10 +47,20 @@ const _layout = () => {
           },
         }}
       />
-
-      <Stack.Screen name="explorerecipes"
+      <Stack.Screen name="(start)"
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name="(survey)"
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name='index'
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name='explorerecipes'
         options={{
           headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
           headerTitle: () => <HeaderLogo />,
           headerRight: () => <ProfileIcon />,
           headerStyle: {
@@ -60,10 +72,11 @@ const _layout = () => {
           },
         }}
       />
-
-      <Stack.Screen name="recipedetails"
+      <Stack.Screen name='recipedetails'
         options={{
           headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
           headerTitle: () => <HeaderLogo />,
           headerRight: () => <ProfileIcon />,
           headerStyle: {
@@ -76,12 +89,8 @@ const _layout = () => {
         }}
       />
     </Stack>
-    
   );
 };
-
-
-
 
 const styles = StyleSheet.create({
   container: {

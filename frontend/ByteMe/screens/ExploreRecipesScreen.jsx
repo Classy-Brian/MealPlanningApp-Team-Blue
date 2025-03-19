@@ -31,8 +31,8 @@ const RecipeSearch = () => {
   }, []);
 
   const fetchRecipes = async (query) => {
-    const API_ID = process.env.EDAMAM_APP_ID;
-    const API_KEY = process.env.EDAMAM_API_KEY;
+    const API_ID =process.env.EDAMAM_APP_ID;
+    const API_KEY =process.env.EDAMAM_API_KEY;
 
     setLoading(true);
     setError(null);
@@ -73,7 +73,7 @@ const RecipeSearch = () => {
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('(tabs)/savedrecipes')}>
               <Image source={Back_butt} style={styles.backIcon} />
               <Text style={styles.backText}>Recipes</Text>
             </TouchableOpacity>
@@ -113,28 +113,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: 20,
-    paddingTop: 50,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 5,
-    paddingHorizontal: 15, // Adjusted for a compact button
+    paddingVertical: 10,
+    paddingHorizontal: 30, // Adjusted for a compact button
     backgroundColor: "#D7E2F1",
     borderRadius: 10,
     marginBottom: 10,
     alignSelf: 'flex-start', // Keeps it aligned to the left
   },
   backIcon: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
+    marginRight: 10,
   },
   backText: {
-    color: "#000",
-    fontSize: 16,
-    fontWeight: "600",
-    fontVariant: "Afacad",
-    marginLeft: 5,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
   },
   header: {
     paddingBottom: 20,
