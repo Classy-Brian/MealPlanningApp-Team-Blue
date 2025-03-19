@@ -26,19 +26,18 @@ const RecipeSearch = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    setRecipes([{ recipe: { label: "Test Recipe", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe1", ingredientLines: ["1 Cup of flour", "2 Eggs"], url: "https://example.com" }}]);
+    // setRecipes([{ recipe: { label: "Test Recipe", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe1", ingredientLines: ["1 Cup of flour", "2 Eggs"], url: "https://example.com" }}]);
   }, []);
 
   const fetchRecipes = async (query) => {
-    const API_ID = process.env.EDAMAM_APP_ID;
-    const API_KEY = process.env.EDAMAM_API_KEY;
+    const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
+    const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
 
     setLoading(true);
     setError(null);
-
-    try {
+    try {  
       const response = await axios.get(
-        `https://api.edamam.com/search?q=${encodeURIComponent(query)}&app_id=${API_ID}&app_key=${API_KEY}`
+        `https://api.edamam.com/search?q=${encodeURIComponent(query)}&app_id=${API_ID}&app_key=${API_KEY}`,
       );
       setRecipes(response.data.hits.length > 0 ? response.data.hits : []);
     } catch (err) {
@@ -56,6 +55,8 @@ const RecipeSearch = () => {
       ingredients: recipe.recipe.ingredientLines,
       directions: recipe.recipe.url,
       imageUri: recipe.recipe.image,
+      allergies: recipe.recipe.healthLabels,
+      nutrition: recipe.recipe.totalNutrients
     });
   };
 

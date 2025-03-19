@@ -8,30 +8,26 @@ import { fonts } from '../components/Fonts';
 import Back_butt from "@/assets/images/backbutton.png";
 
 const initialData = [
-  { id: "1", title: "Croque Monsieur", imageUri: null },
-  { id: "2", title: "Chicken Parmesan Pasta", imageUri: null },
-  { id: "3", title: "Homemade Ratatouille", imageUri: null },
-  { id: "4", title: "Street Taco", imageUri: null },
-  { id: "5", title: "Honey Garlic Shrimp", imageUri: null },
+  { id: "1", title: "Croque Monsieur", imageUri: null, ingredients: [], allergies: [], directions: "" },
+  { id: "2", title: "Chicken Parmesan Pasta", imageUri: null, ingredients: [], allergies: [], directions: "" },
+  { id: "3", title: "Homemade Ratatouille", imageUri: null, ingredients: [], allergies: [], directions: "" },
+  { id: "4", title: "Street Taco", imageUri: null, ingredients: [], allergies: [], directions: "" },
+  { id: "5", title: "Honey Garlic Shrimp", imageUri: null, ingredients: [], allergies: [], directions: "" },
 ];
 
-const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
-
 const RecipeCard = ({ imageUri, title, onPress }) => {
+  const safeImageUri = imageUri && imageUri.startsWith("http") ? { uri: imageUri } : HomeB;
+
   return (
     <TouchableOpacity style={styles.recipeContainer} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.recipeWrapper}>
-        <Image
-          style={styles.recipePhoto}
-          resizeMode="cover"
-          source={imageUri ? { uri: imageUri } : HomeB} 
-        />
+        <Image style={styles.recipePhoto} resizeMode="cover" source={safeImageUri} />
         <View style={styles.overlay} />
-        <Text style={styles.recipeTitle}>{title}</Text>
+        <Text style={styles.recipeTitle}>{title || "No Title Available"}</Text>
       </View>
     </TouchableOpacity>
   );
-}
+};
 
 const Add_Recipe = () => {
   const [recipes, setRecipes] = useState([]);
@@ -41,30 +37,31 @@ const Add_Recipe = () => {
     const requiredCount = 10;
     let updatedData = [...initialData];
 
-    // If fewer than 10 items, fill with placeholders
     if (updatedData.length < requiredCount) {
       const placeholders = Array.from({ length: requiredCount - updatedData.length }, (_, index) => ({
         id: `placeholder-${index}`,
-        title: "Empty Slot"
+        title: "Empty Slot",
+        ingredients: [],
+        allergies: [],
+        directions: "",
       }));
       updatedData = updatedData.concat(placeholders);
     }
 
-    setRecipes(updatedData.slice(0, requiredCount)); // Ensure exactly 10 items
+    setRecipes(updatedData.slice(0, requiredCount));
   }, []);
 
   const goToRecipeDetails = (recipe) => {
     navigation.navigate('recipe_details', {
       title: recipe.title,
-      ingredients: recipe.ingredients,
-      allergies: recipe.allergies,
-      directions: recipe.directions,
+      ingredients: recipe.ingredients.length ? recipe.ingredients : ["No ingredients available"],
+      allergies: recipe.allergies.length ? recipe.allergies : ["No allergy information"],
+      directions: recipe.directions || "No directions available",
     });
   };
 
   return (
     <View style={styles.container}>
-      {/* Scrollable Content */} {/*(Back Button) */}
       <FlatList
         data={recipes}
         keyExtractor={(item) => item.id}
@@ -73,14 +70,16 @@ const Add_Recipe = () => {
         ListHeaderComponent={
           <View style={styles.header}>
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("recipe")}>
-              <Image source={Back_butt} style={styles.backIcon} />
-              <Text style={styles.backText}>Recipes</Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image source={Back_butt} style={styles.backIcon} />
+                <Text style={styles.backText}>Recipes</Text>
+              </View>
             </TouchableOpacity>
             <Text style={styles.title}>Search Recipes</Text>
             <View style={styles.searchContainer}>
               <TextInput
                 placeholder="Search Recipes"
-                placeholderTextColor={textcolors.lightgrey}
+                placeholderTextColor={textcolors?.lightgrey || "#A9A9A9"}
                 style={styles.inputText}
               />
             </View>
@@ -97,57 +96,26 @@ const Add_Recipe = () => {
       />
     </View>
   );
-}
+};
 
 export default Add_Recipe;
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: 20,
-    paddingTop: 50, // Ensures content starts below the fixed header
-  }, 
-
-  headerContainer: {
-    position: "absolute",
-    top: 10,
-    left: 15,
-    zIndex: 10,
-    backgroundColor: "transparent", // Ensure it doesn't block anything
-  },
-  
-
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    position: "absolute",
-    top: 20,
-    left: 15,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    backgroundColor: "#1F508F",
-    borderRadius: 5,
-    zIndex: 10,
+    paddingTop: 50,
   },
 
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    position: "absolute",
-    top: 20,
-    left: 15,
     paddingVertical: 5,
     paddingHorizontal: 10,
     backgroundColor: "#D7E2F1",
     borderRadius: 5,
     zIndex: 10,
-  },
-
-  backButtonText: {
-    fontSize:30,
-    color: '#fff'
   },
 
   backText: {
@@ -162,7 +130,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 36,
-    fontFamily: fonts.bold,
+    fontFamily: fonts?.bold || "System",
     textAlign: "center",
     marginVertical: 10,
   },
@@ -171,7 +139,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: textcolors.lightgrey,
+    borderColor: textcolors?.lightgrey || "#A9A9A9",
     backgroundColor: colors.white,
     justifyContent: 'center',
     paddingHorizontal: 10,

@@ -36,9 +36,9 @@ export default function Recipes(){
 
       <View style={styles.parentContainer}>
       <View style={styles.rectangleView} />
+
       </View>
-      {/* Floating Add Button*/
-      }
+      {/* Floating Add Button*/}
       <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize:36,
-    frontFamily:fonts.bold,
+    fontFamily:fonts.bold,
     textAlign: "center",
     marginVertical: 10
   }

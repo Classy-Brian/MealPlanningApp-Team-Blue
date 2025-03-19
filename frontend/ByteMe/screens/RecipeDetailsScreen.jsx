@@ -1,13 +1,30 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import axios from 'axios';
 import Back_butt from '@/assets/images/backbutton.png';
+
+const USER_ID = "67c8da45f97986963147083a"; // Temporary test user ID
+
 
 const RecipeDetailsScreen = ({ navigation }) => {
   const route = useRoute();
-  const { recipeId, title, ingredients, directions, imageUri } = route.params || {};
 
-  if (!recipeId || !title || !ingredients || !directions) {
+  console.log("Route Params:", route.params);  // Debugging log
+
+  // ✅ Extract parameters directly without parsing
+  const {
+    recipeId = '',
+    title = '',
+    ingredients = [],  // ✅ Directly use the array from route params
+    directions = "No directions available.",
+    imageUri = '',
+    allergies = [], // ✅ Directly use the array
+    nutrition = {}, // ✅ Directly use the object
+  } = route.params || {};
+
+  
+  if (!recipeId || !title || ingredients.length === 0 || !directions) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
@@ -16,89 +33,119 @@ const RecipeDetailsScreen = ({ navigation }) => {
   }
 
   const [activeSection, setActiveSection] = useState(0);
+  const [isSaved, setIsSaved] = useState(false);
 
-  const sections = [
-    { title: 'Ingredients' },
-    { title: 'Allergies' },
-    { title: 'Directions' },
-    { title: 'Nutrition Facts' },
-  ];
+  const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
-  const handleSaveRecipe = () => {
-    // Save the recipe logic here (e.g., saving to local storage, context, or state)
-    const savedRecipe = { recipeId, title, ingredients, directions, imageUri };
+  // ✅ Function to Save Recipe to Backend
+  const saveRecipe = async () => {
+    if (!recipeId) return;
 
-    // Navigate to SavedRecipesScreen after saving
-    navigation.navigate('SavedRecipeScreen', { savedRecipe });
+    try {
+      const response = await axios.post("http://localhost:5000/api/users/save-recipe", {
+        userId: USER_ID, // Send only user ID
+        recipeId: recipeId, // Send only recipe ID
+      });
+
+      if (response.status === 200) {
+        setIsSaved(true);
+        Alert.alert("Success", "Recipe saved successfully!");
+      } else {
+        throw new Error("Failed to save recipe.");
+      }
+    } catch (err) {
+      console.error("Error saving recipe:", err);
+      Alert.alert("Error", "Could not save recipe. Please try again.");
+    }
   };
 
   return (
     <View style={styles.container}>
       {/* Header with Back Button */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('RecipeList')}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Image source={Back_butt} style={styles.backIcon} />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Recipe Image without Overlay */}
-      {imageUri && (
+      {/* Recipe Image */}
+      {imageUri ? (
         <View style={styles.recipeWrapper}>
           <Image source={{ uri: imageUri }} style={styles.recipeImage} />
         </View>
+      ) : (
+        <Text style={styles.errorText}>No image available</Text>
       )}
 
       {/* Title */}
       <Text style={styles.title}>{title}</Text>
 
       {/* Save Button */}
-      <TouchableOpacity style={styles.saveButton} onPress={handleSaveRecipe}>
-        <Text style={styles.saveButtonText}>Add Recipe</Text>
+      <TouchableOpacity style={styles.saveButton} onPress={saveRecipe} disabled={isSaved}>
+        <Text style={styles.saveButtonText}>{isSaved ? "Recipe Saved" : "Add Recipe"}</Text>
       </TouchableOpacity>
 
-      {/* Sections (Tabs) Row - Horizontal Scroll */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionContainer}>
-        {sections.map((item, index) => (
+      {/* Compact Section Tabs */}
+      <View style={styles.tabContainer}>
+        {sections.map((section, index) => (
           <TouchableOpacity
             key={index}
-            style={[styles.sectionButton, index === activeSection && styles.activeSection]}
+            style={[styles.tab, activeSection === index && styles.activeTab]}
             onPress={() => setActiveSection(index)}
           >
-            <Text style={styles.sectionTitle}>{item.title}</Text>
-            {index === activeSection && <View style={styles.activeLine} />}
+            <Text style={[styles.tabText, activeSection === index && styles.activeTabText]}>
+              {section}
+            </Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
 
-      {/* Space below the sections */}
-      <View style={styles.contentWrapper}>
-        {/* Display content based on active section */}
-        <ScrollView style={styles.sectionContentWrapper}>
+      {/* Section Content */}
+      <View style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           {activeSection === 0 && (
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Ingredients:</Text>
+              <Text style={styles.sectionTitle}>Ingredients:</Text>
               {ingredients.map((ingredient, index) => (
-                <Text key={index} style={styles.sectionContentText}>
-                  - {ingredient}
-                </Text>
+                <Text key={index} style={styles.sectionText}>- {ingredient}</Text>
               ))}
             </View>
           )}
+
           {activeSection === 1 && (
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Allergies content coming soon!</Text>
+              <Text style={styles.sectionTitle}>Allergy Information:</Text>
+              {allergies.length > 0 ? (
+                allergies.map((allergy, index) => (
+                  <Text key={index} style={styles.sectionText}>- {allergy}</Text>
+                ))
+              ) : (
+                <Text style={styles.sectionText}>No allergy information available.</Text>
+              )}
             </View>
           )}
+
           {activeSection === 2 && (
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Directions:</Text>
-              <Text style={styles.sectionContentText}>{directions}</Text>
+              <Text style={styles.sectionTitle}>Directions:</Text>
+              <Text style={styles.sectionText}>{directions}</Text>
             </View>
           )}
+
           {activeSection === 3 && (
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Nutrition facts coming soon!</Text>
+              <Text style={styles.sectionTitle}>Nutrition Facts:</Text>
+              {nutrition ? (
+                <>
+                  <Text style={styles.sectionText}>Calories: {Math.round(nutrition.ENERC_KCAL?.quantity || 0)} kcal</Text>
+                  <Text style={styles.sectionText}>Protein: {Math.round(nutrition.PROCNT?.quantity || 0)}g</Text>
+                  <Text style={styles.sectionText}>Fat: {Math.round(nutrition.FAT?.quantity || 0)}g</Text>
+                  <Text style={styles.sectionText}>Carbs: {Math.round(nutrition.CHOCDF?.quantity || 0)}g</Text>
+                </>
+              ) : (
+                <Text style={styles.sectionText}>No nutrition data available.</Text>
+              )}
             </View>
           )}
         </ScrollView>
@@ -117,111 +164,100 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10, // Add padding to make it look more like the save button
-    paddingHorizontal: 30, // Make it consistent with the save button width
-    borderRadius: 10, // Round the corners
-    backgroundColor: '#d7e2f1', // Add background color to match the save button
-    marginBottom: 10, // Add space at the bottom for consistency
-    alignSelf: 'center', // Center the button
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#d7e2f1',
   },
   backIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
+    width: 22,
+    height: 22,
+    marginRight: 8,
   },
   backText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#000', // Keep the text color dark for visibility
+    color: '#000',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
     color: '#1f508f',
     textAlign: 'center',
   },
   saveButton: {
     backgroundColor: '#adc6f2',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
     marginBottom: 10,
     alignSelf: 'center',
   },
   saveButtonText: {
     color: '#000',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   recipeWrapper: {
     width: '100%',
-    height: 250, // Set this to your desired image height or adjust accordingly
-    borderWidth: 3,
-    borderColor: '#000000',
-    borderRadius: 10,
+    height: 220,
+    borderWidth: 2,
+    borderColor: '#000',
+    borderRadius: 8,
     overflow: 'hidden',
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
   recipeImage: {
     width: '100%',
     height: '100%',
     backgroundColor: '#f0f0f0',
-    resizeMode: 'cover', // Ensures image covers the entire container
+    resizeMode: 'cover',
   },
-  sectionContainer: {
-    marginTop: 30,
+  tabContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+    justifyContent: 'space-evenly',
+    marginBottom: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingBottom: 5,
   },
-  sectionButton: {
+  tab: {
     flex: 1,
-    paddingBottom: 10,
+    paddingVertical: 6,
     alignItems: 'center',
-    flexDirection: 'column',
-    paddingHorizontal: 5,
   },
-  sectionTitle: {
-    fontSize: 18,
-    color: '#000000',
+  tabText: {
+    fontSize: 14,
+    color: '#555',
   },
-  activeSection: {
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#1f508f',
+  },
+  activeTabText: {
     fontWeight: 'bold',
-  },
-  activeLine: {
-    marginTop: 5,
-    height: 3,
-    width: 60,
-    backgroundColor: '#000000',
-  },
-  contentWrapper: {
-    marginTop: 20,
-  },
-  sectionContentWrapper: {
-    flex: 1,
-    paddingBottom: 170, // Space at the bottom for scroll
+    color: '#1f508f',
   },
   sectionContent: {
-    flex: 1,
     paddingHorizontal: 10,
+    marginTop: 10,
   },
-  sectionContentText: {
-    fontSize: 19,
-    color: '#000',
-    marginVertical: 5,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
-  errorText: {
-    fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
-    marginTop: 20,
+  sectionText: {
+    fontSize: 14,
+    color: '#333',
+    marginVertical: 2,
   },
 });
 
