@@ -1,4 +1,5 @@
-import express from 'express';
+import express from "express";
+import authenticateJWT from './authMiddleware.js';
 import {
   createUser,
   loginUser,
@@ -8,14 +9,15 @@ import {
   updateUserPreferences,
   updateUser,
   deleteUser,
-  getUserProfile
+  getUserProfile,
+  getSavedRecipes, getUserById, saveRecipe
 } from '../controllers/user.controller.js';
-import authenticateJWT from './authMiddleware.js';
 
 const router = express.Router();
 
-//CREATE: register new user
-router.post('/', createUser);
+router.get("/:id", getUserById)
+router.get("/:id/get-saved-recipes", getSavedRecipes);
+router.post("/save-recipe", saveRecipe);
 
 //READ: get all users (may want admin-only or we remove in production)
 // router.get('/', getAllUsers);

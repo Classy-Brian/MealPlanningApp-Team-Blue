@@ -24,8 +24,16 @@ const RecipeDetailsScreen = () => {
     isSaved = false,  // Check if the recipe is saved
   } = route.params || {};
 
+  if (!recipeId || !title || ingredients.length === 0 || !directions) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
+      </View>
+    );
+  }
+
   const [activeSection, setActiveSection] = useState(0);
-  const [isSavedRecipe, setIsSavedRecipe] = useState(isSaved);  // Initialize with route param
+  const [isSavedRecipe, setIsSavedRecipe] = useState(false);  // Initialize with route param
 
   const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
@@ -65,8 +73,9 @@ const RecipeDetailsScreen = () => {
       <TouchableOpacity
         style={styles.saveButton}
         onPress={saveRecipe}
+        disabled={isSaved}
       >
-        <Text style={styles.buttonText}>Add Recipe</Text>
+        <Text style={styles.saveButtonText}>{isSaved ? "Recipe Saved" : "Add Recipe"}</Text>
       </TouchableOpacity>
     );
   };
@@ -215,7 +224,9 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     color: '#000',
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '700',
   },
   recipeWrapper: {
     width: '100%',

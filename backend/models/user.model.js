@@ -32,23 +32,13 @@ const userSchema = new mongoose.Schema({
         recipes: {
         tried: { type: Number, default: 0 },
         wantToTry: { type: Number, default: 0 }
-      }
+        }
     },
-  
-    //Recipes section - Array of Recipe IDs
-    recipes: [{
-      type: mongoose.Schema.Types.ObjectId, // Reference to Recipe model
-      ref: "Recipe"
-    }],
-    
-    // JWT token is stored here
-    token: {            
-        type: String,
-    },
-  
-  }, {
-    timestamps: true
-  });
+    savedRecipes: 
+    [{type: String }]
+}, {
+  timestamps: true
+});
 
 // Hash the password before saving
 userSchema.pre('save', async function(next) {

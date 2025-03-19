@@ -44,8 +44,7 @@ const RecipeSearch = () => {
 
     setLoading(true);
     setError(null);
-
-    try {
+    try {  
       const response = await axios.get(
         `https://api.edamam.com/search?q=${encodeURIComponent(query)}&app_id=${API_ID}&app_key=${API_KEY}`,
       );

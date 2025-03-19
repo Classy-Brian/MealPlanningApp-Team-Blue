@@ -73,27 +73,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-//READ: Get Single User by ID
-export const getUserById = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    // Populate 'recipes' to get actual recipe documents if needed. otherwise returns the id.
-    // .populate('recipes')
-    const user = await User.findById(id)
-    .select('-password')
-    .populate('recipes')
-    ;
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    return res.json(user);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
 
 // export const getUserProfile = async (req, res) => {
 //   console.log("getUserProfile called");
@@ -260,32 +240,59 @@ export const loginUser = async (req, res) => {
   }
 };
 
-//PATCH: Add Recipe to User
-export const addRecipeToUser = async (req, res) => {
-  try {
-    const { userId, recipeId } = req.params;
+//fetching user's saved recipes
+export const getSavedRecipes = async (req, res) => {
+    try{
+        const user = await User.findById(req.params.id).populate('savedRecipes');
+        if (!user){
+            return res.status(404).json({message: "User not found"});
+        }
 
-    // Find the user
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+        res.json(user.savedRecipes);
+    } catch (error){
+        res.status(500).json({message: "Server error", error: error.message});
     }
+}
 
-    // Find the recipe
-    const recipe = await Recipe.findById(recipeId);
-    if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found" });
+export const saveRecipe = async (req, res) => {
+    try {
+        const { userId, recipeId } = req.body;
+
+        if (!userId || !recipeId) {
+            return res.status(400).json({ message: "User ID and Recipe ID are required." });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        //  Ensure `savedRecipes` is an array before updating
+        if (!Array.isArray(user.savedRecipes)) {
+            user.savedRecipes = []; // Initialize as an empty array if it's not already an array
+        }
+
+        //  Use `$addToSet` to prevent duplicates and ensure the field remains an array
+        await User.findByIdAndUpdate(userId, {
+            $addToSet: { savedRecipes: recipeId } //  Ensures it's added as part of an array
+        });
+
+        res.status(200).json({ message: "Recipe saved successfully!", savedRecipes: user.savedRecipes });
+    } catch (error) {
+        console.error("Error saving recipe:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
+};
 
-    // Add recipe ID to user's recipe array
-    if (!user.recipes.includes(recipeId)) {
-      user.recipes.push(recipeId);
-      await user.save();
+
+export const getUserById = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id); // Find recipe by ID
+        if (!user) {
+            return res.status(404).json({ message: 'Recipe not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    return res.json({ message: "Recipe added to user", user });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
-  }
 };
