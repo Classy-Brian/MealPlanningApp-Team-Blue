@@ -88,15 +88,6 @@ const _layout = () => {
           },
         }}
       />
-      <Stack.Screen name="(start)"
-        options={{headerShown: false}}
-      />
-      <Stack.Screen name="(survey)"
-        options={{headerShown: false}}
-      />
-      <Stack.Screen name='index'
-        options={{headerShown: false}}
-      />
     </Stack>
   );
 };

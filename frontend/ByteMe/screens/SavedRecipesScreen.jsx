@@ -23,13 +23,27 @@ export default function Recipes() {
   }, [params]);
 
   // Rectangle Component directly inside Recipes.js
-  const Rectangle = ({ title, description }) => {
+  const Rectangle = ({ title, description, imageUri, onPress }) => {
     return (
-      <View style={styles.rectangleView}>
+      <TouchableOpacity style={styles.rectangleView} onPress={onPress}>
+        {imageUri && <Image source={{ uri: imageUri }} style={styles.recipeImage} />}
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>
-      </View>
+      </TouchableOpacity>
     );
+  };
+
+  const navigateToRecipeDetails = (recipe) => {
+    router.push({
+      pathname: '/recipedetails', // Assuming this is the path to your RecipeDetailsScreen
+      params: {
+        recipeId: recipe.id,
+        title: recipe.title,
+        description: recipe.description,
+        imageUri: recipe.imageUri,
+        // Add other recipe properties here (ingredients, directions, etc.)
+      }
+    });
   };
 
   return (
@@ -54,7 +68,12 @@ export default function Recipes() {
         data={savedRecipes}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <Rectangle title={item.title} description={item.description} />
+          <Rectangle
+            title={item.title}
+            description={item.description}
+            imageUri={item.imageUri}
+            onPress={() => navigateToRecipeDetails(item)} // Pass item to the navigate function
+          />
         )}
       />
 

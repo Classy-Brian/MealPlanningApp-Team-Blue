@@ -1,15 +1,30 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 import Back_butt from '@/assets/images/backbutton.png';
+import ExploreRecipesScreen from '@/app/explorerecipes';
 
-const RecipeDetailsScreen = () => {
+const USER_ID = "67c8da45f97986963147083a"; // Temporary test user ID
+
+const RecipeDetailsScreen = ({}) => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const { recipeId, title, ingredients, directions, imageUri, allergies, nutritionFacts } = route.params || {};
+  console.log("Route Params:", route.params);  // Debugging log
 
-  if (!recipeId || !title || !ingredients || !directions) {
+  // ✅ Extract parameters directly without parsing
+  const {
+    recipeId = '',
+    title = '',
+    ingredients = [],  // ✅ Directly use the array from route params
+    directions = "No directions available.",
+    imageUri = '',
+    allergies = [], // ✅ Directly use the array
+    nutrition = {}, // ✅ Directly use the object
+  } = route.params || {};
+
+  if (!recipeId || !title || ingredients.length === 0 || !directions) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
@@ -18,15 +33,35 @@ const RecipeDetailsScreen = () => {
   }
 
   const [activeSection, setActiveSection] = useState(0);
-  const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition Facts'];
+  const [isSaved, setIsSaved] = useState(false);
 
-  const handleSaveRecipe = () => {
-    const savedRecipe = { recipeId, title, ingredients, directions, imageUri };
-    navigation.navigate('savedrecipes', { newRecipe: savedRecipe });
+  const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
+
+  // ✅ Function to Save Recipe to Backend
+  const saveRecipe = async () => {
+    if (!recipeId) return;
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/users/save-recipe", {
+        userId: USER_ID, // Send only user ID
+        recipeId: recipeId, // Send only recipe ID
+      });
+
+      if (response.status === 200) {
+        setIsSaved(true);
+        Alert.alert("Success", "Recipe saved successfully!");
+      } else {
+        throw new Error("Failed to save recipe.");
+      }
+    } catch (err) {
+      console.error("Error saving recipe:", err);
+      Alert.alert("Error", "Could not save recipe. Please try again.");
+    }
   };
 
   return (
     <View style={styles.container}>
+      {/* Header with Back Button */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('explorerecipes')}>
           <Image source={Back_butt} style={styles.backIcon} />
@@ -34,63 +69,92 @@ const RecipeDetailsScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {imageUri && (
+      {/* Recipe Image */}
+      {imageUri ? (
         <View style={styles.recipeWrapper}>
           <Image source={{ uri: imageUri }} style={styles.recipeImage} />
         </View>
+      ) : (
+        <Text style={styles.errorText}>No image available</Text>
       )}
 
+      {/* Title */}
       <Text style={styles.title}>{title}</Text>
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSaveRecipe}>
-        <Text style={styles.saveButtonText}>Add Recipe</Text>
+      {/* Save Button */}
+      <TouchableOpacity style={styles.saveButton} onPress={saveRecipe} disabled={isSaved}>
+        <Text style={styles.saveButtonText}>{isSaved ? "Recipe Saved" : "Add Recipe"}</Text>
       </TouchableOpacity>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionContainer}>
+      {/* Compact Section Tabs */}
+      <View style={styles.tabContainer}>
         {sections.map((section, index) => (
           <TouchableOpacity
             key={index}
-            style={[styles.sectionButton, index === activeSection && styles.activeSection]}
+            style={[styles.tab, activeSection === index && styles.activeTab]}
             onPress={() => setActiveSection(index)}
           >
-            <Text style={styles.sectionTitle}>{section}</Text>
-            {index === activeSection && <View style={styles.activeLine} />}
+            <Text style={[styles.tabText, activeSection === index && styles.activeTabText]}>
+              {section}
+            </Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
-
-      <View style={styles.contentWrapper}>
-        <ScrollView style={styles.sectionContentWrapper}>
-          {activeSection === 0 && (
-            <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Ingredients:</Text>
-              {ingredients.map((ingredient, index) => (
-                <Text key={index} style={styles.sectionContentText}>- {ingredient}</Text>
-              ))}
-            </View>
-          )}
-          {activeSection === 1 && (
-            <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Allergy information coming soon!</Text>
-            </View>
-          )}
-          {activeSection === 2 && (
-            <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Directions:</Text>
-              <Text style={styles.sectionContentText}>{directions}</Text>
-            </View>
-          )}
-          {activeSection === 3 && (
-            <View style={styles.sectionContent}>
-              <Text style={styles.sectionContentText}>Nutrition facts coming soon!</Text>
-            </View>
-          )}
-        </ScrollView>
       </View>
+
+      {/* Section Content */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.sectionContent}>
+          {activeSection === 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Ingredients:</Text>
+              {ingredients.map((ingredient, index) => (
+                <Text key={index} style={styles.sectionText}>- {ingredient}</Text>
+              ))}
+            </>
+          )}
+
+          {activeSection === 1 && (
+            <>
+              <Text style={styles.sectionTitle}>Allergy Information:</Text>
+              {allergies.length > 0 ? (
+                allergies.map((allergy, index) => (
+                  <Text key={index} style={styles.sectionText}>- {allergy}</Text>
+                ))
+              ) : (
+                <Text style={styles.sectionText}>No allergy information available.</Text>
+              )}
+            </>
+          )}
+
+          {activeSection === 2 && (
+            <>
+              <Text style={styles.sectionTitle}>Directions:</Text>
+              <Text style={styles.sectionText}>{directions}</Text>
+            </>
+          )}
+
+          {activeSection === 3 && (
+            <>
+              <Text style={styles.sectionTitle}>Nutrition Facts:</Text>
+              {nutrition ? (
+                <>
+                  <Text style={styles.sectionText}>Calories: {Math.round(nutrition.ENERC_KCAL?.quantity || 0)} kcal</Text>
+                  <Text style={styles.sectionText}>Protein: {Math.round(nutrition.PROCNT?.quantity || 0)}g</Text>
+                  <Text style={styles.sectionText}>Fat: {Math.round(nutrition.FAT?.quantity || 0)}g</Text>
+                  <Text style={styles.sectionText}>Carbs: {Math.round(nutrition.CHOCDF?.quantity || 0)}g</Text>
+                </>
+              ) : (
+                <Text style={styles.sectionText}>No nutrition data available.</Text>
+              )}
+            </>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -100,57 +164,55 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
     backgroundColor: '#d7e2f1',
-    marginBottom: 10,
-    alignSelf: 'center',
   },
   backIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
+    width: 22,
+    height: 22,
+    marginRight: 8,
   },
   backText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: '#000',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
     color: '#1f508f',
     textAlign: 'center',
   },
   saveButton: {
     backgroundColor: '#adc6f2',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
     marginBottom: 10,
     alignSelf: 'center',
   },
   saveButtonText: {
     color: '#000',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   recipeWrapper: {
     width: '100%',
-    height: 250,
-    borderWidth: 3,
-    borderColor: '#000000',
-    borderRadius: 10,
+    height: 220,
+    borderWidth: 2,
+    borderColor: '#000',
+    borderRadius: 8,
     overflow: 'hidden',
     alignSelf: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   recipeImage: {
     width: '100%',
@@ -158,53 +220,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     resizeMode: 'cover',
   },
-  sectionContainer: {
-    marginTop: 0,
+  tabContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+    justifyContent: 'space-evenly',
+    marginBottom: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingBottom: 5,
   },
-  sectionButton: {
+  tab: {
     flex: 1,
-    paddingBottom: 10,
+    paddingVertical: 6,
     alignItems: 'center',
-    flexDirection: 'column',
-    paddingHorizontal: 5,
   },
-  sectionTitle: {
-    fontSize: 18,
-    color: '#000000',
+  tabText: {
+    fontSize: 14,
+    color: '#555',
   },
-  activeSection: {
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#1f508f',
+  },
+  activeTabText: {
     fontWeight: 'bold',
-  },
-  activeLine: {
-    marginTop: 5,
-    height: 3,
-    width: 60,
-    backgroundColor: '#000000',
-  },
-  contentWrapper: {
-    marginTop: 20,
-  },
-  sectionContentWrapper: {
-    flex: 1,
-    paddingBottom: 170,
+    color: '#1f508f',
   },
   sectionContent: {
-    flex: 1,
     paddingHorizontal: 10,
+    marginTop: 10,
   },
-  sectionContentText: {
-    fontSize: 19,
-    color: '#000',
-    marginVertical: 5,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
-  errorText: {
-    fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
-    marginTop: 20,
+  sectionText: {
+    fontSize: 14,
+    color: '#333',
+    marginVertical: 2,
+  },
+  scrollContent: {
+    flexGrow: 1, 
+    justifyContent: 'flex-start',  // Ensures content starts at the top
   },
 });
 
