@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } fr
 import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import Back_butt from '../assets/images/backbutton.png';  // Adjusted path for back button
+import heartIcon from '../assets/images/heart.png';  // Add filled heart image
+import emptyHeartIcon from '../assets/images/empty-heart.png';  // Add empty heart image
 
 const USER_ID = "67c8da45f97986963147083a"; // Temporary test user ID
 
@@ -32,17 +34,17 @@ const RecipeDetailsScreen = () => {
   // Function to Save Recipe to Backend
   const saveRecipe = async () => {
     if (!recipeId) return;
-  
+
     try {
       const response = await axios.post("http://localhost:5000/api/users/save-recipe", {
         userId: USER_ID, // Send only user ID
         recipeId: recipeId, // Send only recipe ID
       });
-  
+
       if (response.status === 200) {
         setIsSavedRecipe(true); // Update the saved state
         Alert.alert("Success", "Recipe saved successfully!");
-  
+
         // Navigate to savedrecipes screen and pass the saved recipe info
         navigation.push('(tabs)', {
           screen: 'savedrecipes',
@@ -59,14 +61,18 @@ const RecipeDetailsScreen = () => {
     }
   };
 
-  // Function to render "Add Recipe" button
+  // Function to render heart icon (save button)
   const renderSaveButton = () => {
     return (
       <TouchableOpacity
         style={styles.saveButton}
         onPress={saveRecipe}
+        disabled={isSavedRecipe} // Prevent resaving if already saved
       >
-        <Text style={styles.buttonText}>Add Recipe</Text>
+        <Image
+          source={isSavedRecipe ? heartIcon : emptyHeartIcon}
+          style={styles.heartIcon}
+        />
       </TouchableOpacity>
     );
   };
@@ -77,7 +83,7 @@ const RecipeDetailsScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate('explorerecipes')}  // Navigates back to ExplorePage
+          onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}
         >
           <Image source={Back_butt} style={styles.backIcon} />
           <Text style={styles.backText}>Back</Text>
@@ -205,17 +211,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   saveButton: {
-    backgroundColor: '#adc6f2',
+    backgroundColor: '#fff',
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginBottom: 10,
     alignSelf: 'center',
+    borderColor: '#1f508f',
+    borderWidth: 1,
   },
-  buttonText: {
-    fontSize: 16,
-    color: '#000',
-    fontWeight: 'bold',
+  heartIcon: {
+    width: 32,
+    height: 32,
   },
   recipeWrapper: {
     width: '100%',

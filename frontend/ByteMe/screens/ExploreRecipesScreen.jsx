@@ -38,6 +38,10 @@ const RecipeSearch = () => {
     const API_ID =process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
     const API_KEY =process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
 
+    console.log(API_ID);
+    console.log(API_KEY);
+
+
     setLoading(true);
     setError(null);
 
@@ -79,7 +83,10 @@ const RecipeSearch = () => {
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('(tabs)/savedrecipes')}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}
+            >
               <Image source={Back_butt} style={styles.backIcon} />
               <Text style={styles.backText}>Recipes</Text>
             </TouchableOpacity>
