@@ -1,7 +1,7 @@
 import { Image, Text, View, TextInput, TouchableOpacity, Alert, StyleSheet, Dimensions } from 'react-native'
 import React, { useState } from 'react'
-import { colors } from '../components/Colors'
-import { textcolors} from '../components/TextColors'
+import { colors } from '../../components/Colors'
+import { textcolors} from '../../components/TextColors'
 import { Link, useRouter } from "expo-router"
 import axios from "axios"
 import { styles } from '@/components/Sheet'
@@ -12,7 +12,7 @@ function HeaderLogo() {
     <View style={[logo.logocontainer, {alignSelf: 'stretch'}]}>
       <Image
         style={logo.stretch}
-        source={require('../assets/images/logo.png')}/>
+        source={require('../../assets/images/logo.png')}/>
     </View>
   )
 }
@@ -31,8 +31,7 @@ const SignUp = () => {
   const window = Dimensions.get('window')
 
   const handleChange = async () => {
-    // const PORT = 5000;
-    
+
     try {
       if (!name || !email || !password || !confpassword ) {
         Alert.alert("Please fill in all fields.", "", [{text: "OK"}], {cancelable: true});
@@ -45,7 +44,7 @@ const SignUp = () => {
       }
 
       console.log('Sending registration data...', {name, email, password})
-      const res = await axios.post("http://10.0.2.2:" + "5000" + "/api/users", {name, email, password});
+      const res = await axios.post(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users", {name, email, password});
 
       const token = res.data.token;
       if (!token) {

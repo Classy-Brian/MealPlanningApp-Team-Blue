@@ -13,3 +13,5 @@ node_modules/
 # Backend specific
 /dist/
 /logs/
+
+.idea/

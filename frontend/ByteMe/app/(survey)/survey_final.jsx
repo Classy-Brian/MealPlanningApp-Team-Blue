@@ -1,2 +1,2 @@
-import SurveyFinal from '../../screens/SurveyFinal';
+import SurveyFinal from '../../screens/survey/SurveyFinal';
 export default SurveyFinal;

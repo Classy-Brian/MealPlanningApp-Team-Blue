@@ -18,6 +18,9 @@ const WelcomeScreen = () => {
       <Link href={"/(tabs)/home"} asChild>
         <Text style={{fontSize: 18}}>Homepage</Text>
       </Link>
+      <Link href={"/(settings)/settings"}>
+        <Text>Settings</Text>
+      </Link>
     </View>
   )
 }

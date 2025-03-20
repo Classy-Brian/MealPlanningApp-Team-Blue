@@ -1,8 +1,8 @@
 import { Image, StyleSheet, Text, View, Button, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { colors } from '../components/Colors'
-import { textcolors} from '../components/TextColors'
-import { fonts } from '../components/Fonts'
+import { colors } from '../../components/Colors'
+import { textcolors} from '../../components/TextColors'
+import { fonts } from '../../components/Fonts'
 import { Link, useRouter } from "expo-router"
 import { styles } from '@/components/Sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -36,14 +36,14 @@ const SurveyFinal = ( { navigation, route } ) => {
         return;
       }
 
-      const res = await axios.put("http://10.0.2.2:" + "5000" + "/api/users/preferences", { allergies },
-                                  { headers: { Authorization: `Bearer ${token}`}});
+      const res = await axios.put("http://192.168.4.66:5005/api/users/preferences", { allergies },
+        { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
       if (res.status === 200) {
         await AsyncStorage.removeItem('authToken');
         await AsyncStorage.removeItem('allergies')
-        router.replace('../(start)/login');
+        router.replace('../../(start)/login');
       }
     } catch (err) {
       if (__DEV__) {
@@ -75,7 +75,7 @@ const SurveyFinal = ( { navigation, route } ) => {
           <TouchableOpacity onPress={prevPage}>
             <View style={[button.greybutton, ]}>
               <Image style={{marginRight:10}}
-                      source={require('../assets/images/back_arrow_navigate.png')}/>
+                      source={require('../../assets/images/back_arrow_navigate.png')}/>
               <Text style={styles.regularText}>Back</Text>
             </View>
           </TouchableOpacity>      

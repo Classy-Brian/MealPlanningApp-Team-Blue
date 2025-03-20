@@ -7,7 +7,8 @@ import {
   getUserById,
   updateUserPreferences,
   updateUser,
-  deleteUser
+  deleteUser,
+  getUserProfile
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -21,6 +22,11 @@ router.post('/', createUser);
 
 //READ: get single user by ID
 router.get('/:id', getUserById);
+
+// READ: Get current user's profile by JWT
+// router.get('/profile', authenticateJWT, getUserProfile);
+// router.get('/profile/:token', getUserProfile); // TEMPORARY - Remove authenticateJWT <- Not protected and unsafe
+router.get('/profile/:token', authenticateJWT, getUserProfile);
 
 //UPDATE: user by ID
 router.patch('/:id', updateUser);

@@ -1,8 +1,8 @@
 import { Image, StyleSheet, Text, View, Button, ScrollView, TouchableOpacity, Dimensions } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { colors } from '../components/Colors'
-import { textcolors} from '../components/TextColors'
-import { fonts } from '../components/Fonts'
+import { colors } from '../../components/Colors'
+import { textcolors} from '../../components/TextColors'
+import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 import { Checkbox } from 'react-native-paper'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 function NextButton() {
   return (
     <View >
-      <Image source={require('../assets/images/next_arrow.png')}/>
+      <Image source={require('../../assets/images/next_arrow.png')}/>
     </View>
   )
 }
@@ -59,14 +59,14 @@ const SurveyAllergies = ({ navigation }) => {
           <TouchableOpacity onPress={prevPage}>
             <View style={[button.greybutton, ]}>
               <Image style={{marginRight:10}}
-                      source={require('../assets/images/back_arrow_navigate.png')}/>
+                      source={require('../../assets/images/back_arrow_navigate.png')}/>
               <Text style={styles.regularText}>Survey</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity onPress={nextPage}>
             <View style={[button.greybutton, {justifyContent: 'space-between'}]}>
               <Text style={[styles.regularText, {marginRight:10}]}>Skip</Text>
-              <Image source={require('../assets/images/next_arrow_navigate.png')}/>            
+              <Image source={require('../../assets/images/next_arrow_navigate.png')}/>            
             </View>
           </TouchableOpacity>          
         </View>
