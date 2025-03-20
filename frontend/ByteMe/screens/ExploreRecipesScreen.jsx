@@ -35,8 +35,8 @@ const RecipeSearch = () => {
   }, []);
 
   const fetchRecipes = async (query) => {
-    const API_ID ='54d92af4';
-    const API_KEY ='6567448f2fefab625354bc3a56ed17ad';
+    const API_ID =process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
+    const API_KEY =process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
 
     console.log(API_ID);
     console.log(API_KEY);
