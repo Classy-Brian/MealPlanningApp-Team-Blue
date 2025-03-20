@@ -21,7 +21,7 @@ export default function CalorieGoalScreen() {
       const parsedMin = parseInt(minCalories, 10) || 0;
       const parsedMax = parseInt(maxCalories, 10) || 0;
 
-      await fetch(`http://192.168.4.66:5005/api/users/${userId}`, {
+      await fetch(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

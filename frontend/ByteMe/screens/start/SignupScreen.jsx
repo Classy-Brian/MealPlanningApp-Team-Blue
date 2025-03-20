@@ -31,8 +31,7 @@ const SignUp = () => {
   const window = Dimensions.get('window')
 
   const handleChange = async () => {
-    // const PORT = 5005;
-    
+
     try {
       if (!name || !email || !password || !confpassword ) {
         Alert.alert("Please fill in all fields.", "", [{text: "OK"}], {cancelable: true});
@@ -45,7 +44,7 @@ const SignUp = () => {
       }
 
       console.log('Sending registration data...', {name, email, password})
-      const res = await axios.post("http://192.168.4.66:5005/api/users", {name, email, password});
+      const res = await axios.post(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users", {name, email, password});
 
       const token = res.data.token;
       if (!token) {

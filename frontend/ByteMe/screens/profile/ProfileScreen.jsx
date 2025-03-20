@@ -26,7 +26,7 @@ export default function ProfileScreen() {
         return;
       }
       const response = await fetch(
-        `http://192.168.4.66:5005/api/users/profile/${token}`,
+        process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/profile/${token}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -61,7 +61,7 @@ export default function ProfileScreen() {
       }
 
       const response = await fetch(
-        `http://192.168.4.66:5005/api/users/${userData._id}`,
+        process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userData._id}`,
         {
           method: 'PATCH',
           headers: {

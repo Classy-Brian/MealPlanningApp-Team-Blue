@@ -50,7 +50,7 @@ const PreferenceSettingsScreen = () => {
             }
 
             const axiosInstance = axios.create({
-                baseURL: 'http://192.168.4.66:5005',
+                baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
                 headers: {
                     Authorization: `Bearer ${token}`, 
                 },
@@ -133,7 +133,7 @@ const PreferenceSettingsScreen = () => {
             }
 
             const axiosInstance = axios.create({
-                baseURL: 'http://192.168.4.66:5005',
+                baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
                 headers: {
                     Authorization: `Bearer ${token}`, 
                 },

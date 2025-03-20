@@ -14,7 +14,7 @@ export default function EditProfile() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch(`http://192.168.4.66:5005/api/users/${userId}`);
+        const response = await fetch(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userId}`);
         const data = await response.json();
 
         setUsername(data.name || '');
@@ -37,7 +37,7 @@ export default function EditProfile() {
   // Save updated user data
   const handleSaveChanges = async () => {
     try {
-      await fetch(`http://192.168.4.66:5005/api/users/${userId}`, {
+      await fetch(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: username, avatar: avatar }),
