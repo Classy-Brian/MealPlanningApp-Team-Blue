@@ -188,11 +188,11 @@ export const loginUser = async (req, res) => {
       
     } else {
       // Invalid email or password
-      res.status(401).json({ message: 'Invalid email or password' }); // 401 Unauthorized
+      return res.status(401).json({ message: 'Invalid email or password' }); // 401 Unauthorized
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 

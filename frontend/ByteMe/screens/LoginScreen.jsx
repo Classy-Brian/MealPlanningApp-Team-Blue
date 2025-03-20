@@ -49,6 +49,9 @@ const Login = () => {
       if (__DEV__) {
         console.error("Error", err);
       }
+      if (err.response && err.response.status === 401) {
+        Alert.alert("Invalid email or password.", "Please try again.", [{text: "OK"}], {cancelable: true});
+      }
       if (err.response) {
         console.error("Response error:", err.response.data);
       } else if (err.request) {
