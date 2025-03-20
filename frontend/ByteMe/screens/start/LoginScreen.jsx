@@ -1,7 +1,7 @@
 import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions } from 'react-native'
 import React, { useState } from 'react'
-import { colors } from '../components/Colors'
-import { textcolors} from '../components/TextColors'
+import { colors } from '../../components/Colors'
+import { textcolors} from '../../components/TextColors'
 import { Link, useRouter } from "expo-router"
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
@@ -13,7 +13,7 @@ function HeaderLogo() {
     <View style={logo.logocontainer}>
       <Image
         style={logo.stretch}
-        source={require('../assets/images/logo.png')}/>
+        source={require('../../assets/images/logo.png')}/>
     </View>
   )
 }

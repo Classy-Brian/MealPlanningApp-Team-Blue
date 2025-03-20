@@ -91,7 +91,7 @@ export default function ProfileScreen() {
   // Decide what image to display: user avatar or local placeholder
   const avatarSource = userData.avatar
     ? { uri: userData.avatar }
-    : require('../assets/images/profile.png');
+    : require('../../assets/images/profile.png');
 
   // Render the calorie intake goal card
   const renderCalorieGoalCard = () => {

@@ -37,13 +37,7 @@ export default function EditProfile() {
   // Save updated user data
   const handleSaveChanges = async () => {
     try {
-      // await fetch(`http://192.168.1.65:5005/api/users/${userId}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ name: username, avatar: avatar }),
-      // });
-
-      await fetch(`http://localhost:5000/api/users/${userId}`, {
+      await fetch(`http://192.168.4.66:5005/api/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: username, avatar: avatar }),
@@ -73,7 +67,7 @@ export default function EditProfile() {
       {avatar ? (
         <Image source={{ uri: avatar }} style={styles.avatarImage} />
       ) : (
-        <Image source={require('../assets/images/profile.png')} style={styles.avatarImage} />
+        <Image source={require('../../assets/images/profile.png')} style={styles.avatarImage} />
       )}
 
       {/* Change Avatar Input */}

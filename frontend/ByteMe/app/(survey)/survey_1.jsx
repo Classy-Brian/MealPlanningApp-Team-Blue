@@ -1,2 +1,2 @@
-import WelcomeSurvey from '../../screens/WelcomeSurvey';
+import WelcomeSurvey from '../../screens/survey/WelcomeSurvey';
 export default WelcomeSurvey;
