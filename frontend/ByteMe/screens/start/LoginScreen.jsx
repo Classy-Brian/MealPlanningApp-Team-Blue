@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions } from 'react-native'
+ import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
@@ -6,6 +6,7 @@ import { Link, useRouter } from "expo-router"
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { styles } from '@/components/Sheet'
+import { fonts } from '@/components/Fonts'
 
 
 function HeaderLogo() {
@@ -87,7 +88,7 @@ const Login = () => {
               placeholder='Enter your email'
               onChangeText={setEmail}
               placeholderTextColor={textcolors.lightgrey}
-              style={isFocused} 
+              style={[isFocused, styles.regularText]} 
               onFocus={() => setFocused(styles.focusedinput)}
               onBlur={() => setFocused(styles.inputContainer)}
               />
@@ -102,20 +103,20 @@ const Login = () => {
               secureTextEntry
               onChangeText={setPass}
               placeholderTextColor={textcolors.lightgrey}
-              style={isFocused1}
+              style={[isFocused1, styles.regularText]}
               onFocus={() => setFocused1(styles.focusedinput)}
               onBlur={() => setFocused1(styles.inputContainer)}
               />          
           </View>        
         </View>
 
-        <View style={styles.container}>
+        <View style={[styles.container, {alignItems: 'flex-end'}]}>
           <Text style={styles.forgot} >Forgot Password? </Text>
         </View>
         
         <TouchableOpacity onPress={handleLogin}>
           <View style={styles.buttonContainer}>
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={[styles.buttonText, {color: colors.white}]}>Login</Text>
           </View>
         </TouchableOpacity>
  

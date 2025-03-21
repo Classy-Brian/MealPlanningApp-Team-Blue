@@ -47,19 +47,19 @@ const WelcomeSurvey = ( { navigation, route } ) => {
         </View>
 
         <View style={[{marginTop: 180, marginBottom: 120}]}>
-          <Text style={button.othergreybox}>Would you like to take a quick survey?</Text>
-          <Text style={button.othertext}>It's so we can personally tailor your meal plan for you!</Text>
+          <Text style={[button.othergreybox, button.heading]}>Would you like to take a quick survey?</Text>
+          <Text style={[button.othertext, button.subheading]}>It's so we can personally tailor your meal plan for you!</Text>
         </View>
 
         <TouchableOpacity onPress={() => navigation.navigate('survey2')}>
           <View style={button.bluebutton}>
-            <Text style={[styles.buttonText, {fontSize: 20, color: colors.white}]}>Yes</Text>
+            <Text style={[styles.buttonText, {fontSize: 30, color: colors.white}]}>Yes</Text>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('surveyfinal', { allergies: allergies })}>
           <View style={button.greybutton}>
-            <Text style={[styles.buttonText, {fontSize: 20,}]}>Skip Survey</Text>
+            <Text style={[styles.buttonText, {fontSize: 30,}]}>Skip Survey</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -137,10 +137,18 @@ const button = StyleSheet.create({
       textAlign: 'center',
       fontSize: 22,
       borderRadius: 20,
-      paddingHorizontal: 5,
+      paddingHorizontal: 15,
       paddingVertical: 10,
       position: 'absolute',
       marginLeft: 50,
-      marginTop: 100,
-    }
+      transform: [{translateY: 120}],
+    },
+    heading: {
+      fontSize: 36,
+      fontFamily: fonts.semiBold
+    },
+    subheading: {
+      fontsize: 30,
+      fontFamily: fonts.medium,
+    },
 })

@@ -110,7 +110,7 @@ const SignUp = () => {
                 placeholderTextColor={textcolors.lightgrey}
                 onChangeText={setUserName}
                 value={name}
-                style={isFocused}
+                style={[isFocused, styles.regularText]}
                 onFocus={() => setFocused(styles.focusedinput)}
                 onBlur={() => setFocused(styles.inputContainer)}
               />
@@ -126,7 +126,7 @@ const SignUp = () => {
               placeholderTextColor={textcolors.lightgrey}
               onChangeText={setEmail}
               value={email}
-              style={isFocused2} 
+              style={[isFocused2, styles.regularText]} 
               onFocus={() => setFocused2(styles.focusedinput)}
               onBlur={() => setFocused2(styles.inputContainer)}
               />
@@ -142,7 +142,7 @@ const SignUp = () => {
               placeholderTextColor={textcolors.lightgrey}
               onChangeText={setPass}
               value={password}
-              style={isFocused3}
+              style={[isFocused3, styles.regularText]}
               onFocus={() => setFocused3(styles.focusedinput)}
               onBlur={() => setFocused3(styles.inputContainer)}
               />
@@ -158,7 +158,7 @@ const SignUp = () => {
               placeholderTextColor={textcolors.lightgrey}
               onChangeText={setConfPass}
               value={confpassword}
-              style={isFocused4}
+              style={[isFocused4, styles.regularText]}
               onFocus={() => setFocused4(styles.focusedinput)}
               onBlur={() => setFocused4(styles.inputContainer)}
               />
@@ -167,11 +167,11 @@ const SignUp = () => {
 
         <TouchableOpacity onPress={handleChange}>
           <View style={styles.buttonContainer}>
-            <Text style={styles.buttonText}>Sign Up</Text>
+            <Text style={[styles.buttonText, {color: colors.white}]}>Sign Up</Text>
           </View>
         </TouchableOpacity>
 
-        <View style={[styles.littlenote, {bottom: -90}]}>
+        <View style={[styles.littlenote, {bottom: -84}]}>
           <Text style={styles.regularText}>Have an account already? </Text>
           <Link href={"/(start)/login"} asChild>
             <Text style={styles.createacc}>Log in</Text>

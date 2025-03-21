@@ -13,7 +13,7 @@ export default {
       supportsTablet: true
     },
     android: {
-      
+      softwareKeyboardLayoutMode: "pan"
     },
     web: {
       bundler: "metro",
@@ -21,6 +21,13 @@ export default {
     },
     plugins: [
       "expo-router",
+      [
+        "expo-font",
+        {
+          fonts: ["./assets/fonts/Afacad-Bold.ttf"]
+        }
+      ]
+      
     ],
     experiments: {
       typedRoutes: true

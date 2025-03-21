@@ -10,7 +10,7 @@ import userRoutes from './routes/user.routes.js';
 
 
 const app = express();
-const PORT = process.env.PORT || 5005;
+const PORT = process.env.PORT;
 
 app.use(express.json()); // Allows us to accept JSON data in the req body
 app.use(cors());
