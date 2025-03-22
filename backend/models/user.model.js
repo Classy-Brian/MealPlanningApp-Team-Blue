@@ -11,9 +11,6 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    avatar: { 
-        type: String 
-    },
     password: {
         type: String,
         required: true
@@ -35,10 +32,7 @@ const userSchema = new mongoose.Schema({
         }
     },
     savedRecipes: 
-    [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Recipe'
-    }]
+    [{type: String }]
 }, {
   timestamps: true
 });
@@ -65,7 +59,7 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
     try {
         return await bcrypt.compare(enteredPassword, this.password); // Compare the entered password with the stored hashed password
     } catch (error) {
-        return resizeBy.status(400).json({ message: "Invalid credentials"}); // <- Need to add a way to handle the error
+        throw new Error(error); // <- Need to add a way to handle the error
     }
 };
 
