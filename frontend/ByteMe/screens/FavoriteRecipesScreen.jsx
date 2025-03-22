@@ -36,7 +36,7 @@ const RecipeDetailsScreen = () => {
     if (!recipeId) return;
 
     try {
-      const response = await axios.post("http://localhost:5001/api/users/save-recipe", {
+      const response = await axios.post("http://localhost:5000/api/users/save-recipe", {
         userId: USER_ID, // Send only user ID
         recipeId: recipeId, // Send only recipe ID
       });
