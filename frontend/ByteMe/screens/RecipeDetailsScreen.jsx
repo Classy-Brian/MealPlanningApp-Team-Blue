@@ -11,18 +11,27 @@ const RecipeDetailsScreen = ({}) => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  console.log("Route Params:", route.params);  // Debugging log
-
-  // ✅ Extract parameters directly without parsing
+  //  Extract parameters directly without parsing
   const {
     recipeId = '',
     title = '',
-    ingredients = [],  // ✅ Directly use the array from route params
     directions = "No directions available.",
     imageUri = '',
-    allergies = [], // ✅ Directly use the array
-    nutrition = {}, // ✅ Directly use the object
   } = route.params || {};
+  console.log(route.params)
+  const ingredients = Array.isArray(route.params?.ingredients)
+  ? route.params.ingredients
+  : (typeof route.params?.ingredients === "string" ? route.params.ingredients.split(",") : []);
+
+  const allergies = route.params?.allergies
+    ? (Array.isArray(route.params.allergies) 
+        ? route.params.allergies  // ✅ Already an array
+        : route.params.allergies.split(",")) // ✅ Convert string to array
+    : [];
+  
+  const nutrition = route.params.nutrition || {};  // ✅ No need for JSON.parse
+
+  console.log(route.params)
 
   if (!recipeId || !title || ingredients.length === 0 || !directions) {
     return (

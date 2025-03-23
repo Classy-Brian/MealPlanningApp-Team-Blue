@@ -2,13 +2,15 @@ import express from 'express';
 import {
   createUser,
   loginUser,
-  addRecipeToUser,
+  // addRecipeToUser,
   getAllUsers,
   getUserById,
   updateUserPreferences,
   updateUser,
   deleteUser,
-  getUserProfile
+  getUserProfile,
+  getSavedRecipes,
+  saveRecipe
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -41,6 +43,10 @@ router.delete('/:id', deleteUser);
 router.post('/login', loginUser);
 
 //Add recipe to user
-router.patch('/:userId/add-recipe/:recipeId', addRecipeToUser);
+// router.patch('/:userId/add-recipe/:recipeId', addRecipeToUser);
+//Getting user's saved recipe
+router.get("/:id/get-saved-recipes", getSavedRecipes);
 
+//User save a recipe
+router.post("/save-recipe", saveRecipe);
 export default router;

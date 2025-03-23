@@ -52,12 +52,10 @@ export default function Recipes() {
           allergies: Array.isArray(res.data[0].healthLabels) 
             ? res.data[0].healthLabels 
             : JSON.parse(res.data[0].healthLabels || "[]"), // Ensure array format
-          nutrition: typeof res.data[0].totalNutrients === "object"
-            ? res.data[0].totalNutrients
-            : JSON.parse(res.data[0].totalNutrients || "{}"), // Ensure object format
+          nutrition: res.data[0].totalNutrients
         };
       }).filter(Boolean);  // Remove null values
-
+      console.log(detailedRecipes)
       setSavedRecipes(detailedRecipes);
       setError(null);
     } catch (err) {
@@ -118,7 +116,7 @@ export default function Recipes() {
                     ingredients: item.ingredients || [],  //  Send as an array, no JSON.stringify()
                     directions: item.directions || "No directions available.",
                     allergies: item.allergies || [],  //  Send as an array
-                    nutrition: item.nutrition || {},  //  Send as an object
+                    nutrition: item.nutrition
                   }
                 })}
           >

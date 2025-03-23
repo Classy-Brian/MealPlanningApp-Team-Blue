@@ -28,9 +28,9 @@ const RecipeSearch = () => {
 
   useEffect(() => {
     setRecipes([
-        { recipe: { label: "Test Recipe 1", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe1", ingredientLines: ["1 Cup of flour", "2 Eggs"], url: "https://example.com" }},
-        { recipe: { label: "Test Recipe 2", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe2", ingredientLines: ["1 Cup of sugar", "3 Eggs"], url: "https://example.com" }},
-        { recipe: { label: "Test Recipe 3", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe3", ingredientLines: ["2 Cups of milk", "1 tbsp vanilla"], url: "https://example.com" }},
+        // { recipe: { label: "Test Recipe 1", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe1", ingredientLines: ["1 Cup of flour", "2 Eggs"], url: "https://example.com" }},
+        // { recipe: { label: "Test Recipe 2", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe2", ingredientLines: ["1 Cup of sugar", "3 Eggs"], url: "https://example.com" }},
+        // { recipe: { label: "Test Recipe 3", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe3", ingredientLines: ["2 Cups of milk", "1 tbsp vanilla"], url: "https://example.com" }},
       ]);
   }, []);
 
@@ -79,7 +79,7 @@ const RecipeSearch = () => {
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('(tabs)/savedrecipes')}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('./(tabs)/savedrecipes')}>
               <Image source={Back_butt} style={styles.backIcon} />
               <Text style={styles.backText}>Recipes</Text>
             </TouchableOpacity>
