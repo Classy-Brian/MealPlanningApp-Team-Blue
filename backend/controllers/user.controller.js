@@ -1,5 +1,6 @@
 import User from '../models/user.model.js'; 
 import Recipe from '../models/recipe.model.js';
+
 //CREATE: Register a new User
 export const createUser = async (req, res) => {
   try {
@@ -34,6 +35,7 @@ export const createUser = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 //READ: Get All Users. for admin or debugging
 export const getAllUsers = async (req, res) => {
   try {
@@ -46,6 +48,8 @@ export const getAllUsers = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+
 
 //UPDATE: Update User by ID (Patch or Put)
 //need to create a seperate route for password changes later
@@ -88,6 +92,7 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 //DELETE: Remove a User by ID
 export const deleteUser = async (req, res) => {
   try {
@@ -175,14 +180,14 @@ export const saveRecipe = async (req, res) => {
 };
 
 
-// export const getUserById = async (req, res) => {
-//     try {
-//         const user = await User.findById(req.params.id); // Find recipe by ID
-//         if (!user) {
-//             return res.status(404).json({ message: 'Recipe not found' });
-//         }
-//         res.json(user);
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
+export const getUserById = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id); // Find recipe by ID
+        if (!user) {
+            return res.status(404).json({ message: 'Recipe not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
