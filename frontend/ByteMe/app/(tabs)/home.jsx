@@ -4,9 +4,12 @@ import { styles } from '@/components/Sheet'
 
 const Homepage = () => {
   return (
-    <View style={styles.screenContainer}>
-      <Text style={styles.title}>Homepage</Text>
+    <View style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <Text style={styles.title}>Homepage</Text>
+      </View>
     </View>
+   
   )
 }
 

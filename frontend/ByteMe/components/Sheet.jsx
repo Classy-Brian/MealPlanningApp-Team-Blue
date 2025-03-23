@@ -101,5 +101,26 @@ export const styles = StyleSheet.create({
       backgroundColor: colors.header,
       height: 100,
       top: 150,
-    }
+    },
+    searchInput: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 5,
+      paddingVertical: 10,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: textcolors.darkgrey,
+      backgroundColor: colors.grey,
+    },
+    addButton: {
+      position: 'absolute',
+      bottom: 20,
+      right: 20,
+      backgroundColor: '#10386D',
+      borderRadius: 150,
+      padding: 5,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 2,
+    },
   })
