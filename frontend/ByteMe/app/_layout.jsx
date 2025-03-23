@@ -1,8 +1,8 @@
 import { Image, View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router'; // Use Stack from expo-router
 import { colors } from "../components/Colors";
-// import { createStackNavigator } from '@react-navigation/stack'
+import SavedRecipesScreen from "@/screens/SavedRecipesScreen"; // This will be handled by the router
 
 function HeaderLogo() {
   return (
@@ -16,8 +16,6 @@ function HeaderLogo() {
 }
 
 function ProfileIcon() {
-  const router = useRouter();
-
   return (
     <TouchableOpacity onPress={() => router.push('/profile')}>
       <Image
@@ -31,7 +29,8 @@ function ProfileIcon() {
 const _layout = () => {
   return (
     <Stack>
-      <Stack.Screen name="(tabs)"
+      <Stack.Screen
+        name="(tabs)"
         options={{
           headerShown: true,
           headerLeft: () => null,
@@ -47,16 +46,11 @@ const _layout = () => {
           },
         }}
       />
-      <Stack.Screen name="(start)"
-        options={{headerShown: false}}
-      />
-      <Stack.Screen name="(survey)"
-        options={{headerShown: false}}
-      />
-      <Stack.Screen name='index'
-        options={{headerShown: false}}
-      />
-      <Stack.Screen name='explorerecipes'
+      
+      {/* Do not include SavedRecipesScreen directly in the Stack.Screen. 
+          Just refer to the name and routing will handle the screen. */}
+      <Stack.Screen
+        name="(tabs)/savedrecipes"  // Make sure this matches the file structure
         options={{
           headerShown: true,
           headerLeft: () => null,
@@ -72,7 +66,56 @@ const _layout = () => {
           },
         }}
       />
-      <Stack.Screen name='recipedetails'
+
+      {/* Other screens */}
+      <Stack.Screen
+        name="(start)"
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="(survey)"
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name='index'
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name='explorerecipes'
+        options={{
+          headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name='recipedetails'
+        options={{
+          headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name='favoriterecipes'
         options={{
           headerShown: true,
           headerLeft: () => null,
