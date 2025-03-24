@@ -41,10 +41,6 @@ const _layout = () => {
           headerStyle: {
             backgroundColor: colors.header,
           },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
         }}
       />
       <Stack.Screen name="(start)"
@@ -55,6 +51,18 @@ const _layout = () => {
       />
       <Stack.Screen name='index'
         options={{headerShown: false}}
+      />
+      <Stack.Screen name="(pantry)/pantrysuggest"
+        options={{
+          headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+        }}
       />
     </Stack>
   );

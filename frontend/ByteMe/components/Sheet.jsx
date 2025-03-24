@@ -105,7 +105,6 @@ export const styles = StyleSheet.create({
     searchInput: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 5,
       paddingVertical: 10,
       borderRadius: 22,
       borderWidth: 1,
@@ -123,4 +122,15 @@ export const styles = StyleSheet.create({
       alignItems: 'center',
       elevation: 2,
     },
+    cancelAddButton: {
+      position: 'absolute',
+      bottom: 20,
+      right: 20,
+      backgroundColor: colors.grey,
+      borderRadius: 10,
+      padding: 5,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 2,
+    }
   })
