@@ -1,2 +1,2 @@
-import AddGoalsScreen from "@/screens/AddGoalsScreen";
+import AddGoalsScreen from "@/screens/profile/AddGoalsScreen";
 export default AddGoalsScreen;

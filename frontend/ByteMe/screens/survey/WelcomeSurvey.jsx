@@ -1,8 +1,8 @@
 import { Image, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { colors } from '../components/Colors'
-import { textcolors} from '../components/TextColors'
-import { fonts } from '../components/Fonts'
+import { colors } from '../../components/Colors'
+import { textcolors} from '../../components/TextColors'
+import { fonts } from '../../components/Fonts'
 import { useRouter } from 'expo-router'
 import { styles } from '@/components/Sheet'
 
@@ -11,7 +11,7 @@ function HeaderLogo() {
     <View style={[button.logocontainer]}>
       <Image
         style={button.stretch}
-        source={require('../assets/images/logo.png')}/>
+        source={require('../../assets/images/logo.png')}/>
     </View>
   )
 }

@@ -1,8 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Button, TextInput } from 'react-native';
+import { Image, View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Button, TextInput } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons'; // Import icons
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { colors } from '../../components/Colors'
+import { textcolors } from '../../components/TextColors'
+import { fonts } from '../../components/Fonts'
+import { styles } from '@/components/Sheet'
 
 const SettingsScreen = () => {
     const router = useRouter();
@@ -19,26 +24,29 @@ const SettingsScreen = () => {
 
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.scrollView}>
-                <View style={styles.container}>
+        <SafeAreaView style={styles_settings.safeArea}>
+            <ScrollView style={styles_settings.scrollView}>
+                <View style={styles_settings.container}>
                     {/* Header Section */}
-                    <View style={styles.header}>
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                         <Link href="/profile" asChild>
-                            <TouchableOpacity style={styles.profileButton}>
-                                 <Ionicons name="arrow-back" size={24} color="black" />
-                                <Text style={styles.profileText}>Profile</Text>
+                            <TouchableOpacity>
+                                <View style={[ styles_settings.greybutton ]}>
+                                    <Image style={{marginRight:10}}
+                                            source={require('../../assets/images/back_arrow_navigate.png')}/>
+                                    <Text style={styles.regularText}>Profile</Text>
+                                </View>
                             </TouchableOpacity>
                         </Link>
-                        <Text style={styles.title}>Settings</Text>
-                        <View style={{width: 85}}></View>
                     </View>
 
+                    <Text style={[styles.title, {marginTop: 10}]}>Settings </Text>
+
                     {/* Search Bar (Placeholder) */}
-                    <View style={styles.searchBarContainer}>
-                        <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
+                    <View style={styles_settings.searchBarContainer}>
+                        <Ionicons name="search" size={20} color="#888" style={styles_settings.searchIcon} />
                         <TextInput
-                            style={styles.searchInput}
+                            style={styles_settings.searchInput}
                             placeholder="Search Settings"
                             placeholderTextColor="#888"
                             editable={false} 
@@ -47,35 +55,35 @@ const SettingsScreen = () => {
 
                     {/* Settings List */}
                     <Link href={{ pathname: "/(settings)/preferences", params: { from: 'Allergies' } }} asChild>
-                        <TouchableOpacity style={styles.settingItem}>
-                            <MaterialIcons name="tune" size={24} color="#000000" />
-                            <Text style={styles.settingText}>Preference Settings</Text>
+                        <TouchableOpacity style={styles_settings.settingItem}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <Text style={[styles.regularText, {marginLeft: 10}]}>Preference Settings</Text>
                             <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                         </TouchableOpacity>
                     </Link>
 
-                    <TouchableOpacity style={styles.settingItem}>
-                        <MaterialIcons name="account-circle" size={24} color="#000000" />
-                        <Text style={styles.settingText}>Account Settings</Text>
+                    <TouchableOpacity style={styles_settings.settingItem}>
+                        <MaterialIcons name="account-circle" size={40} color="#000000" />
+                        <Text style={[styles.regularText, {marginLeft: 10}]}>Account Settings</Text>
                         <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.settingItem}>
-                        <MaterialIcons name="notifications" size={24} color="#000000" />
-                        <Text style={styles.settingText}>Notification Settings</Text>
+                    <TouchableOpacity style={styles_settings.settingItem}>
+                        <MaterialIcons name="notifications" size={40} color="#000000" />
+                        <Text style={[styles.regularText, {marginLeft: 10}]}>Notification Settings</Text>
                         <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                     </TouchableOpacity>
 
                     {/* Logout Button */}
-                    <View style={styles.logoutButtonContainer}>
-                        <Button title="Log Out" onPress={handleLogout} color="#D80032" />
+                    <View style={styles_settings.logoutButtonContainer}>
+                        <Button title="Log Out" onPress={handleLogout} color="#C0776E" />
                     </View>
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 };
-const styles = StyleSheet.create({
+const styles_settings = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#fff', 
@@ -95,23 +103,21 @@ const styles = StyleSheet.create({
         height: 60, 
         marginBottom: 40, 
     },
-    profileButton: {
+    greybutton: {
         flexDirection: 'row',
+        borderRadius: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 5,
+        backgroundColor: colors.othergrey,
         alignItems: 'center',
-        position: 'absolute', 
-        left: 0,
-        top: 0,
+        justifyContent: 'center',
+        marginVertical: 20,
+        elevation: 2,
+        shadowColor: colors.black,
     },
     profileText: {
         fontSize: 20,
         marginLeft: 5,
-    },
-    title: {
-        fontSize: 48,
-        fontWeight: 'bold',
-        marginTop: 60,       
-        textAlign: 'start', 
-        flex: 1, 
     },
     searchBarContainer: {
         flexDirection: 'row',

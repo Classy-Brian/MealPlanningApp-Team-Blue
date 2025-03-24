@@ -1,7 +1,7 @@
 import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions } from 'react-native'
 import React, { useState } from 'react'
-import { colors } from '../components/Colors'
-import { textcolors} from '../components/TextColors'
+import { colors } from '../../components/Colors'
+import { textcolors} from '../../components/TextColors'
 import { Link, useRouter } from "expo-router"
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
@@ -13,7 +13,7 @@ function HeaderLogo() {
     <View style={logo.logocontainer}>
       <Image
         style={logo.stretch}
-        source={require('../assets/images/logo.png')}/>
+        source={require('../../assets/images/logo.png')}/>
     </View>
   )
 }
@@ -33,9 +33,7 @@ const Login = () => {
       if (!email || !password ) {
         alert("Please fill in all fields.");
       }
-      // const res = await axios.post("http://10.0.2.2:" + "5005" + "/api/users/login", {email, password});
-      // const res = await axios.post(" http://192.168.1.65:5005/api/users/login", {email, password});
-      const res = await axios.post(" http://localhost:5000/api/users/login", {email, password});
+      const res = await axios.post(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/login", {email, password});
       await AsyncStorage.setItem('authToken', res.data.token);
       if (res.status === 200) {
         setEmail('');

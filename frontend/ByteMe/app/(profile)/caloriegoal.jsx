@@ -1,2 +1,2 @@
-import CalorieGoalScreen from "@/screens/CalorieGoalScreen";
+import CalorieGoalScreen from "@/screens/profile/CalorieGoalScreen";
 export default CalorieGoalScreen;

@@ -25,14 +25,8 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'Not logged in.');
         return;
       }
-      // const response = await fetch(
-      //   `http://192.168.1.65:5005/api/users/profile/${token}`,
-      //   {
-      //     headers: { Authorization: `Bearer ${token}` }
-      //   }
-      // );
       const response = await fetch(
-        `http://localhost:5000/api/users/profile/${token}`,
+        process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/profile/${token}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -66,20 +60,8 @@ export default function ProfileScreen() {
         updatedProfile.recipes = { tried: 0, wantToTry: 0 };
       }
 
-      // const response = await fetch(
-      //   `http://192.168.1.65:5005/api/users/${userData._id}`,
-      //   {
-      //     method: 'PATCH',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       Authorization: `Bearer ${token}`
-      //     },
-      //     body: JSON.stringify({ profile: updatedProfile })
-      //   }
-      // );
-
       const response = await fetch(
-        `http://localhost:5000/api/users/${userData._id}`,
+        process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userData._id}`,
         {
           method: 'PATCH',
           headers: {
@@ -89,6 +71,7 @@ export default function ProfileScreen() {
           body: JSON.stringify({ profile: updatedProfile })
         }
       );
+
       if (!response.ok) throw new Error('Failed to update profile');
       fetchUser();
     } catch (error) {
@@ -108,7 +91,7 @@ export default function ProfileScreen() {
   // Decide what image to display: user avatar or local placeholder
   const avatarSource = userData.avatar
     ? { uri: userData.avatar }
-    : require('../assets/images/profile.png');
+    : require('../../assets/images/profile.png');
 
   // Render the calorie intake goal card
   const renderCalorieGoalCard = () => {

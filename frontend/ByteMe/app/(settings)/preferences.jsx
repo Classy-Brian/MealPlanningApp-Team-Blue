@@ -1,3 +1,3 @@
-import PreferenceSettingsScreen from "@/screens/PreferenceSettingsScreen";
+import PreferenceSettingsScreen from "@/screens/settings/PreferenceSettingsScreen";
 
 export default PreferenceSettingsScreen;
