@@ -23,7 +23,7 @@ export default function Recipes() {
   const fetchSavedRecipes = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:5000/api/users/${USER_ID}/get-saved-recipes`);
+      const response = await axios.get(`http://localhost:${PORT}/api/users/${USER_ID}/get-saved-recipes`);
       
       if (!response.data || response.data.length === 0) {
         console.warn("No saved recipes found.");

@@ -51,7 +51,7 @@ const RecipeDetailsScreen = () => {
     if (!recipeId) return;
 
     try {
-      const response = await axios.post("http://localhost:5000/api/users/save-recipe", {
+      const response = await axios.post(`http://localhost:${PORT}/api/users/save-recipe`, {
         userId: USER_ID, // Send only user ID
         recipeId: recipeId, // Send only recipe ID
       });
@@ -73,7 +73,7 @@ const RecipeDetailsScreen = () => {
     if (!recipeId) return;
 
     try {
-        const response = await axios.delete("http://localhost:5000/api/users/remove-recipe",{
+        const response = await axios.delete(`http://localhost:${PORT}/api/users/remove-recipe`,{
         data: {
           userId: USER_ID,
           recipeId: recipeId
