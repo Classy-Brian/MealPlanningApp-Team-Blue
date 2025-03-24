@@ -28,19 +28,15 @@ const RecipeSearch = () => {
 
   useEffect(() => {
     setRecipes([
-        { recipe: { label: "Test Recipe 1", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe1", ingredientLines: ["1 Cup of flour", "2 Eggs"], url: "https://example.com" }},
-        { recipe: { label: "Test Recipe 2", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe2", ingredientLines: ["1 Cup of sugar", "3 Eggs"], url: "https://example.com" }},
-        { recipe: { label: "Test Recipe 3", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe3", ingredientLines: ["2 Cups of milk", "1 tbsp vanilla"], url: "https://example.com" }},
+        // { recipe: { label: "Test Recipe 1", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe1", ingredientLines: ["1 Cup of flour", "2 Eggs"], url: "https://example.com" }},
+        // { recipe: { label: "Test Recipe 2", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe2", ingredientLines: ["1 Cup of sugar", "3 Eggs"], url: "https://example.com" }},
+        // { recipe: { label: "Test Recipe 3", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe3", ingredientLines: ["2 Cups of milk", "1 tbsp vanilla"], url: "https://example.com" }},
       ]);
   }, []);
 
   const fetchRecipes = async (query) => {
     const API_ID =process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
     const API_KEY =process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
-
-    console.log(API_ID);
-    console.log(API_KEY);
-
 
     setLoading(true);
     setError(null);

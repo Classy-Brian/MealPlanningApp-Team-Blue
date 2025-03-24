@@ -10,19 +10,25 @@ const RecipeDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  console.log("Route Params:", route.params);  // Debugging log
-
   // Extract parameters directly from route
   const {
     recipeId = '',
     title = '',
-    ingredients = [],
     directions = "No directions available.",
     imageUri = '',
-    allergies = [],
-    nutrition = {},
     isSaved = false,  // Check if the recipe is saved
   } = route.params || {};
+
+  const ingredients = typeof route.params['ingredients'] === 'string' 
+  ? route.params['ingredients'].split(',') 
+  : route.params['ingredients'];
+  
+
+  const allergies = typeof route.params['allergies'] === 'string' 
+  ? route.params['allergies'].split(',') 
+  : route.params['allergies'];
+
+  const nutrition = JSON.parse(typeof route.params.nutrition === "string" ? route.params.nutrition : JSON.stringify(route.params.nutrition));
 
   if (!recipeId || !title || ingredients.length === 0 || !directions) {
     return (
@@ -160,16 +166,21 @@ const RecipeDetailsScreen = () => {
               <Text style={styles.sectionTitle}>Nutrition Facts:</Text>
               {nutrition ? (
                 <>
-                  <Text style={styles.sectionText}>Calories: {Math.round(nutrition.ENERC_KCAL?.quantity || 0)} kcal</Text>
-                  <Text style={styles.sectionText}>Protein: {Math.round(nutrition.PROCNT?.quantity || 0)}g</Text>
-                  <Text style={styles.sectionText}>Fat: {Math.round(nutrition.FAT?.quantity || 0)}g</Text>
-                  <Text style={styles.sectionText}>Carbs: {Math.round(nutrition.CHOCDF?.quantity || 0)}g</Text>
+                  {Object.keys(nutrition).map((key) => {
+                    const { label, quantity, unit } = nutrition[key];
+                    return (
+                      <Text key={key} style={styles.sectionText}>
+                        {label}: {Math.round(quantity || 0)} {unit}
+                      </Text>
+                    );
+                  })}
                 </>
               ) : (
                 <Text style={styles.sectionText}>No nutrition data available.</Text>
               )}
             </>
           )}
+
         </View>
       </ScrollView>
     </View>

@@ -12,7 +12,6 @@ const RecipeDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  console.log("Route Params:", route.params);  // Debugging log
 
   // Extract parameters directly from route
   const {

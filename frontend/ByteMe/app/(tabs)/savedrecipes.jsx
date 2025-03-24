@@ -46,16 +46,11 @@ export default function Recipes() {
           label: res.data[0].label,
           image: res.data[0].image || "https://via.placeholder.com/150",
           directions: res.data[0].url || "No directions available.",
-          ingredients: Array.isArray(res.data[0].ingredientLines) 
-            ? res.data[0].ingredientLines 
-            : JSON.parse(res.data[0].ingredientLines || "[]"), // Ensure array format
-          allergies: Array.isArray(res.data[0].healthLabels) 
-            ? res.data[0].healthLabels 
-            : JSON.parse(res.data[0].healthLabels || "[]"), // Ensure array format
+          ingredients: res.data[0].ingredientLines, 
+          allergies: res.data[0].healthLabels,
           nutrition: res.data[0].totalNutrients
         };
       }).filter(Boolean);  // Remove null values
-      console.log(detailedRecipes)
       setSavedRecipes(detailedRecipes);
       setError(null);
     } catch (err) {
@@ -116,7 +111,7 @@ export default function Recipes() {
                     ingredients: item.ingredients || [],  //  Send as an array, no JSON.stringify()
                     directions: item.directions || "No directions available.",
                     allergies: item.allergies || [],  //  Send as an array
-                    nutrition: item.nutrition
+                    nutrition: JSON.stringify(item.nutrition)
                   }
                 })}
           >
