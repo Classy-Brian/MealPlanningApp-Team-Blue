@@ -4,10 +4,13 @@ import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, Touchabl
 import axios from 'axios';  // For making HTTP requests.
 import { useLocalSearchParams, useRouter, Link } from 'expo-router'; // Import useRouter
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { Checkbox } from 'react-native-paper';
-
 import { MaterialIcons, Ionicons } from '@expo/vector-icons'; // Import icons
+
+import { colors } from '../../components/Colors'
+import { textcolors } from '../../components/TextColors'
+import { fonts } from '../../components/Fonts'
+import { styles } from '@/components/Sheet'
 
 // Defines an array of allergy options.  Each option is an object with an 'id' and a 'label'.
 // (e.g., constants/allergies.js)
@@ -182,33 +185,33 @@ const PreferenceSettingsScreen = () => {
 
     // Main UI rendering:
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
+        <SafeAreaView style={styles_allergies.safeArea}>
+            <View style={styles_allergies.container}>
 
-                <View style={styles.header}>
+                <View style={styles_allergies.header}>
                     <Link href="/settings" asChild>
-                        <TouchableOpacity style={styles.settingsButton}>
+                        <TouchableOpacity style={styles_allergies.settingsButton}>
                                 <Ionicons name="arrow-back" size={24} color="black" />
-                                <Text style={styles.settingsText}>Settings</Text>
+                                <Text style={styles_allergies.settingsText}>Settings</Text>
                         </TouchableOpacity>
                     </Link>
                 </View>
 
-                <Text style={styles.title}>{from}</Text>
-                <Text style={styles.normalText}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
+                <Text style={styles_allergies.title}>{from}</Text>
+                <Text style={styles_allergies.normalText}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
 
             <FlatList
                 data={ALLERGY_OPTIONS}
                 renderItem={renderAllergyItem}
                 keyExtractor={(item) => item.id}
-                style={styles.list}
+                style={styles_allergies.list}
             />
 
                 <TouchableOpacity
-                    style={styles.saveButton}
+                    style={styles_allergies.saveButton}
                     onPress={saveAllergies}
                 >
-                    <Text style={styles.saveButtonText}>Save</Text>
+                    <Text style={styles_allergies.saveButtonText}>Save</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
@@ -217,7 +220,7 @@ const PreferenceSettingsScreen = () => {
 };
 
 // Styles for the components.
-const styles = StyleSheet.create({
+const styles_allergies = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#f0f0f0',
