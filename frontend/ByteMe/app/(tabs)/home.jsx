@@ -1,11 +1,15 @@
 import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
+import { styles } from '@/components/Sheet'
 
 const Homepage = () => {
   return (
-    <View>
-      <Text>Homepage</Text>
+    <View style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <Text style={styles.title}>Homepage</Text>
+      </View>
     </View>
+   
   )
 }
 
@@ -18,13 +22,3 @@ const Homepage = () => {
 // })
 
 export default Homepage
-
-// export default function Tab() {
-//   return (
-//     <View style={styles.container}>
-//       <Text>
-//         Tab [Home|Calendar|Recipe|Grocery|Pantry]
-//       </Text>
-//     </View>
-//   )
-// }

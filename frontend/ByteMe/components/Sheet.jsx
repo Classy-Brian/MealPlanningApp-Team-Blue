@@ -28,24 +28,29 @@ export const styles = StyleSheet.create({
         fontFamily: fonts.semiBold,
     },
     regularText: {
-        fontSize: 16,
+        fontSize: 20,
         fontFamily: fonts.regular
     },
+    regText16: {
+      fontSize: 16, 
+      fontFamily: fonts.regular,
+    },
     forgot: {
-      fontSize: 16,
+      fontSize: 20,
       color: textcolors.red,
-      fontWeight: 'bold',
+      fontFamily: fonts.semiBold,
     },
     createacc: {
       color: textcolors.link,
-      fontSize: 16,
+      fontSize: 20,
+      fontFamily: fonts.semiBold,
     },
     buttonContainer: {
       flexDirection: 'row',
       borderRadius: 20,
       marginHorizontal: 60,
       paddingVertical: 10,
-      backgroundColor: colors.primary,
+      backgroundColor: '#5a7ead',
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 10,
@@ -54,7 +59,7 @@ export const styles = StyleSheet.create({
     },
     buttonText: {
       fontFamily: fonts.bold,
-      fontSize: 16,
+      fontSize: 20,
     },
     inputContainer: {
       flexDirection: 'row',
@@ -96,5 +101,26 @@ export const styles = StyleSheet.create({
       backgroundColor: colors.header,
       height: 100,
       top: 150,
-    }
+    },
+    searchInput: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 5,
+      paddingVertical: 10,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: textcolors.darkgrey,
+      backgroundColor: colors.grey,
+    },
+    addButton: {
+      position: 'absolute',
+      bottom: 20,
+      right: 20,
+      backgroundColor: '#10386D',
+      borderRadius: 150,
+      padding: 5,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 2,
+    },
   })
