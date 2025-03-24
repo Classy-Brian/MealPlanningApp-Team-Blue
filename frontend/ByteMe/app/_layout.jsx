@@ -3,6 +3,8 @@ import React from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { colors } from "../components/Colors";
 // import { createStackNavigator } from '@react-navigation/stack'
+import SavedRecipesScreen from "@/screens/SavedRecipesScreen"; // This will be handled by the router
+
 
 function HeaderLogo() {
   return (
@@ -56,6 +58,107 @@ const _layout = () => {
       <Stack.Screen name='index'
         options={{headerShown: false}}
       />
+      {/* Do not include SavedRecipesScreen directly in the Stack.Screen. 
+          Just refer to the name and routing will handle the screen. */}
+      <Stack.Screen
+        name="(tabs)/savedrecipes"  // Make sure this matches the file structure
+        options={{
+          headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name='explorerecipes'
+        options={{
+          headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name='recipedetails'
+        options={{
+          headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name='favoriterecipes'
+        options={{
+          headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+
+      <Stack.Screen name="add_recipe"
+        options={{
+          headerShown: true,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+
+      <Stack.Screen name="recipe_details"
+        options={{
+          headerShown: true,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+
     </Stack>
   );
 };
