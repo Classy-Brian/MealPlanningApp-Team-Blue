@@ -1,4 +1,4 @@
-import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native'
+import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import { styles } from '@/components/Sheet'
 import { Divider } from 'react-native-paper'
@@ -7,6 +7,7 @@ import { colors } from '@/components/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import { fonts } from '@/components/Fonts'
 import { useRouter } from 'expo-router'
+import Animated, { Easing, useAnimatedProps, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 
 function SingleIngredient() {
   return(
@@ -94,16 +95,52 @@ function GoPantrySuggest() {
   )
 }
 
-
 const Pantry = () => {
   const [pantry, setPantry] = useState('');
   const [isFocused, setFocused] = useState(styles.searchInput);
 
   const [addPress, setAddPress] = useState(false);
 
+  const translateY1 = useSharedValue(0);
+  const opacity = useSharedValue(0);
+
   const toggleAdd = () => {
+
+    translateY1.value = withTiming(addPress ? 0 : -20, {
+      duration: 400,
+      easing: Easing.inOut(Easing.quad),
+    });
+
+    opacity.value = withTiming( addPress ? 0: 1, {
+      duration: 400,
+      easing: Easing.inOut(Easing.quad),
+    });
+
     setAddPress((prev) => !prev)
   }
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [{ translateY: translateY1.value}],
+    };
+  });
+
+  const animatedProps = useAnimatedProps(() => {
+    return {
+      opacity: opacity.value,
+    };
+  });
+
+  const handleSuggest = () => {
+    if (addPress == true) {
+      route.push('/(pantry)/pantrysuggest')
+    } else {
+      return
+    }
+  }
+
+
   const route = useRouter();
 
   return (
@@ -151,19 +188,23 @@ const Pantry = () => {
         {addPress ? <CancelAddButton /> : <AddButton />}
       </TouchableOpacity>
 
-      <TouchableOpacity>
-        <AddFromGList />
-      </TouchableOpacity>
+      <Animated.View 
+          style={[det.buttonContainer1, animatedStyle]}
+          animatedProps={animatedProps}>
+        <TouchableOpacity onPress={handleSuggest}>
+          <GoPantrySuggest />
+        </TouchableOpacity>
+      </Animated.View>
 
-      <TouchableOpacity onPress={() => route.push('/(pantry)/pantrysuggest')}>
-        <GoPantrySuggest />
-      </TouchableOpacity>
-      
-      
-      
-      
-    </View>
-    
+      <Animated.View 
+          style={[det.buttonContainer2, animatedStyle]}
+          animatedProps={animatedProps}>
+        <TouchableOpacity>
+          <AddFromGList />
+        </TouchableOpacity>
+      </Animated.View>
+
+    </View>    
   )
 }
 
@@ -216,6 +257,7 @@ const det = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     marginBottom: 12,
+    elevation: 2,
   },
   addButton: {
     backgroundColor: '#10386D',
@@ -223,10 +265,21 @@ const det = StyleSheet.create({
     padding: 5,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 2,
   },
   addContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+  },
+  buttonContainer1: {
+    position: 'absolute',
+    bottom: 70,
+    right: 20,
+  },
+  buttonContainer2: {
+    position: 'absolute',
+    bottom: 110,
+    right: 20,
   }
 })
