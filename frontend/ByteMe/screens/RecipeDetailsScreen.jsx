@@ -5,6 +5,7 @@ import axios from 'axios';
 import Back_butt from '../assets/images/backbutton.png';  // Adjusted path for back button
 
 const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
+const PORT = process.env.PORT;
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();
@@ -48,7 +49,7 @@ const RecipeDetailsScreen = () => {
     if (!recipeId) return;
   
     try {
-      const response = await axios.post(`http://localhost:${PORT}/api/users/save-recipe`, {
+      const response = await axios.post(`http://localhost:5001/api/users/save-recipe`, {
         userId: USER_ID, // Send only user ID
         recipeId: recipeId, // Send only recipe ID
       });

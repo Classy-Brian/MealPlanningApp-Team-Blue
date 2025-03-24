@@ -7,6 +7,7 @@ import heartIcon from '../assets/images/heart.png';  // Add filled heart image
 import emptyHeartIcon from '../assets/images/empty-heart.png';  // Add empty heart image
 
 const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
+const PORT = process.env.PORT;
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();
@@ -51,7 +52,7 @@ const RecipeDetailsScreen = () => {
     if (!recipeId) return;
 
     try {
-      const response = await axios.post(`http://localhost:${PORT}/api/users/save-recipe`, {
+      const response = await axios.post(`http://localhost:5001/api/users/save-recipe`, {
         userId: USER_ID, // Send only user ID
         recipeId: recipeId, // Send only recipe ID
       });
@@ -73,7 +74,7 @@ const RecipeDetailsScreen = () => {
     if (!recipeId) return;
 
     try {
-        const response = await axios.delete(`http://localhost:${PORT}/api/users/remove-recipe`,{
+        const response = await axios.delete(`http://localhost:5001/api/users/remove-recipe`,{
         data: {
           userId: USER_ID,
           recipeId: recipeId
