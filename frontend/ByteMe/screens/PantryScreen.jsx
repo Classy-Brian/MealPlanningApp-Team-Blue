@@ -1,4 +1,4 @@
-import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'
+import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native'
 import React, { useState } from 'react'
 import { styles } from '@/components/Sheet'
 import { Divider } from 'react-native-paper'
@@ -6,6 +6,7 @@ import { textcolors } from '@/components/TextColors'
 import { colors } from '@/components/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import { fonts } from '@/components/Fonts'
+import { useRouter } from 'expo-router'
 
 function SingleIngredient() {
   return(
@@ -41,6 +42,59 @@ function Category() {
   )
 }
 
+function Filter() {
+  return(
+    <View>
+      <TouchableOpacity style={det.button}>
+        <Text style={styles.regularText}>Category</Text>
+      </TouchableOpacity>
+    </View>
+  )
+}
+
+function AddButton() {
+  return(
+    <View style={styles.addButton}>
+        <Ionicons name="add" size={60} color='#d9d9d9' />
+    </View>
+  )
+}
+
+function CancelAddButton() {
+  return (
+    <View style={styles.cancelAddButton}>
+      <Ionicons name="add" size={60} color='#10386D' style={{transform: [{rotateZ: '45deg'}]}}/>
+    </View>    
+  )
+}
+
+function AddFromGList() {
+  return(
+    <View style={det.addContainer}>
+      <View style={[det.button, {marginRight: 10}]}>
+        <Text style={[styles.regText16, {fontFamily: fonts.medium}]}>Add From Grocery List</Text>
+      </View>
+      <View style={det.addButton}>
+          <Ionicons name="add" size={15} color='#d9d9d9' />
+      </View>
+    </View>
+  )  
+}
+
+function GoPantrySuggest() {
+  return(
+    <View style={det.addContainer}>
+      <View style={[det.button, {marginRight: 10}]}>
+        <Text style={[styles.regText16, {fontFamily: fonts.medium}]}>Suggest Recipes</Text>
+      </View>
+      <View style={det.addButton}>
+          <Ionicons name="add" size={15} color='#d9d9d9' />
+      </View>
+    </View>
+  )
+}
+
+
 const Pantry = () => {
   const [pantry, setPantry] = useState('');
   const [isFocused, setFocused] = useState(styles.searchInput);
@@ -48,8 +102,9 @@ const Pantry = () => {
   const [addPress, setAddPress] = useState(false);
 
   const toggleAdd = () => {
-    setAddPress(!addPress);
+    setAddPress((prev) => !prev)
   }
+  const route = useRouter();
 
   return (
     <View style={styles.whiteBackground}>
@@ -57,6 +112,7 @@ const Pantry = () => {
         <View style={styles.screenContainer}>
           <Text style={styles.title}>Pantry</Text>
 
+          {/* Search Box */}
           <View style={styles.container}>          
             <TextInput
               placeholder='Search for ingredients'
@@ -67,6 +123,11 @@ const Pantry = () => {
               onFocus={() => setFocused([styles.searchInput, {borderColor: colors.header}])}
               onBlur={() => setFocused([styles.searchInput])}
             />
+          </View>
+
+          {/* Filters */}
+          <View style={{flexDirection: 'row'}}>
+
           </View>
 
           <Divider />
@@ -83,11 +144,24 @@ const Pantry = () => {
 
           </View>
         </View>
+        <View style={det.space} />
       </ScrollView>
       
-      <TouchableOpacity style={styles.addButton}>
-        <Ionicons name="add" size={60} color='#d9d9d9' />
+      <TouchableOpacity onPress={toggleAdd}>
+        {addPress ? <CancelAddButton /> : <AddButton />}
       </TouchableOpacity>
+
+      <TouchableOpacity>
+        <AddFromGList />
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => route.push('/(pantry)/pantrysuggest')}>
+        <GoPantrySuggest />
+      </TouchableOpacity>
+      
+      
+      
+      
     </View>
     
   )
@@ -130,5 +204,29 @@ const det = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-
+  space: {
+    marginTop: 100,
+  },
+  button: {
+    flexDirection: 'row',
+    backgroundColor: colors.primary,
+    borderRadius: 15,
+    borderColor: textcolors.blue,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 12,
+  },
+  addButton: {
+    backgroundColor: '#10386D',
+    borderRadius: 150,
+    padding: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  }
 })
