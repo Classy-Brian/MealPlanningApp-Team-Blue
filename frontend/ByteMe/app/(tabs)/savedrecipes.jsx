@@ -17,7 +17,7 @@ export default function Recipes() {
 
   const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
   const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
-  const USER_ID = "67c8da45f97986963147083a"; // Replace with actual user authentication
+  const USER_ID = "67d3a9717c654c6be6f07502"; // Replace with actual user authentication
 
   // Fetch saved recipes from the backend
   const fetchSavedRecipes = async () => {
@@ -103,7 +103,7 @@ export default function Recipes() {
             style={styles.recipeContainer} 
             onPress={() => 
                 router.push({
-                  pathname: "../recipedetails",
+                  pathname: "../favoriterecipes",
                   params: {
                     recipeId: item.uri,  
                     title: item.label,

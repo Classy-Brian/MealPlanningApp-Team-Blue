@@ -4,7 +4,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import Back_butt from '../assets/images/backbutton.png';  // Adjusted path for back button
 
-const USER_ID = "67c8da45f97986963147083a"; // Temporary test user ID
+const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();

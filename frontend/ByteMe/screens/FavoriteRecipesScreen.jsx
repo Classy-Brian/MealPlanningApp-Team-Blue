@@ -6,7 +6,7 @@ import Back_butt from '../assets/images/backbutton.png';  // Adjusted path for b
 import heartIcon from '../assets/images/heart.png';  // Add filled heart image
 import emptyHeartIcon from '../assets/images/empty-heart.png';  // Add empty heart image
 
-const USER_ID = "67c8da45f97986963147083a"; // Temporary test user ID
+const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();
@@ -17,16 +17,32 @@ const RecipeDetailsScreen = () => {
   const {
     recipeId = '',
     title = '',
-    ingredients = [],
     directions = "No directions available.",
     imageUri = '',
-    allergies = [],
-    nutrition = {},
     isSaved = false,  // Check if the recipe is saved
   } = route.params || {};
 
+    const ingredients = typeof route.params['ingredients'] === 'string' 
+    ? route.params['ingredients'].split(',') 
+    : route.params['ingredients'];
+    
+  
+    const allergies = typeof route.params['allergies'] === 'string' 
+    ? route.params['allergies'].split(',') 
+    : route.params['allergies'];
+  
+    const nutrition = JSON.parse(typeof route.params.nutrition === "string" ? route.params.nutrition : JSON.stringify(route.params.nutrition));
+  
+    if (!recipeId || !title || ingredients.length === 0 || !directions) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
+        </View>
+      );
+    }
+
   const [activeSection, setActiveSection] = useState(0);
-  const [isSavedRecipe, setIsSavedRecipe] = useState(isSaved);  // Initialize with route param
+  const [isSavedRecipe, setIsSavedRecipe] = useState(true);  // Initialize with route param
 
   const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
@@ -44,13 +60,6 @@ const RecipeDetailsScreen = () => {
         setIsSavedRecipe(true); // Update the saved state
         Alert.alert("Success", "Recipe saved successfully!");
 
-        // Navigate to savedrecipes screen and pass the saved recipe info
-        navigation.push('(tabs)', {
-          screen: 'savedrecipes',
-          params: {
-            recipe: { title, imageUri, recipeId, isSaved: true },
-          },
-        });
       } else {
         throw new Error("Failed to save recipe.");
       }
@@ -60,21 +69,48 @@ const RecipeDetailsScreen = () => {
     }
   };
 
-  // Function to render heart icon (save button)
-  const renderSaveButton = () => {
-    return (
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={saveRecipe}
-        disabled={isSavedRecipe} // Prevent resaving if already saved
-      >
-        <Image
-          source={isSavedRecipe ? emptyHeartIcon : heartIcon}
-          style={styles.heartIcon}
-        />
-      </TouchableOpacity>
-    );
-  };
+  const unsaveRecipe = async() => {
+    if (!recipeId) return;
+
+    try {
+        const response = await axios.delete("http://localhost:5000/api/users/remove-recipe",{
+        data: {
+          userId: USER_ID,
+          recipeId: recipeId
+        }
+      });
+
+
+      if (response.status == 200){
+        setIsSavedRecipe(false);
+        Alert.alert("success", "Recipe unsave successfully!");
+      }
+       else{
+        throw new Error("Faield to unsave recipe.");
+      }
+    } catch (err){
+      console.log("Error remove recipe:", err);
+      Alert.alert("Error", "Could not remove recipe, please try again.");
+    }
+  }
+
+// Function to render heart icon (save/unsave button)
+const renderSaveButton = () => {
+  return (
+    <TouchableOpacity
+      style={styles.saveButton}
+      onPress={() => {
+        isSavedRecipe ? unsaveRecipe() : saveRecipe();
+      }}  // Toggle between save and unsave
+    >
+      <Image
+        source={isSavedRecipe ? heartIcon : emptyHeartIcon}  // Toggle between filled and empty heart
+        style={styles.heartIcon}
+      />
+    </TouchableOpacity>
+  );
+};
+
 
   return (
     <View style={styles.container}>
@@ -102,7 +138,7 @@ const RecipeDetailsScreen = () => {
       <Text style={styles.title}>{title}</Text>
 
       {/* Save Button - Only show if not already saved */}
-      {!isSavedRecipe && renderSaveButton()}
+      {renderSaveButton()}
 
       {/* Compact Section Tabs */}
       <View style={styles.tabContainer}>
@@ -156,10 +192,14 @@ const RecipeDetailsScreen = () => {
               <Text style={styles.sectionTitle}>Nutrition Facts:</Text>
               {nutrition ? (
                 <>
-                  <Text style={styles.sectionText}>Calories: {Math.round(nutrition.ENERC_KCAL?.quantity || 0)} kcal</Text>
-                  <Text style={styles.sectionText}>Protein: {Math.round(nutrition.PROCNT?.quantity || 0)}g</Text>
-                  <Text style={styles.sectionText}>Fat: {Math.round(nutrition.FAT?.quantity || 0)}g</Text>
-                  <Text style={styles.sectionText}>Carbs: {Math.round(nutrition.CHOCDF?.quantity || 0)}g</Text>
+                  {Object.keys(nutrition).map((key) => {
+                    const { label, quantity, unit } = nutrition[key];
+                    return (
+                      <Text key={key} style={styles.sectionText}>
+                        {label}: {Math.round(quantity || 0)} {unit}
+                      </Text>
+                    );
+                  })}
                 </>
               ) : (
                 <Text style={styles.sectionText}>No nutrition data available.</Text>
