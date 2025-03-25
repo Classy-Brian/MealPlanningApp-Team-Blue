@@ -2,17 +2,12 @@ import { Image, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } 
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native'; 
 
-// import HomeB from "@/assets/images/active.png";
-// import { colors } from '../components/Colors';
-// import { textcolors } from '../components/TextColors';
-// import { fonts } from '../components/Fonts';
-// import Back_butt from "@/assets/images/backbutton.png";
-
 import HomeB from '../../assets/images/active.png';
 import { colors } from '../../components/Colors';
 import { textcolors } from '../../components/TextColors';
 import { fonts } from '../../components/Fonts'
 import Back_butt from '../../assets/images/backbutton.png';
+import AddRecipeScreen from '@/app/(recipe)/addrecipe';
 
 
 const initialData = [
@@ -39,7 +34,7 @@ const RecipeCard = ({ imageUri, title, onPress }) => {
 
 const Add_Recipe = () => {
   const [recipes, setRecipes] = useState([]);
-  const navigation = useNavigation(); // Initialize navigation
+  const navigation = useNavigation(); 
 
   useEffect(() => {
     const requiredCount = 10;
@@ -105,8 +100,6 @@ const Add_Recipe = () => {
     </View>
   );
 };
-
-export default Add_Recipe;
 
 const styles = StyleSheet.create({
   container: {
@@ -204,3 +197,5 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
 });
+
+export default AddRecipeScreen;
