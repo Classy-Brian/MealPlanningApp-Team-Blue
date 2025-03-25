@@ -1,2 +1,2 @@
-import ExploreRecipesScreen from "@/screens/ExploreRecipesScreen";
+import ExploreRecipesScreen from "@/screens/recipe/ExploreRecipesScreen";
 export default ExploreRecipesScreen;

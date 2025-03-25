@@ -4,9 +4,9 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import HomeB from "@/assets/images/active.png";
 import maglass from "@/assets/images/magnifyingglass.png";
-import { colors } from '../components/Colors';
-import { textcolors } from '../components/TextColors';
-import { fonts } from '../components/Fonts';
+import { colors } from '../../components/Colors';
+import { textcolors } from '../../components/TextColors';
+import { fonts } from '../../components/Fonts';
 import Back_butt from "@/assets/images/backbutton.png";
 
 const RecipeCard = ({ imageUri, title, onPress }) => (

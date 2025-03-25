@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import Back_butt from '../assets/images/backbutton.png';  // Adjusted path for back button
+import Back_butt from '../../assets/images/backbutton.png';  // Adjusted path for back button
+import heartIcon from '../../assets/images/heart.png';  // Add filled heart image
+import emptyHeartIcon from '../../assets/images/empty-heart.png';  // Add empty heart image
 
 const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
+
 
   // Extract parameters directly from route
   const {
@@ -19,51 +22,44 @@ const RecipeDetailsScreen = () => {
     isSaved = false,  // Check if the recipe is saved
   } = route.params || {};
 
-  const ingredients = typeof route.params['ingredients'] === 'string' 
-  ? route.params['ingredients'].split(',') 
-  : route.params['ingredients'];
+    const ingredients = typeof route.params['ingredients'] === 'string' 
+    ? route.params['ingredients'].split(',') 
+    : route.params['ingredients'];
+    
   
-
-  const allergies = typeof route.params['allergies'] === 'string' 
-  ? route.params['allergies'].split(',') 
-  : route.params['allergies'];
-
-  const nutrition = JSON.parse(typeof route.params.nutrition === "string" ? route.params.nutrition : JSON.stringify(route.params.nutrition));
-
-  if (!recipeId || !title || ingredients.length === 0 || !directions) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
-      </View>
-    );
-  }
+    const allergies = typeof route.params['allergies'] === 'string' 
+    ? route.params['allergies'].split(',') 
+    : route.params['allergies'];
+  
+    const nutrition = JSON.parse(typeof route.params.nutrition === "string" ? route.params.nutrition : JSON.stringify(route.params.nutrition));
+  
+    if (!recipeId || !title || ingredients.length === 0 || !directions) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
+        </View>
+      );
+    }
 
   const [activeSection, setActiveSection] = useState(0);
-  const [isSavedRecipe, setIsSavedRecipe] = useState(false);  // Initialize with route param
+  const [isSavedRecipe, setIsSavedRecipe] = useState(true);  // Initialize with route param
 
   const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
   // Function to Save Recipe to Backend
   const saveRecipe = async () => {
     if (!recipeId) return;
-  
+
     try {
       const response = await axios.post("http://localhost:5000/api/users/save-recipe", {
         userId: USER_ID, // Send only user ID
         recipeId: recipeId, // Send only recipe ID
       });
-  
+
       if (response.status === 200) {
         setIsSavedRecipe(true); // Update the saved state
         Alert.alert("Success", "Recipe saved successfully!");
-  
-        // Navigate to savedrecipes screen and pass the saved recipe info
-        navigation.push('(tabs)', {
-          screen: 'savedrecipes',
-          params: {
-            recipe: { title, imageUri, recipeId, isSaved: true },
-          },
-        });
+
       } else {
         throw new Error("Failed to save recipe.");
       }
@@ -73,18 +69,48 @@ const RecipeDetailsScreen = () => {
     }
   };
 
-  // Function to render "Add Recipe" button
-  const renderSaveButton = () => {
-    return (
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={saveRecipe}
-        disabled={isSaved}
-      >
-        <Text style={styles.saveButtonText}>{isSaved ? "Recipe Saved" : "Add Recipe"}</Text>
-      </TouchableOpacity>
-    );
-  };
+  const unsaveRecipe = async() => {
+    if (!recipeId) return;
+
+    try {
+        const response = await axios.delete("http://localhost:5000/api/users/remove-recipe",{
+        data: {
+          userId: USER_ID,
+          recipeId: recipeId
+        }
+      });
+
+
+      if (response.status == 200){
+        setIsSavedRecipe(false);
+        Alert.alert("success", "Recipe unsave successfully!");
+      }
+       else{
+        throw new Error("Faield to unsave recipe.");
+      }
+    } catch (err){
+      console.log("Error remove recipe:", err);
+      Alert.alert("Error", "Could not remove recipe, please try again.");
+    }
+  }
+
+// Function to render heart icon (save/unsave button)
+const renderSaveButton = () => {
+  return (
+    <TouchableOpacity
+      style={styles.saveButton}
+      onPress={() => {
+        isSavedRecipe ? unsaveRecipe() : saveRecipe();
+      }}  // Toggle between save and unsave
+    >
+      <Image
+        source={isSavedRecipe ? heartIcon : emptyHeartIcon}  // Toggle between filled and empty heart
+        style={styles.heartIcon}
+      />
+    </TouchableOpacity>
+  );
+};
+
 
   return (
     <View style={styles.container}>
@@ -92,7 +118,7 @@ const RecipeDetailsScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate('explorerecipes')}  // Navigates back to ExplorePage
+          onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}
         >
           <Image source={Back_butt} style={styles.backIcon} />
           <Text style={styles.backText}>Back</Text>
@@ -112,7 +138,7 @@ const RecipeDetailsScreen = () => {
       <Text style={styles.title}>{title}</Text>
 
       {/* Save Button - Only show if not already saved */}
-      {!isSavedRecipe && renderSaveButton()}
+      {renderSaveButton()}
 
       {/* Compact Section Tabs */}
       <View style={styles.tabContainer}>
@@ -180,7 +206,6 @@ const RecipeDetailsScreen = () => {
               )}
             </>
           )}
-
         </View>
       </ScrollView>
     </View>
@@ -225,19 +250,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   saveButton: {
-    backgroundColor: '#adc6f2',
+    backgroundColor: '#fff',
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginBottom: 10,
     alignSelf: 'center',
+    borderColor: '#1f508f',
+    borderWidth: 1,
   },
-  buttonText: {
-    fontSize: 16,
-    color: '#000',
-    //fontWeight: 'bold',
-    fontSize: 16,
-    fontWeight: '700',
+  heartIcon: {
+    width: 32,
+    height: 32,
   },
   recipeWrapper: {
     width: '100%',

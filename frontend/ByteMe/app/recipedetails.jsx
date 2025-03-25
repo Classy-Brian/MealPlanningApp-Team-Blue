@@ -1,2 +1,2 @@
-import RecipeDetailsScreen from "@/screens/RecipeDetailsScreen";
+import RecipeDetailsScreen from "@/screens/recipe/RecipeDetailsScreen";
 export default RecipeDetailsScreen;

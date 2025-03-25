@@ -2,7 +2,7 @@ import { Image, View, Text, Button, StyleSheet, TouchableOpacity } from 'react-n
 import React from 'react';
 import { Stack } from 'expo-router'; // Use Stack from expo-router
 import { colors } from "../components/Colors";
-import SavedRecipesScreen from "@/screens/SavedRecipesScreen"; // This will be handled by the router
+import SavedRecipesScreen from "@/screens/recipe/SavedRecipesScreen"; // This will be handled by the router
 
 function HeaderLogo() {
   return (
