@@ -10,14 +10,22 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 // const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
 const PORT = process.env.PORT;
 
-const RecipeDetailsScreen = async () => {
+const RecipeDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const userId = await getUserIdFromToken()
-  if (!userId) {
-    console.warn("User ID not found")
-  }
+  const [userId, setUserId] = useState(null);
+  
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await getUserIdFromToken();
+      if (!id) {
+        console.warn("User ID not found")
+      }
+      setUserId(id);
+    }
+    fetchUserId()
+  }, [])
 
   // Extract parameters directly from route
   const {
@@ -79,10 +87,10 @@ const RecipeDetailsScreen = async () => {
     if (!recipeId) return;
 
     try {
-        const response = await axios.delete(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/remove-recipe`,{
+      const response = await axios.delete(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/remove/remove-recipe`, {
         data: {
-          userId: userId,
-          recipeId: recipeId
+        userId: userId, // Send only user ID
+        recipeId: recipeId, // Send only recipe ID
         }
       });
 
