@@ -36,7 +36,7 @@ const SurveyFinal = ( { navigation, route } ) => {
         return;
       }
 
-      const res = await axios.put("http://192.168.4.66:5005/api/users/preferences", { allergies },
+      const res = await axios.put(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies },
         { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
