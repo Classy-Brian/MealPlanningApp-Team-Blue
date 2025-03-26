@@ -42,7 +42,7 @@ const RecipeSearch = () => {
     setError(null);
     try {  
       const response = await axios.get(
-        `https://api.edamam.com/search?q=${encodeURIComponent(query)}&app_id=${API_ID}&app_key=${API_KEY}`,
+        `https://api.edamam.com/api/recipes/v2?type=public&q=${query}&app_id=${API_ID}&app_key=${API_KEY}`,
       );
       setRecipes(response.data.hits.length > 0 ? response.data.hits : []);
     } catch (err) {

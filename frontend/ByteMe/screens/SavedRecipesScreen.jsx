@@ -22,53 +22,43 @@ export default function Recipes() {
 
 
   // Fetch saved recipes from the backend
-  const fetchSavedRecipes = async () => {
-    setLoading(true);
-    try {
-
-      const userId = await getUserIdFromToken()
-      if (!userId) {
-        console.warn("User ID not found")
-      }
-
-      const response = await axios.get(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userId}/get-saved-recipes`);
-      
-      if (!response.data || response.data.length === 0) {
-        console.warn("No saved recipes found.");
-        setSavedRecipes([]);
-        setLoading(false);
-        return;
-      }
-
-      
-      // Fetch full recipe details from Edamam API
-      const recipeDetailsPromises = response.data.map((uri) =>
-        axios.get(`https://api.edamam.com/search?r=${encodeURIComponent(uri)}&app_id=${API_ID}&app_key=${API_KEY}`)
-      );
-
-      const recipeDetailsResponses = await Promise.all(recipeDetailsPromises);
-      const detailedRecipes = recipeDetailsResponses.map(res => {
-        if (!res.data[0]) return null; // Skip if missing data
-        return {
-          uri: res.data[0].uri,
-          label: res.data[0].label,
-          image: res.data[0].image || "https://via.placeholder.com/150",
-          directions: res.data[0].url || "No directions available.",
-          ingredients: res.data[0].ingredientLines, 
-          allergies: res.data[0].healthLabels,
-          nutrition: res.data[0].totalNutrients
-        };
-      }).filter(Boolean);  // Remove null values
-      setSavedRecipes(detailedRecipes);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching saved recipes:", err);
-      setError("Failed to load saved recipes.");
-      Alert.alert("Error", "Could not load saved recipes.");
-    } finally {
+// Fetch saved recipes from the backend
+const fetchSavedRecipes = async () => {
+  setLoading(true);
+  try {
+    const userId = await getUserIdFromToken();
+    if (!userId) {
+      console.warn("User ID not found");
       setLoading(false);
+      return;
     }
-  };
+
+    // Make a single call to the backend to get saved recipes
+    const response = await axios.get(
+      `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/get-saved-recipes`
+    );
+
+    if (!response.data || !response.data.savedRecipes || response.data.savedRecipes.length === 0) {
+      console.warn("No saved recipes found.");
+      setSavedRecipes([]);
+      setLoading(false);
+      return;
+    }
+
+    // Set the saved recipes directly from the backend response
+    const detailedRecipes = response.data.savedRecipes;
+    setSavedRecipes(detailedRecipes);
+    setError(null);
+  } catch (err) {
+    console.error("Error fetching saved recipes:", err);
+    setError("Failed to load saved recipes.");
+    Alert.alert("Error", "Could not load saved recipes.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   useEffect(() => {
     fetchSavedRecipes();

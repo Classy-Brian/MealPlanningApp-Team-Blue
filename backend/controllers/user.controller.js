@@ -3,7 +3,7 @@ import Recipe from '../models/recipe.model.js';
 import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
-
+import axios from 'axios'
 dotenv.config();
 const JWT_SECRET = `${process.env.JWT_SECRET}` 
 
@@ -292,17 +292,50 @@ export const addRecipeToUser = async (req, res) => {
 
 //fetching user's saved recipes
 export const getSavedRecipes = async (req, res) => {
-  try{
-      const user = await User.findById(req.params.id).populate('savedRecipes');
-      if (!user){
-          return res.status(404).json({message: "User not found"});
-      }
+  try {
+    // Find the user by ID and populate saved recipes
+    const user = await User.findById(req.params.id).populate('savedRecipes');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!Array.isArray(user.savedRecipes) || user.savedRecipes.length === 0) {
+      return res.json({ message: "No saved recipes found", savedRecipes: [] });
+    }
 
-      res.json(user.savedRecipes);
-  } catch (error){
-      res.status(500).json({message: "Server error", error: error.message});
+    const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
+    const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
+
+    // Fetch full recipe details from Edamam API
+    const recipeDetailsPromises = user.savedRecipes.map((uri) =>
+      axios.get(`https://api.edamam.com/api/recipes/v2/by-uri?uri=${encodeURIComponent(uri)}&app_id=${API_ID}&app_key=${API_KEY}`)
+    );
+
+    const recipeDetailsResponses = await Promise.all(recipeDetailsPromises);
+    const detailedRecipes = recipeDetailsResponses
+      .map((response) => {
+        if (!response.data || !response.data.hits || response.data.hits.length === 0) return null;
+
+    // Access the recipe from the first hit
+        const recipe = response.data.hits[0].recipe;
+        return {
+        uri: recipe.uri,
+        label: recipe.label,
+        image: recipe.image || "https://via.placeholder.com/150",
+        directions: recipe.url || "No directions available.",
+        ingredients: recipe.ingredientLines,
+        allergies: recipe.healthLabels,
+        nutrition: recipe.totalNutrients,
+    };
+  })
+  .filter(Boolean); // Remove null values
+
+    return res.json({ message: "Saved recipes fetched successfully", savedRecipes: detailedRecipes });
+  } catch (error) {
+    console.error("Error fetching saved recipes:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
-}
+};
+
 
 export const saveRecipe = async (req, res) => {
   try {
