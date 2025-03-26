@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
+import getUserIdFromToken from '@/components/getUserIdFromToken';
 
 export default function Recipes() {
   const router = useRouter();
@@ -17,13 +18,20 @@ export default function Recipes() {
   const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
   const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
   const PORT = process.env.PORT;
-  const USER_ID = "67d3a9717c654c6be6f07502"; // Replace with actual user authentication
+  // const USER_ID = "67d3a9717c654c6be6f07502"; // Replace with actual user authentication
+
 
   // Fetch saved recipes from the backend
   const fetchSavedRecipes = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:5001/api/users/${USER_ID}/get-saved-recipes`);
+
+      const userId = await getUserIdFromToken()
+      if (!userId) {
+        console.warn("User ID not found")
+      }
+
+      const response = await axios.get(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userId}/get-saved-recipes`);
       
       if (!response.data || response.data.length === 0) {
         console.warn("No saved recipes found.");
