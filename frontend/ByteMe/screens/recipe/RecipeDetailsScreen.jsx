@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import Back_butt from '../assets/images/backbutton.png';  // Adjusted path for back button
+import Back_butt from '@/assets/images/backbutton.png';  // Adjusted path for back button
 import getUserIdFromToken from '@/components/getUserIdFromToken';
-
-// const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
-const PORT = process.env.PORT;
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();

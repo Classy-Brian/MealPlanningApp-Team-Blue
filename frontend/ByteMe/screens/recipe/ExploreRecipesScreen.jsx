@@ -4,9 +4,9 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import HomeB from "@/assets/images/active.png";
 import maglass from "@/assets/images/magnifyingglass.png";
-import { colors } from '../components/Colors';
-import { textcolors } from '../components/TextColors';
-import { fonts } from '../components/Fonts';
+import { colors } from '@/components/Colors';
+import { textcolors } from '@/components/TextColors';
+import { fonts } from '@/components/Fonts';
 import Back_butt from "@/assets/images/backbutton.png";
 
 const RecipeCard = ({ imageUri, title, onPress }) => (
@@ -25,14 +25,6 @@ const RecipeSearch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigation = useNavigation();
-
-  useEffect(() => {
-    setRecipes([
-        // { recipe: { label: "Test Recipe 1", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe1", ingredientLines: ["1 Cup of flour", "2 Eggs"], url: "https://example.com" }},
-        // { recipe: { label: "Test Recipe 2", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe2", ingredientLines: ["1 Cup of sugar", "3 Eggs"], url: "https://example.com" }},
-        // { recipe: { label: "Test Recipe 3", image: "https://via.placeholder.com/150", uri: "https://example.com/recipe3", ingredientLines: ["2 Cups of milk", "1 tbsp vanilla"], url: "https://example.com" }},
-      ]);
-  }, []);
 
   const fetchRecipes = async (query) => {
     const API_ID =process.env.EXPO_PUBLIC_EDAMAM_APP_ID;

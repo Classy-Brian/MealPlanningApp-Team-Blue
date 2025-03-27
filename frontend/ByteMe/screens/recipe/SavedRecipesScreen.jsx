@@ -4,8 +4,8 @@ import {
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
-import { colors } from '../components/Colors';
-import { textcolors } from '../components/TextColors';
+import { colors } from '@/components/Colors';
+import { textcolors } from '@/components/TextColors';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 
 export default function Recipes() {
@@ -15,13 +15,6 @@ export default function Recipes() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
-  const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
-  const PORT = process.env.PORT;
-  // const USER_ID = "67d3a9717c654c6be6f07502"; // Replace with actual user authentication
-
-
-  // Fetch saved recipes from the backend
 // Fetch saved recipes from the backend
 const fetchSavedRecipes = async () => {
   setLoading(true);
@@ -56,9 +49,7 @@ const fetchSavedRecipes = async () => {
   } finally {
     setLoading(false);
   }
-};
-
-
+  };
 
   useEffect(() => {
     fetchSavedRecipes();
