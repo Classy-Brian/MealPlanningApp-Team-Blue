@@ -6,7 +6,7 @@ import axios from 'axios';
 import Back_butt from '../../assets/images/backbutton.png';
 import heartIcon from '../../assets/images/heart.png';
 import emptyHeartIcon from '../../assets/images/empty-heart.png';
-// import FavoriteRecipesScreen from '@/app/(recipe)/favoriterecipes';
+import FavoriteRecipesScreen from '@/app/(recipe)/favoriterecipes';
 
 const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
 
@@ -20,61 +20,30 @@ const RecipeDetailsScreen = () => {
     title = '',
     directions = "No directions available.",
     imageUri = '',
-    isSaved = false,  // Check if the recipe is saved (defaults to false)
+    isSaved = false,  // Check if the recipe is saved
   } = route.params || {};
 
-  // Parse ingredients (handle string or array)
-  const ingredients = typeof route.params['ingredients'] === 'string'
-    ? route.params['ingredients'].split(',')
-    : (route.params['ingredients'] || []); // Ensure it's an array, default to empty
-
-  // Parse allergies (handle string or array)
-  const allergies = typeof route.params['allergies'] === 'string'
-    ? route.params['allergies'].split(',')
-    : (route.params['allergies'] || []); // Ensure it's an array, default to empty
-
-  let parsedNutrition = null; // Default value if parsing fails or data is missing
-  const nutritionData = route.params?.nutrition; // Use optional chaining to safely access
-
-  if (nutritionData) { // Check if nutritionData exists and is not null/undefined
-    if (typeof nutritionData === 'string') {
-      try {
-        parsedNutrition = JSON.parse(nutritionData);
-      } catch (e) {
-        console.error("Failed to parse nutrition string:", e);
-        // Keep parsedNutrition as null or set to an empty object {} if preferred
-        parsedNutrition = {}; // Default to empty object on error
-      }
-    } else if (typeof nutritionData === 'object') {
-      // It's already an object, use it directly
-      parsedNutrition = nutritionData;
-    } else {
-       console.warn("Unexpected type for nutrition data:", typeof nutritionData);
-       parsedNutrition = {}; // Default to empty object for unexpected types
+    const ingredients = typeof route.params['ingredients'] === 'string' 
+    ? route.params['ingredients'].split(',') 
+    : route.params['ingredients'];
+    
+  
+    const allergies = typeof route.params['allergies'] === 'string' 
+    ? route.params['allergies'].split(',') 
+    : route.params['allergies'];
+  
+    const nutrition = JSON.parse(typeof route.params.nutrition === "string" ? route.params.nutrition : JSON.stringify(route.params.nutrition));
+  
+    if (!recipeId || !title || ingredients.length === 0 || !directions) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
+        </View>
+      );
     }
-  } else {
-     console.log("Nutrition data not provided in route params.");
-     parsedNutrition = {}; // Default to empty object if not provided
-  }
-  // Use 'parsedNutrition' going forward
-  const nutrition = parsedNutrition;
-
-  // Basic validation check (optional, but good practice)
-  if (!recipeId || !title ) { // Removed ingredients/directions check as they have defaults
-    console.error("RecipeDetailsScreen: Missing essential parameters like recipeId or title.");
-    // You might want to show a more user-friendly error message or navigate back
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error: Essential recipe details missing!</Text>
-         <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text>Go Back</Text>
-         </TouchableOpacity>
-      </View>
-    );
-  }
 
   const [activeSection, setActiveSection] = useState(0);
-  const [isSavedRecipe, setIsSavedRecipe] = useState(isSaved); // Initialize with route param
+  const [isSavedRecipe, setIsSavedRecipe] = useState(true);  // Initialize with route param
 
   const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
@@ -97,53 +66,52 @@ const RecipeDetailsScreen = () => {
       }
     } catch (err) {
       console.error("Error saving recipe:", err);
-      // More specific error message if available from response
-      const message = err.response?.data?.message || "Could not save recipe. Please try again.";
-      Alert.alert("Error", message);
+      Alert.alert("Error", "Could not save recipe. Please try again.");
     }
   };
 
-  // Function to Unsave Recipe from Backend
   const unsaveRecipe = async() => {
     if (!recipeId) return;
 
     try {
         const response = await axios.delete("http://localhost:5000/api/users/remove-recipe",{
-        data: { // For DELETE requests with body, data often goes under 'data' key in Axios config
+        data: {
           userId: USER_ID,
           recipeId: recipeId
         }
       });
 
-      if (response.status === 200){
-        setIsSavedRecipe(false); // Update the saved state
-        Alert.alert("Success", "Recipe unsaved successfully!"); // Corrected typo
-      } else{
-        throw new Error("Failed to unsave recipe."); // Corrected typo
+
+      if (response.status == 200){
+        setIsSavedRecipe(false);
+        Alert.alert("success", "Recipe unsave successfully!");
+      }
+       else{
+        throw new Error("Faield to unsave recipe.");
       }
     } catch (err){
-      console.error("Error removing recipe:", err); // Corrected console log message
-      const message = err.response?.data?.message || "Could not remove recipe. Please try again.";
-      Alert.alert("Error", message);
+      console.log("Error remove recipe:", err);
+      Alert.alert("Error", "Could not remove recipe, please try again.");
     }
-  };
+  }
 
-  // Function to render heart icon (save/unsave button)
-  const renderSaveButton = () => {
-    return (
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={() => {
-          isSavedRecipe ? unsaveRecipe() : saveRecipe();
-        }}  // Toggle between save and unsave
-      >
-        <Image
-          source={isSavedRecipe ? heartIcon : emptyHeartIcon}  // Toggle between filled and empty heart
-          style={styles.heartIcon}
-        />
-      </TouchableOpacity>
-    );
-  };
+// Function to render heart icon (save/unsave button)
+const renderSaveButton = () => {
+  return (
+    <TouchableOpacity
+      style={styles.saveButton}
+      onPress={() => {
+        isSavedRecipe ? unsaveRecipe() : saveRecipe();
+      }}  // Toggle between save and unsave
+    >
+      <Image
+        source={isSavedRecipe ? heartIcon : emptyHeartIcon}  // Toggle between filled and empty heart
+        style={styles.heartIcon}
+      />
+    </TouchableOpacity>
+  );
+};
+
 
   return (
     <View style={styles.container}>
@@ -151,10 +119,7 @@ const RecipeDetailsScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          // Consider using navigation.goBack() for a more standard back behavior
-          // onPress={() => navigation.goBack()}
-          // Or if you specifically need to go to the savedrecipes tab:
-          onPress={() => navigation.navigate('(tabs)', { screen: 'savedrecipes' })}
+          onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}
         >
           <Image source={Back_butt} style={styles.backIcon} />
           <Text style={styles.backText}>Back</Text>
@@ -167,16 +132,13 @@ const RecipeDetailsScreen = () => {
           <Image source={{ uri: imageUri }} style={styles.recipeImage} />
         </View>
       ) : (
-        // Provide a placeholder or adjust layout if no image
-        <View style={[styles.recipeWrapper, styles.recipeImagePlaceholder]}>
-             <Text>No image available</Text>
-        </View>
+        <Text style={styles.errorText}>No image available</Text>
       )}
 
       {/* Title */}
       <Text style={styles.title}>{title}</Text>
 
-      {/* Save Button */}
+      {/* Save Button - Only show if not already saved */}
       {renderSaveButton()}
 
       {/* Compact Section Tabs */}
@@ -200,13 +162,9 @@ const RecipeDetailsScreen = () => {
           {activeSection === 0 && (
             <>
               <Text style={styles.sectionTitle}>Ingredients:</Text>
-              {ingredients.length > 0 ? (
-                  ingredients.map((ingredient, index) => (
-                    <Text key={index} style={styles.sectionText}>- {ingredient.trim()}</Text> // Added trim()
-                  ))
-              ) : (
-                  <Text style={styles.sectionText}>No ingredients listed.</Text>
-              )}
+              {ingredients.map((ingredient, index) => (
+                <Text key={index} style={styles.sectionText}>- {ingredient}</Text>
+              ))}
             </>
           )}
 
@@ -215,10 +173,10 @@ const RecipeDetailsScreen = () => {
               <Text style={styles.sectionTitle}>Allergy Information:</Text>
               {allergies.length > 0 ? (
                 allergies.map((allergy, index) => (
-                  <Text key={index} style={styles.sectionText}>- {allergy.trim()}</Text> // Added trim()
+                  <Text key={index} style={styles.sectionText}>- {allergy}</Text>
                 ))
               ) : (
-                <Text style={styles.sectionText}>No specific allergy information provided.</Text> // Improved message
+                <Text style={styles.sectionText}>No allergy information available.</Text>
               )}
             </>
           )}
@@ -226,33 +184,22 @@ const RecipeDetailsScreen = () => {
           {activeSection === 2 && (
             <>
               <Text style={styles.sectionTitle}>Directions:</Text>
-              {/* Check if directions is meaningful */}
-              {directions && directions !== "No directions available." ? (
-                 <Text style={styles.sectionText}>{directions}</Text>
-              ) : (
-                 <Text style={styles.sectionText}>No directions provided.</Text>
-              )}
+              <Text style={styles.sectionText}>{directions}</Text>
             </>
           )}
 
           {activeSection === 3 && (
             <>
               <Text style={styles.sectionTitle}>Nutrition Facts:</Text>
-              {/* Check if nutrition exists and has keys */}
-              {nutrition && Object.keys(nutrition).length > 0 ? (
+              {nutrition ? (
                 <>
                   {Object.keys(nutrition).map((key) => {
-                    // Defensive check for properties inside nutrition[key]
-                    const nutrient = nutrition[key];
-                    if (nutrient && typeof nutrient === 'object' && nutrient.label) {
-                        const { label, quantity, unit } = nutrient;
-                        return (
-                          <Text key={key} style={styles.sectionText}>
-                            {label}: {Math.round(quantity || 0)} {unit || ''}
-                          </Text>
-                        );
-                    }
-                    return null; // Skip rendering if nutrient data is malformed
+                    const { label, quantity, unit } = nutrition[key];
+                    return (
+                      <Text key={key} style={styles.sectionText}>
+                        {label}: {Math.round(quantity || 0)} {unit}
+                      </Text>
+                    );
                   })}
                 </>
               ) : (
@@ -266,7 +213,7 @@ const RecipeDetailsScreen = () => {
   );
 };
 
-// Styles (keep your existing styles here)
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -282,27 +229,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 15, // Adjusted padding slightly
+    paddingHorizontal: 20,
     borderRadius: 8,
     backgroundColor: '#d7e2f1',
-    marginRight: 'auto', // Push other header items away if needed
   },
   backIcon: {
-    width: 20, // Slightly smaller
-    height: 20, // Slightly smaller
-    marginRight: 5, // Reduced margin
+    width: 22,
+    height: 22,
+    marginRight: 8,
   },
   backText: {
-    fontSize: 15, // Slightly smaller
-    fontWeight: '600', // Adjusted weight
+    fontSize: 16,
+    fontWeight: '700',
     color: '#000',
   },
-   errorText: { // Added style for errors
-     fontSize: 16,
-     color: 'red',
-     textAlign: 'center',
-     marginTop: 20,
-   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -311,12 +251,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   saveButton: {
-    // backgroundColor: '#fff', // Can remove if only using icon
-    padding: 5, // Make it just large enough for the icon
-    borderRadius: 50, // Make it circular
-    marginBottom: 15, // Increased margin
+    backgroundColor: '#fff',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginBottom: 10,
     alignSelf: 'center',
-    // Removed border, rely on icon
+    borderColor: '#1f508f',
+    borderWidth: 1,
   },
   heartIcon: {
     width: 32,
@@ -325,34 +267,30 @@ const styles = StyleSheet.create({
   recipeWrapper: {
     width: '100%',
     height: 220,
-    borderWidth: 1, // Thinner border
-    borderColor: '#ccc', // Lighter border
+    borderWidth: 2,
+    borderColor: '#000',
     borderRadius: 8,
     overflow: 'hidden',
     alignSelf: 'center',
     marginBottom: 15,
-    backgroundColor: '#f0f0f0', // Background for placeholder
-  },
-  recipeImagePlaceholder: { // Style for placeholder view
-      justifyContent: 'center',
-      alignItems: 'center',
   },
   recipeImage: {
     width: '100%',
     height: '100%',
+    backgroundColor: '#f0f0f0',
     resizeMode: 'cover',
   },
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    marginBottom: 10, // Increased margin
+    marginBottom: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    paddingBottom: 8, // Increased padding
+    paddingBottom: 5,
   },
   tab: {
     flex: 1,
-    paddingVertical: 8, // Increased padding
+    paddingVertical: 6,
     alignItems: 'center',
   },
   tabText: {
@@ -360,7 +298,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   activeTab: {
-    borderBottomWidth: 3, // Thicker indicator
+    borderBottomWidth: 2,
     borderBottomColor: '#1f508f',
   },
   activeTabText: {
@@ -368,25 +306,23 @@ const styles = StyleSheet.create({
     color: '#1f508f',
   },
   sectionContent: {
-    paddingHorizontal: 5, // Reduced horizontal padding slightly
+    paddingHorizontal: 10,
     marginTop: 10,
-    paddingBottom: 30, // Add padding at the bottom of scroll content
   },
   sectionTitle: {
-    fontSize: 18, // Larger title
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8, // Increased margin
-    color: '#333', // Darker color
+    marginBottom: 5,
   },
   sectionText: {
-    fontSize: 15, // Slightly larger text
-    color: '#444', // Slightly darker
-    marginVertical: 4, // Increased vertical margin
-    lineHeight: 21, // Improve readability
+    fontSize: 14,
+    color: '#333',
+    marginVertical: 2,
   },
   scrollContent: {
     flexGrow: 1,
+    justifyContent: 'flex-start',  
   },
 });
 
-export default RecipeDetailsScreen;
+export default FavoriteRecipesScreen;

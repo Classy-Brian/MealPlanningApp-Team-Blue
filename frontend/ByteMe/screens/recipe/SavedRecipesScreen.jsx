@@ -8,6 +8,7 @@ import { textcolors } from '../../components/TextColors';
 import { fonts } from '../../components/Fonts';
 import maglass from '../../assets/images/magnifyingglass.png';
 import forwardbutton from "../../assets/images/forwardbutton.png";
+import SavedRecipesScreen from '@/app/(tabs)/recipe';
 
 const Recipes = () => {
   const router = useRouter();
@@ -172,4 +173,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Recipes;
+export default SavedRecipesScreen;
