@@ -1,2 +1,2 @@
-import FavoriteRecipesScreen from "../../screens/recipe/FavoriteRecipesScreen";
-export default FavoriteRecipesScreen;
+// import FavoriteRecipesScreen from "@/screens/FavoriteRecipesScreen";
+// export default FavoriteRecipesScreen;
