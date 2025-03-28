@@ -40,6 +40,16 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId, // Reference to Recipe model
       ref: "Recipe"
     }],
+
+    grocery: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Ingredients"
+    }],
+
+    pantry: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Ingredients"
+    }],
     
     // JWT token is stored here
     token: {            

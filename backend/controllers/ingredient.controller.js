@@ -1,6 +1,7 @@
 import Ingredient from "../models/ingredient.model.js";
 import mongoose from "mongoose";
 import axios from 'axios';
+import express from "express";
 
 export const getRecipes = async (req, res) => {
     try {
