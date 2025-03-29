@@ -94,13 +94,13 @@ const PreferenceSettingsScreen = () => {
 
     // Function to render a single allergy item in the FlatList.
     const renderAllergyItem = ({ item }) => (
-        <View style={styles.allergyItem}>
+        <View style={styles_allergies.allergyItem}>
             <Checkbox.Android
                 status={selectedAllergies.includes(item.id) ? 'checked' : 'unchecked'}
                 onPress={() => toggleSelection(item.id)}
                 color="#284B63"
             />
-            <Text style={styles.allergyText}>{item.label}</Text>
+            <Text style={styles_allergies.allergyText}>{item.label}</Text>
         </View>
     );
     
@@ -188,13 +188,22 @@ const PreferenceSettingsScreen = () => {
         <SafeAreaView style={styles_allergies.safeArea}>
             <View style={styles_allergies.container}>
 
-                <View style={styles_allergies.header}>
+                {/* <View style={styles_allergies.header}>
                     <Link href="/settings" asChild>
                         <TouchableOpacity style={styles_allergies.settingsButton}>
                                 <Ionicons name="arrow-back" size={24} color="black" />
                                 <Text style={styles_allergies.settingsText}>Settings</Text>
                         </TouchableOpacity>
                     </Link>
+                </View> */}
+                <View style={styles_allergies.header}>
+                    <TouchableOpacity
+                        style={styles_allergies.settingsButton}
+                        onPress={() => router.back()} 
+                    >
+                        <Ionicons name="arrow-back" size={24} color="black" />
+                        <Text style={styles_allergies.settingsText}>Settings</Text>
+                    </TouchableOpacity>
                 </View>
 
                 <Text style={styles_allergies.title}>{from}</Text>
@@ -268,6 +277,22 @@ const styles_allergies = StyleSheet.create({
     settingsText: {
         fontSize: 20,
         marginLeft: 5,
+    },
+    saveButton: {
+        backgroundColor: colors.header, 
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 25, 
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 20, 
+        alignSelf: 'center', 
+        minWidth: 150, 
+    },
+    saveButtonText: {
+        color: textcolors.white,
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 
