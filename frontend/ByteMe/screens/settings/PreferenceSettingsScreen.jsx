@@ -188,14 +188,6 @@ const PreferenceSettingsScreen = () => {
         <SafeAreaView style={styles_allergies.safeArea}>
             <View style={styles_allergies.container}>
 
-                {/* <View style={styles_allergies.header}>
-                    <Link href="/settings" asChild>
-                        <TouchableOpacity style={styles_allergies.settingsButton}>
-                                <Ionicons name="arrow-back" size={24} color="black" />
-                                <Text style={styles_allergies.settingsText}>Settings</Text>
-                        </TouchableOpacity>
-                    </Link>
-                </View> */}
                 <View style={styles_allergies.header}>
                     <TouchableOpacity
                         style={styles_allergies.settingsButton}
