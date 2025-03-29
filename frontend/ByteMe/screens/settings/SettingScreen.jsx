@@ -33,7 +33,7 @@ const SettingsScreen = () => {
                             <TouchableOpacity>
                                 <View style={[ styles_settings.greybutton ]}>
                                     <Image style={{marginRight:10}}
-                                            source={require('../../assets/images/back_arrow_navigate.png')}/>
+                                        source={require('../../assets/images/back_arrow_navigate.png')}/>
                                     <Text style={styles.regularText}>Profile</Text>
                                 </View>
                             </TouchableOpacity>
@@ -54,7 +54,7 @@ const SettingsScreen = () => {
                     </View>
 
                     {/* Settings List */}
-                    <Link href={{ pathname: "/(settings)/preferences", params: { from: 'Allergies' } }} asChild>
+                    <Link href={{ pathname: "/(settings)/allergies", params: { from: 'Allergies' } }} asChild>
                         <TouchableOpacity style={styles_settings.settingItem}>
                             <MaterialIcons name="tune" size={40} color="#000000" />
                             <Text style={[styles.regularText, {marginLeft: 20}]}>

@@ -1,6 +1,6 @@
 // Import necessary modules from React and React Native.
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, TouchableOpacity } from 'react-native';
+import { Image, View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, TouchableOpacity } from 'react-native';
 import axios from 'axios';  // For making HTTP requests.
 import { useLocalSearchParams, useRouter, Link } from 'expo-router'; // Import useRouter
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -27,7 +27,7 @@ const ALLERGY_OPTIONS = [
 ];
 
 // Main functional component for the Preference Settings screen.
-const PreferenceSettingsScreen = () => {
+const AllergySettingsScreen = () => {
     // State variables using the useState hook:
     const [selectedAllergies, setSelectedAllergies] = useState([]); // Stores the *IDs* of selected allergies.
     const [loading, setLoading] = useState(true); // Indicates whether data is being loaded.
@@ -193,12 +193,14 @@ const PreferenceSettingsScreen = () => {
                         style={styles_allergies.settingsButton}
                         onPress={() => router.back()} 
                     >
-                        <Ionicons name="arrow-back" size={24} color="black" />
+                        <Image style={{marginRight:10}}
+                            source={require('../../assets/images/back_arrow_navigate.png')}/>
                         <Text style={styles_allergies.settingsText}>Settings</Text>
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles_allergies.title}>{from}</Text>
+                {/* <Text style={[styles.title, {marginTop: 10}]}>Settings </Text> */}
+                <Text style={[styles.title, {marginTop: 10}]}>{from}</Text>
                 <Text style={styles_allergies.normalText}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
 
             <FlatList
@@ -224,7 +226,7 @@ const PreferenceSettingsScreen = () => {
 const styles_allergies = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#fff',
     },
     container: {
         flex: 1,
@@ -265,6 +267,14 @@ const styles_allergies = StyleSheet.create({
         position: 'absolute', 
         left: 0,
         top: 0,
+        borderRadius: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 5,
+        backgroundColor: colors.othergrey,
+        justifyContent: 'center',
+        marginVertical: 20,
+        elevation: 2,
+        shadowColor: colors.black,
     },
     settingsText: {
         fontSize: 20,
@@ -288,4 +298,4 @@ const styles_allergies = StyleSheet.create({
     },
 });
 
-export default PreferenceSettingsScreen;
+export default AllergySettingsScreen;
