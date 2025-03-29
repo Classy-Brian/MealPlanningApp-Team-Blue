@@ -82,12 +82,12 @@ const SurveyFinal = ( { navigation, route } ) => {
         </View>
 
         <Text style={[styles.title, {marginBottom: 80}]}>Finish Sign Up </Text>
-        <Text style={[styles.heading, button.greybox, {fontSize: 34, textAlign: 'center'}]}>Finished signing up? You'll still be able 
+        <Text style={[styles.heading, button.greybox, {fontSize: 30, textAlign: 'center'}]}>Finished signing up? You'll still be able 
                       to add or edit preferences in your settings.</Text>
         
         <TouchableOpacity onPress={handleSubmitSurvey}>
           <View style={[button.bluebutton, {marginTop: 30}]}>
-            <Text style={[styles.buttonText, {fontSize: 30, color: textcolors.white}]}>Finish</Text>
+            <Text style={[styles.buttonText, {fontSize: 20, color: textcolors.white}]}>Finish</Text>
           </View>
         </TouchableOpacity>
       </View>

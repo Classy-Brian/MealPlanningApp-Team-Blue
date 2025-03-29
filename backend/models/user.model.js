@@ -34,19 +34,11 @@ const userSchema = new mongoose.Schema({
         wantToTry: { type: Number, default: 0 }
       }
     },
-  
-    //Recipes section - Array of Recipe IDs
-    recipes: [{
-      type: mongoose.Schema.Types.ObjectId, // Reference to Recipe model
-      ref: "Recipe"
-    }],
-    
-    // JWT token is stored here
-    token: {            
-        type: String,
-    },
-  
-  }, {
+
+    savedRecipes: [{
+        type: String 
+    }]
+    }, {
     timestamps: true
   });
 

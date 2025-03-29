@@ -70,7 +70,7 @@ const getTabIcon = (name, isActive) => {
       return <Image source={isActive ? HomeW : HomeB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'calendar':
       return <Image source={isActive ? CalendarW : CalendarB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
-    case 'recipe':
+    case 'savedrecipes':
       return <Image source={isActive ? RecipeW : RecipeB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'grocery':
       return <Image source={isActive ? GroceryW : GroceryB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
@@ -89,7 +89,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="home" options={{ title: 'Home', headerShown: false }} />
       <Tabs.Screen name="calendar" options={{ title: 'Calendar', headerShown: false }} />
-      <Tabs.Screen name="recipe" options={{ title: 'Recipe', headerShown: false }} />
+      <Tabs.Screen name="savedrecipes" options={{ title: 'Recipe', headerShown: false }} />
       <Tabs.Screen name="grocery" options={{ title: 'Grocery', headerShown: false }} />
       <Tabs.Screen name="pantry" options={{ title: 'Pantry', headerShown: false }} />
     </Tabs>
