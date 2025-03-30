@@ -195,7 +195,7 @@ const AllergySettingsScreen = () => {
                     >
                         <Image style={{marginRight:10}}
                             source={require('../../assets/images/back_arrow_navigate.png')}/>
-                        <Text style={styles_allergies.settingsText}>Settings</Text>
+                        <Text style={styles_allergies.settingsText}>Preference</Text>
                     </TouchableOpacity>
                 </View>
 

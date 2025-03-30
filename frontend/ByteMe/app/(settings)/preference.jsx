@@ -1,2 +1,2 @@
-import AllergySettingsScreen from "@/screens/settings/PreferenceSettingsScreen"
-export default AllergySettingsScreen;
+import PreferenceSettingsScreen from "@/screens/settings/PreferenceSettingsScreen"
+export default PreferenceSettingsScreen;
