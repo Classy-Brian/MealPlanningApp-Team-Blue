@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import Back_butt from '../assets/images/backbutton.png';  // Adjusted path for back button
-import heartIcon from '../assets/images/heart.png';  // Add filled heart image
-import emptyHeartIcon from '../assets/images/empty-heart.png';  // Add empty heart image
+import Back_butt from '../../assets/images/backbutton.png';  // Adjusted path for back button
+import heartIcon from '../../assets/images/heart.png';  // Add filled heart image
+import emptyHeartIcon from '../../assets/images/empty-heart.png';  // Add empty heart image
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 
 // const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
