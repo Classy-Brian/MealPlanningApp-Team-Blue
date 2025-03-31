@@ -8,7 +8,10 @@ import {
   updateUserPreferences,
   updateUser,
   deleteUser,
-  getUserProfile
+  getUserProfile,
+  getSavedRecipes, 
+  saveRecipe,
+  unsaveRecipe
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -42,5 +45,15 @@ router.post('/login', loginUser);
 
 //Add recipe to user
 router.patch('/:userId/add-recipe/:recipeId', addRecipeToUser);
+
+//fetching saved recipe
+router.get("/:id/get-saved-recipes", getSavedRecipes);
+
+//save the recipe
+router.post("/save-recipe", saveRecipe);
+
+//removing saved recipe 
+router.delete("/remove/remove-recipe", unsaveRecipe);
+
 
 export default router;
