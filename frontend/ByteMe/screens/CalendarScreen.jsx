@@ -1,32 +1,62 @@
-import { Image, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
-import HomeB from "@/assets/images/active.png";
-import maglass from "@/assets/images/magnifyingglass.png";
-import { colors } from '@/components/Colors';
-import { textcolors } from '@/components/TextColors';
-import { fonts } from '@/components/Fonts';
-import Back_butt from "@/assets/images/backbutton.png";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
+import { Calendar } from 'react-native-calendars';
 
-const Calendar = () => {
+const CalendarScreen = () => {
   const router = useRouter();
+  
+  // Track selected date
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  // Sample meal plan data
+  const mealPlans = {
+    "2025-04-01": ["Breakfast: Oatmeal", "Lunch: Chicken Salad", "Dinner: Pasta"],
+    "2025-04-02": ["Breakfast: Pancakes", "Lunch: Sushi", "Dinner: Steak"],
+  };
+
   return (
     <View style={styles.container}>
-      <FlatList
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Calendar</Text>
-            </View>
-          </View>
-        }
+      {/* Calendar Title */}
+      <Text style={styles.title}>Calendar</Text>
+
+      {/* Calendar Component */}
+      <Calendar
+        onDayPress={(day) => setSelectedDate(day.dateString)}
+        markedDates={{
+          [selectedDate]: { selected: true, selectedColor: "#133E7C" },
+        }}
+        theme={{
+          calendarBackground: "#fff",
+          textSectionTitleColor: "#133E7C",
+          selectedDayBackgroundColor: "#133E7C",
+          selectedDayTextColor: "#fff",
+          todayTextColor: "#133E7C",
+          dayTextColor: "#000",
+          textDisabledColor: "#d9e1e8",
+          arrowColor: "#133E7C",
+          monthTextColor: "#133E7C",
+        }}
       />
+
+      {/* Meal Plan Section */}
+      <View style={styles.mealContainer}>
+        <Text style={styles.mealTitle}>Meal Plan for {selectedDate || "Select a date"}</Text>
+        {selectedDate && mealPlans[selectedDate] ? (
+          <FlatList
+            data={mealPlans[selectedDate]}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => <Text style={styles.mealItem}>{item}</Text>}
+          />
+        ) : (
+          <Text style={styles.noMealText}>No meal plan available.</Text>
+        )}
+      </View>
+
       {/* Floating Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
-              <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
+      <TouchableOpacity style={styles.addButton} onPress={() => router.push('addday')}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -35,111 +65,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 20,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 30, // Adjusted for a compact button
-    backgroundColor: "#D7E2F1",
-    borderRadius: 10,
-    marginBottom: 10,
-    alignSelf: 'flex-start', // Keeps it aligned to the left
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
-  },
-  backText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
-  },
-  header: {
-    paddingBottom: 20,
+    padding: 20,
   },
   title: {
-    fontSize: 36,
-    fontFamily: fonts.bold,
+    fontSize: 22,
+    fontWeight: "bold",
     textAlign: "center",
-    marginVertical: 10,
-    flex: 1,
-  },
-  searchContainer: {
-    flexDirection: 'row', // Align the image and input text horizontally
-    alignItems: 'center', // Center items vertically
-    height: 50,
-    borderRadius: 20,
-    borderWidth: 2, // Black border width
-    borderColor: 'black', // Set border color to black
-    backgroundColor: "#D3D3D3", // The background color can stay as it is or be changed
-    paddingHorizontal: 10,
     marginBottom: 10,
-    flex: 1,
+    color: "#000",
   },
-  
-  magnifyingGlassIcon: {
-    width: 30,
-    height: 30,
-    marginRight: 15, // Space between the icon and input
-  },
-  
-  inputText: {
-    fontSize: 20,
-    paddingVertical: 10,
-    flex: 1, // Take up the remaining space
-  },
-  searchButton: {
-    backgroundColor: colors.primary, // Choose any color for the button
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+  mealContainer: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#F0F0F0",
     borderRadius: 10,
-    alignItems: 'center',
   },
-  searchButtonText: {
-    color: '#fff',
+  mealTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  mealItem: {
     fontSize: 16,
-    fontWeight: '600',
+    paddingVertical: 5,
   },
-  row: {
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  recipeContainer: {
-    width: "48%",
-    aspectRatio: 1,
-  },
-  recipeWrapper: {
-    width: "100%",
-    height: "100%",
-    borderWidth: 3,
-    borderColor: "#000",
-    borderRadius: 15,
-    overflow: "hidden",
-  },
-  recipePhoto: {
-    width: "100%",
-    height: "100%",
-  },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    backgroundColor: "rgba(31, 80, 143, 0.8)",
-    width: "100%",
-    height: 40,
-    opacity: 0.8,
-  },
-  recipeTitle: {
-    position: "absolute",
-    top: 10,
-    width: "100%",
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#fff",
-    textAlign: "center",
-    opacity: 0.8,
+  noMealText: {
+    fontSize: 16,
+    color: "gray",
   },
   addButton: {
     position: 'absolute',
@@ -159,4 +111,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Calendar
+export default CalendarScreen;
