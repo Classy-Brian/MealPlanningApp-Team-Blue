@@ -41,7 +41,7 @@ const SurveyAllergies = ({ navigation }) => {
 
   const nextPage = async () => {
     await AsyncStorage.setItem('allergies', JSON.stringify(allergies));
-    navigation.navigate('surveyfinal', {allergies});
+    navigation.navigate('survey3', { allergies });
   };
 
   const prevPage = async () => {

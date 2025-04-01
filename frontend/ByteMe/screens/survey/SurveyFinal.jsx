@@ -11,37 +11,35 @@ import axios from 'axios'
 const SurveyFinal = ( { navigation, route } ) => {
   const router = useRouter();
   const [allergies, setAllergies] = useState([]);
-
-  useEffect(() => {
-    const load = async () => {
-      const savedAllergies = await AsyncStorage.getItem('allergies');
-      if (savedAllergies) {
-        setAllergies(JSON.parse(savedAllergies));
-      }
-    };
-
-    if (route.params?.allergies) {
-      setAllergies(route.params.allergies);
-    } else {
-      load();
-    }
-  }, []);
+  // const [selectedPortion, setSelectedPortion] = useState(null);
+  const [portion, setSelectedPortion] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmitSurvey = async () => {
+    setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('authToken');    // Retrieves the token
       if (!token) {
         console.error("AUTHENTICATION TOKEN IS MISSING");
+        Alert.alert("Error", "Authentication missing. Please log in again.");
+        setIsLoading(false);
         return;
       }
 
-      const res = await axios.put(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies },
+      const savedAllergies = await AsyncStorage.getItem('allergies');
+      const savedPortionSize = await AsyncStorage.getItem('portion')
+
+      const allergies = savedAllergies ? JSON.parse(savedAllergies) : [];
+      const portion = savedPortionSize ? JSON.parse(savedPortionSize) : "1"; // parseInt(savedPortionSize, 10) : 1;
+
+      const res = await axios.put(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion },
         { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
       if (res.status === 200) {
         await AsyncStorage.removeItem('authToken');
         await AsyncStorage.removeItem('allergies')
+        await AsyncStorage.removeItem('portion')
         router.replace('../../(start)/login');
       }
     } catch (err) {
@@ -63,7 +61,7 @@ const SurveyFinal = ( { navigation, route } ) => {
   }
 
   const prevPage = () => {
-    navigation.navigate('survey2', { allergies });
+    navigation.navigate('survey3', { allergies, portion });
   }
 
   return (

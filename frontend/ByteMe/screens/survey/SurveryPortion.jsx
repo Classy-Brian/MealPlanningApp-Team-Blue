@@ -30,16 +30,25 @@ const PORTION_OPTIONS = [
 ]
 
 const SurveyPortion = ({ navigation }) => {
-    const router = useRouter();
-    const [selectedPortion, setSelectedPortion] = useState(null);
+    const window = Dimensions.get('window')
 
-    // Load previously saved portion size on mount
+    const [portion, setSelectedPortion] = useState(null);
+
+    const handleSelection = (value) => {
+        setSelectedPortion(value);
+    };
+
     useEffect(() => {
         const loadPortionSize = async () => {
             try {
-                const savedPortion = await AsyncStorage.getItem('surveyPortionSize');
+                const savedPortion = await AsyncStorage.getItem('portion');
                 if (savedPortion !== null) {
-                    setSelectedPortion(parseInt(savedPortion, 10));
+                    const parsedValue = parseInt(savedPortion, 10);
+                    if (PORTION_OPTIONS.some(option => option.value === parsedValue)) {
+                        setSelectedPortion(parsedValue);
+                    } else {
+                        console.warn("Loaded invalid portion size from storage:", savedPortion);
+                    }
                 }
             } catch (e) {
                 console.error("Failed to load portion size from storage", e);
@@ -48,45 +57,15 @@ const SurveyPortion = ({ navigation }) => {
         loadPortionSize();
     }, []);
 
-    const handleSelection = (value) => {
-        setSelectedPortion(value);
-    };
-
     const nextPage = async () => {
-        if (selectedPortion === null) {
-            Alert.alert("Selection Needed", "Please select a portion size before continuing.");
-            return;
-        }
-        try {
-            await AsyncStorage.setItem('surveyPortionSize', selectedPortion.toString());
-            router.push('/(survey)/survey_final');
-        } catch (e) {
-            console.error("Failed to save portion size", e);
-            Alert.alert("Error", "Could not save your selection");
-        }
+        await AsyncStorage.setItem('portion', JSON.stringify(portion));
+        navigation.navigate('surveyfinal', { portion });
     };
-
+    
     const prevPage = async () => {
-        if (selectedPortion !== null) {
-            try {
-                await AsyncStorage.setItem('surveyPortionSize', selectedPortion.toString());
-            } catch(e) {
-                console.error("Failed to save portion size on back navigation", e);
-            }
-        }
-        // router.push('/(survey)/survey_2');
-        router.back();
-    };
-
-    const skipPage = async () => {
-        try {
-            await AsyncStorage.setItem('surveyPortionSize', '1') // Default to 1
-            router.push('/(survey)/survey_final');
-        } catch (e) {
-            console.error("Failed to save skipped portion size", e);
-            Alert.alert("Error", "Could not skip this step");
-        }
-    };
+        await AsyncStorage.setItem('portion', JSON.stringify(portion));
+        navigation.navigate('survey2', { portion });
+    }
 
     return (
         <View style={styles.whiteBackground}>
@@ -95,7 +74,7 @@ const SurveyPortion = ({ navigation }) => {
                 {/* Header buttons */}
                 <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                     <TouchableOpacity onPress={prevPage}>
-                        <View style={[styles_portion.greybutton, ]}>
+                        <View style={styles_portion.greybutton}>
                             <Image style={{marginRight:10}} source={backArrowImage}/>
                             <Text style={styles.regularText}>Allergies</Text>
                         </View>
@@ -115,16 +94,16 @@ const SurveyPortion = ({ navigation }) => {
 
                 {/* Radio Button Options */}
                 <View style={styles_portion.optionsContainer}>
-                    <RadioButton.Group onValueChange={newValue => handleSelection(parseInt(newValue, 10))} value={selectedPortion?.toString()}>
+                    <RadioButton.Group onValueChange={newValue => handleSelection(parseInt(newValue, 10))} value={portion?.toString()}>
                         {PORTION_OPTIONS.map((option) => (
-                            <TouchableOpacity key={option.value} onPress={() => handleSelection(option.value)} style={styles.optionRow}>
+                            <TouchableOpacity key={option.value} onPress={() => handleSelection(option.value)} style={styles_portion.optionRow}>
                                 <RadioButton.Android 
                                     value={option.value.toString()} 
-                                    status={selectedPortion === option.value ? 'checked' : 'unchecked'}
+                                    status={portion === option.value ? 'checked' : 'unchecked'}
                                     color={colors.header}
                                 />
-                                <Text style={styles.optionLabel}>{option.label}</Text>
-                                <Image source={option.icon} style={styles.optionIcon} />
+                                <Text style={styles_portion.optionLabel}>{option.label}</Text>
+                                <Image source={option.icon} style={styles_portion.optionIcon} />
                             </TouchableOpacity>
                         ))}
                     </RadioButton.Group>
@@ -132,12 +111,12 @@ const SurveyPortion = ({ navigation }) => {
 
             </View>
 
-            {/* Floating Next Button */}
-            <TouchableOpacity onPress={nextPage} style={styles_portion.nextButtonContainer}>
-                    <View style={[styles_portion.nextbutton]}>
-                        <NextButton />
-                    </View>
+            <TouchableOpacity onPress={nextPage}>
+                <View style={[styles_portion.nextbutton, {right: 0, top: 0, transform:[{translateX: 30}, {translateY: 265}]}]}>
+                    <NextButton />
+                </View>
             </TouchableOpacity>
+
         </View>
     );
 

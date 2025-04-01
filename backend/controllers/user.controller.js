@@ -18,7 +18,7 @@ export const createUser = async (req, res) => {
   console.log("Recieved registration request:", req.body);
   
   try {
-    const { name, email, password, allergies, profile, avatar } = req.body;
+    const { name, email, password, allergies, portion, profile, avatar } = req.body;
 
     // Check if user already exists by email
     const userExists = await User.findOne({ email });
@@ -33,6 +33,7 @@ export const createUser = async (req, res) => {
       avatar,
       password,
       allergies,
+      portion,
       profile
     });
 
@@ -49,6 +50,7 @@ export const createUser = async (req, res) => {
         email: user.email,
         avatar: user.avatar,
         allergies: user.allergies,
+        portion: user.portion,
         profile: user.profile,
         recipes: user.recipes,
       },
@@ -129,12 +131,14 @@ export const getUserProfile = async (req, res) => {
 };
 
 export const updateUserPreferences = async (req, res) => {
-  const { allergies } = req.body;
+  const { allergies, portion } = req.body;
   const userId = req.user._id;  // Extracted from token
 
   try {
-    await User.findByIdAndUpdate(userId, { allergies }, { new: true });
-    return res.status(200).json({ message: 'Allergies updated successfully'});
+    await User.findByIdAndUpdate(userId, { allergies, portion }, { new: true });
+    console.log(allergies)
+    console.log(portion)
+    return res.status(200).json({ message: 'Allergies & Portion updated successfully'});
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Server error'});
@@ -194,7 +198,6 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 //DELETE: Remove a User by ID
 export const deleteUser = async (req, res) => {
@@ -322,7 +325,6 @@ export const getSavedRecipes = async (req, res) => {
   }
 };
 
-
 export const saveRecipe = async (req, res) => {
   try {
       const { userId, recipeId } = req.body;
@@ -382,9 +384,6 @@ export const unsaveRecipe = async (req, res) => {
       res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
-
 
 export const getRecieById = async (req, res) => {
   try {
