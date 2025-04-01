@@ -95,20 +95,6 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// export const getUserProfile = async (req, res) => {
-//   console.log("getUserProfile called");
-//   console.log("req.user:", req.user);
-
-//   const user = await User.findById(req.user._id).select('-password');
-
-//   if (user) {
-//     res.json(user);
-//   } else {
-//     res.status(404);
-//     throw new Error('User not found');
-//   }
-// };
-
 export const getUserProfile = async (req, res) => {
   console.log("getUserProfile called");
   const token = req.params.token; // Get token from URL parameter

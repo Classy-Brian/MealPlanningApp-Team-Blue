@@ -10,7 +10,6 @@ import axios from 'axios'
 
 const SurveyFinal = ( { navigation, route } ) => {
   const router = useRouter();
-  // const { allergies } = route.params;
   const [allergies, setAllergies] = useState([]);
 
   useEffect(() => {

@@ -21,7 +21,16 @@ const userSchema = new mongoose.Schema({
     allergies: [{
         type: String
     }],
-  
+    portion: {
+        type: String
+    },
+    dislikes: [{
+        type: String
+    }],
+    cuisines: [{
+        type: String
+    }],
+    
     // Profile section
     profile: {
         calories: {
