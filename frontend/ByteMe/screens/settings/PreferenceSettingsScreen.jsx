@@ -31,18 +31,20 @@ const PreferenceSettingsScreen = () => {
                     <Text style={[styles.regularText, {paddingBottom: 20}]}>Manage your overall preferences.{'\n'}Including allergens, your portion sizes and more.</Text>
 
                     {/* Preference List */}
-                    <TouchableOpacity style={styles_preference.settingItem}>
-                        <MaterialIcons name="tune" size={40} color="#000000" />
-                        <View style={styles_preference.textContainer}>
-                            <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
-                                Portion Size
-                            </Text>
-                            <Text style={styles_preference.settingDescriptionText}>
-                                Select your preferred portion size.
-                            </Text>
-                        </View>
-                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                    </TouchableOpacity>
+                    <Link href={{ pathname: "/(settings)/portion", params: { from: 'Portion Size' } }} asChild>
+                        <TouchableOpacity style={styles_preference.settingItem}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_preference.textContainer}>
+                                <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Portion Size
+                                </Text>
+                                <Text style={styles_preference.settingDescriptionText}>
+                                    Select your preferred portion size.
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+                    </Link>
 
                     <Link href={{ pathname: "/(settings)/allergies", params: { from: 'Allergies' } }} asChild>
                         <TouchableOpacity style={styles_preference.settingItem}>

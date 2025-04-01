@@ -131,17 +131,41 @@ export const getUserProfile = async (req, res) => {
 };
 
 export const updateUserPreferences = async (req, res) => {
-  const { allergies, portion } = req.body;
-  const userId = req.user._id;  // Extracted from token
+  console.log("updateUserPreferences called");
+  console.log("req.body:", req.body);
+  console.log("req.user:", req.user);
+
+  const updateData = {};
+  if (req.body.allergies !== undefined) {
+    updateData.allergies = req.body.allergies; 
+  }
+  if (req.body.portion !== undefined) {
+      updateData.portion = req.body.portion;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    res.status(400);
+    throw new Error('No preference data provided for update.');
+  }
+
+  const userId = req.user._id;
+  console.log("Extracted userId:", userId);
+  console.log("Data to update:", updateData);
 
   try {
-    await User.findByIdAndUpdate(userId, { allergies, portion }, { new: true });
-    console.log(allergies)
-    console.log(portion)
-    return res.status(200).json({ message: 'Allergies & Portion updated successfully'});
+      const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+
+      console.log("Updated user:", updatedUser);
+      if (!updatedUser) {
+          res.status(404);
+          throw new Error('User not found during preference update.');
+      }
+
+      res.status(200).json({ message: 'Preferences updated successfully' }); 
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Server error'});
+      console.error("Error in updateUserPreferences:", err);
+      res.status(500);
+      throw new Error('Server error updating preferences.'); 
   }
 };
 

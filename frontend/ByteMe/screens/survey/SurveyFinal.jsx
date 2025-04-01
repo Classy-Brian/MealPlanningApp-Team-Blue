@@ -11,7 +11,6 @@ import axios from 'axios'
 const SurveyFinal = ( { navigation, route } ) => {
   const router = useRouter();
   const [allergies, setAllergies] = useState([]);
-  // const [selectedPortion, setSelectedPortion] = useState(null);
   const [portion, setSelectedPortion] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,7 +31,7 @@ const SurveyFinal = ( { navigation, route } ) => {
       const allergies = savedAllergies ? JSON.parse(savedAllergies) : [];
       const portion = savedPortionSize ? JSON.parse(savedPortionSize) : "1"; // parseInt(savedPortionSize, 10) : 1;
 
-      const res = await axios.put(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion },
+      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion },
         { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 

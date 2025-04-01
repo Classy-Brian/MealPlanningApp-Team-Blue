@@ -142,7 +142,7 @@ const AllergySettingsScreen = () => {
                 },
             });
 
-            await axiosInstance.put(`/api/users/preferences`, { allergies: allergiesToSend });
+            await axiosInstance.patch(`/api/users/preferences`, { allergies: allergiesToSend });
 
             Alert.alert("Success", "Allergies updated successfully!"); // Provide user feedback
             fetchUserData();
@@ -199,7 +199,6 @@ const AllergySettingsScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* <Text style={[styles.title, {marginTop: 10}]}>Settings </Text> */}
                 <Text style={[styles.title, {marginTop: 10}]}>{from}</Text>
                 <Text style={styles_allergies.normalText}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
 
