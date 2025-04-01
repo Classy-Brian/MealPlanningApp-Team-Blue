@@ -11,7 +11,8 @@ import {
   getUserProfile,
   getSavedRecipes, 
   saveRecipe,
-  unsaveRecipe
+  unsaveRecipe,
+  getSavedPantry
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -54,6 +55,8 @@ router.post("/save-recipe", saveRecipe);
 
 //removing saved recipe 
 router.delete("/remove/remove-recipe", unsaveRecipe);
+
+router.get("/:id/get-saved-pantry", getSavedPantry);
 
 
 export default router;

@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { colors } from '@/components/Colors'
 import { textcolors } from '@/components/TextColors'
 import { Divider } from 'react-native-paper'
+import backarrow from "@/assets/images/back_arrow_navigate.png"
 
 function Recipe() {
   return(
@@ -23,7 +24,7 @@ const PantrySuggestions = () => {
             <TouchableOpacity onPress={() => route.replace('/(tabs)/pantry')}>
             <View style={[det.greybutton, ]}>
               <Image style={{marginRight:10}}
-                      source={require('../assets/images/back_arrow_navigate.png')}/>
+                      source={backarrow}/>
               <Text style={styles.regularText}>Survey</Text>
             </View>
           </TouchableOpacity>

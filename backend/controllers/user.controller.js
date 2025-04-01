@@ -397,9 +397,6 @@ export const unsaveRecipe = async (req, res) => {
   }
 };
 
-
-
-
 export const getRecieById = async (req, res) => {
   try {
       const user = await User.findById(req.params.id); // Find recipe by ID
@@ -409,5 +406,97 @@ export const getRecieById = async (req, res) => {
       res.json(user);
   } catch (error) {
       res.status(500).json({ message: error.message });
+  }
+};
+
+export const getSavedPantry = async (req, res) => {
+  try {
+    // Find the user by ID and populate saved pantry ingredients
+    const user = await User.findById(req.params.id).populate('savedPantry');
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!Array.isArray(user.savedPantry) || user.savedPantry.length === 0) {
+      return res.json({ message: "No saved pantry ingredients found", savedPantry: [] });
+    }
+
+    const API_ID = process.env.EXPO_PUBLIC_FOODDB_ID;
+    const API_KEY = process.env.EXPO_PUBLIC_FOODDB_KEY;
+
+    if (!API_ID || !API_KEY) {
+      console.error("Missing API credentials");
+      return res.status(500).json({message: "Server error: Missing API credentials"});
+    }
+
+    const pantryDetailsPromises = user.savedPantry.map(async (foodId) => {
+      try {                
+        if (!foodId || typeof foodId !== "string") {
+          console.error("Invalid foodId", foodId);
+          return null;
+        }
+
+        const response = await axios.get(
+          `https://api.edamam.com/api/food-database/v2/parser`,
+          {
+            params: {
+              app_id: API_ID,
+              app_key: API_KEY,
+              ingr: foodId,
+            },
+            timeout: 10000,
+          }
+        );
+
+        const foodData = response.data.hints[0]?.food;
+
+        if (!foodData) {
+          console.error("Food data not found for the given foodId");
+          return null;
+        }
+
+        const label = foodData.label || "Unknown";
+        const category = foodData.category || "Other";
+        const nutrients = foodData.nutrients || {};
+        const image = foodData.image || 'https://via.placeholder.com/150';
+
+        // if (!response.data.ingredients || response.data.ingredients.length === 0) {
+        //   console.error(`No ingredients found for foodId: ${foodId}`);
+        //   return null;
+        // }
+
+        // const parsedData = response.data.ingredients[0]?.parsed?.[0];
+
+        // if (!parsedData) {
+        //   console.error(`No parsed data found for foodId: ${foodId}`);
+        //   return null;
+        // }
+
+        console.log('Food details:', {label, category, nutrients, image});
+
+        return {
+          label, category, nutrients, image
+          // uri: foodId,
+          // label: parsedData.food,
+          // category: parsedData.foodCategory || "Unknown",
+          // image: parsedData.image || "https://via.placeholder.com/150",
+          // nutrition: parsedData.totalNutrients || {},
+        };
+      } catch (err) {
+        console.error(`Error fetching ingredient details for foodId ${foodId}:`, err.message);
+        return null;
+      }
+    });
+
+    const detailedPantry = (await Promise.all(pantryDetailsPromises)).filter(Boolean);
+
+    return res.json({ 
+      message: "Saved pantry ingredients fetched successfully",
+      savedPantry: detailedPantry 
+    });
+
+  } catch (error) {
+    console.error("Error fetching user's pantry ingredients recipes:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

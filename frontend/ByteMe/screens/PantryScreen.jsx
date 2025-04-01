@@ -1,5 +1,5 @@
-import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, FlatList } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { styles } from '@/components/Sheet'
 import { Divider } from 'react-native-paper'
 import { textcolors } from '@/components/TextColors'
@@ -7,37 +7,45 @@ import { colors } from '@/components/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import { fonts } from '@/components/Fonts'
 import { useRouter } from 'expo-router'
+import maglass from "@/assets/images/magnifyingglass.png"
+import chright from "@/assets/images/chevron_right.png"
 import Animated, { Easing, useAnimatedProps, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
+import getUserIdFromToken from '@/components/getUserIdFromToken'
+import axios from 'axios'
 
-function SingleIngredient() {
+const SingleIngredient = ({ ingredient }) => {
   return(
     <View style={det.box}>
       <View style={det.boxContainer}>
         <View style={det.leftcontain}>
           <Image 
             style={det.ingredientIcon}
-            source={require('../assets/images/salt.png')}/>
+            source={{
+              uri: ingredient.image || "https://via.placeholder.com/150",
+            }}/>
           <View>                  
             <Text style={styles.regText16}>
-            Ingredient </Text>
+            {ingredient.label} </Text>
             <Text style={styles.regText16}>
               Ingredient details </Text>
           </View>
         </View>
         <TouchableOpacity>
-          <Image source={require('../assets/images/chevron_right.png')}/>
+          <Image source={chright}/>
         </TouchableOpacity>
       </View>                         
     </View>
   )
 }
 
-function Category() {
+const Category = ({ category, ingredients }) => {
   return(
     <View> 
-      <Text style={det.heading}>Category</Text>
-        <SingleIngredient />
-
+      <Text style={det.heading}>{category}</Text>
+      <FlatList
+        data={ingredients}
+        keyExtractor={({ item }) => <SingleIngredient ingredient={item} />}
+      />
       <Divider />
     </View>
   )
@@ -96,13 +104,51 @@ function GoPantrySuggest() {
 }
 
 const Pantry = () => {
-  const [pantry, setPantry] = useState('');
-  const [isFocused, setFocused] = useState(styles.searchInput);
+  const [query, setQuery] = useState('');
+  const [savedPantry, setSavedPantry] = useState([]);
+  const [groupedPantry, setGroupedPantry] = useState({});
 
   const [addPress, setAddPress] = useState(false);
 
   const translateY1 = useSharedValue(0);
   const opacity = useSharedValue(0);
+
+  const fetchSavedPantry = async () => {
+    try {
+      const userId = await getUserIdFromToken();
+      if (!userId) {
+        console.warn("User ID not found");
+        return;
+      }
+
+      const response = await axios.get(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/get-saved-pantry`
+      );
+      
+      if (!response.data || !response.data.savedPantry || response.data.savedPantry.length === 0) {
+        console.warn("No saved pantry ingredients found.");
+        setSavedPantry([]);
+        return;
+      }
+
+      const groupedData = response.data.savedPantry.reduce((acc, ingredient) => {
+        const category = ingredient.category || "Other";
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(ingredient);
+        return acc;
+      }, {});
+      setGroupedPantry(groupedData);
+      setSavedPantry(response.data.savedPantry);
+    } catch (err) {
+      console.error("Error fetching saved pantry ingredients:", err);
+      setError("Failed to load saved pantry ingredients.");
+      Alert.alert("Error!", "Could not load user's saved pantry ingredients.");
+    } 
+  }
+
+  useEffect(() => {
+    fetchSavedPantry();
+  }, []);
 
   const toggleAdd = () => {
 
@@ -140,49 +186,42 @@ const Pantry = () => {
     }
   }
 
+  const filteredPantry = savedPantry.filter((pantry) =>
+    pantry.label.toLowerCase().includes(query.toLowerCase())
+  );
 
   const route = useRouter();
 
   return (
     <View style={styles.whiteBackground}>
-      <ScrollView>
-        <View style={styles.screenContainer}>
-          <Text style={styles.title}>Pantry</Text>
+      <FlatList
+        ListHeaderComponent={
+          <View style={styles.screenContainer}>
+            <Text style={styles.title}>Pantry</Text>
 
-          {/* Search Box */}
-          <View style={styles.container}>          
-            <TextInput
-              placeholder='Search for ingredients'
-              placeholderTextColor={textcolors.darkgrey}
-              onChangeText={setPantry}
-              value={pantry}
-              style={[isFocused, styles.regularText]}
-              onFocus={() => setFocused([styles.searchInput, {borderColor: colors.header}])}
-              onBlur={() => setFocused([styles.searchInput])}
-            />
-          </View>
-
-          {/* Filters */}
-          <View style={{flexDirection: 'row'}}>
-
-          </View>
-
+            {/* Search Box */}
+            <View style={[styles.searchInput, {flexDirection: 'row'}]}>
+              <Image 
+                style={det.magnifyingGlassIcon} 
+                source={maglass} />          
+              <TextInput
+                placeholder='Search for ingredients'
+                placeholderTextColor={textcolors.darkgrey}
+                onChangeText={setQuery}
+                value={query}
+                style={styles.regularText}
+              />
+            </View>
           <Divider />
-
-          <View style={det.listBox}>
-
-            {/* Category */}
-            <Category />
-            <Category />
-            <Category />
-            <Category />
-            <Category />
-            <Category />
-
-          </View>
         </View>
-        <View style={det.space} />
-      </ScrollView>
+        }
+        data={Object.entries(groupedPantry)}
+        keyExtractor={(item, index) => item[0]}
+        renderItem={({ item }) => (
+          <Category category={item[0]} ingredients={item[1]} />
+        )}
+        ListFooterComponent={<View style={det.space} />}
+        />
       
       <TouchableOpacity onPress={toggleAdd}>
         {addPress ? <CancelAddButton /> : <AddButton />}
@@ -281,5 +320,10 @@ const det = StyleSheet.create({
     position: 'absolute',
     bottom: 110,
     right: 20,
-  }
+  },
+  magnifyingGlassIcon: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 15, // Space between the icon and input
+  },
 })
