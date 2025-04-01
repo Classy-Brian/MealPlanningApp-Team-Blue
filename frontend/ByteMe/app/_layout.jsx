@@ -1,8 +1,10 @@
 import { Image, View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { Stack } from 'expo-router'; // Use Stack from expo-router
+import { Stack, useRouter } from 'expo-router';
 import { colors } from "../components/Colors";
-import SavedRecipesScreen from "@/screens/recipe/SavedRecipesScreen"; // This will be handled by the router
+// import { createStackNavigator } from '@react-navigation/stack'
+// import SavedRecipesScreen from "@/screens/recipe/SavedRecipesScreen"; // This will be handled by the router
+
 
 function HeaderLogo() {
   return (
@@ -16,6 +18,8 @@ function HeaderLogo() {
 }
 
 function ProfileIcon() {
+  const router = useRouter();
+
   return (
     <TouchableOpacity onPress={() => router.push('/profile')}>
       <Image
@@ -29,8 +33,7 @@ function ProfileIcon() {
 const _layout = () => {
   return (
     <Stack>
-      <Stack.Screen
-        name="(tabs)"
+      <Stack.Screen name="(tabs)"
         options={{
           headerShown: true,
           headerLeft: () => null,
@@ -46,7 +49,15 @@ const _layout = () => {
           },
         }}
       />
-      
+      <Stack.Screen name="(start)"
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name="(survey)"
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name='index'
+        options={{headerShown: false}}
+      />
       {/* Do not include SavedRecipesScreen directly in the Stack.Screen. 
           Just refer to the name and routing will handle the screen. */}
       <Stack.Screen
@@ -65,20 +76,6 @@ const _layout = () => {
             fontWeight: 'bold',
           },
         }}
-      />
-
-      {/* Other screens */}
-      <Stack.Screen
-        name="(start)"
-        options={{headerShown: false}}
-      />
-      <Stack.Screen
-        name="(survey)"
-        options={{headerShown: false}}
-      />
-      <Stack.Screen
-        name='index'
-        options={{headerShown: false}}
       />
       <Stack.Screen
         name='explorerecipes'
@@ -161,9 +158,11 @@ const _layout = () => {
           },
         }}
       />
-  </Stack>
+
+    </Stack>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

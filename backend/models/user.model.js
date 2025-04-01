@@ -34,18 +34,11 @@ const userSchema = new mongoose.Schema({
         wantToTry: { type: Number, default: 0 }
       }
     },
-  
-    //Recipes section - Array of Recipe IDs
+
     savedRecipes: [{
-      type: String
-    }],
-    
-    // JWT token is stored here
-    token: {            
-        type: String,
-    },
-  
-  }, {
+        type: String 
+    }]
+    }, {
     timestamps: true
   });
 

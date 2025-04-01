@@ -57,20 +57,29 @@ const SettingsScreen = () => {
                     <Link href={{ pathname: "/(settings)/preferences", params: { from: 'Allergies' } }} asChild>
                         <TouchableOpacity style={styles_settings.settingItem}>
                             <MaterialIcons name="tune" size={40} color="#000000" />
-                            <Text style={[styles.regularText, {marginLeft: 10}]}>Preference Settings</Text>
+                            <Text style={[styles.regularText, {marginLeft: 20}]}>
+                                Preference Settings {"\n"}
+                                Edit your food preferences. 
+                            </Text>
                             <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                         </TouchableOpacity>
                     </Link>
 
                     <TouchableOpacity style={styles_settings.settingItem}>
                         <MaterialIcons name="account-circle" size={40} color="#000000" />
-                        <Text style={[styles.regularText, {marginLeft: 10}]}>Account Settings</Text>
+                        <Text style={[styles.regularText, {marginLeft: 20}]}>
+                            Account Settings {"\n"}
+                            See your account information.
+                        </Text>
                         <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles_settings.settingItem}>
                         <MaterialIcons name="notifications" size={40} color="#000000" />
-                        <Text style={[styles.regularText, {marginLeft: 10}]}>Notification Settings</Text>
+                        <Text style={[styles.regularText, {marginLeft: 20}]}>
+                            Notification Settings {"\n"}
+                            Choose the notifications that you'd like to see.
+                        </Text>
                         <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                     </TouchableOpacity>
 
