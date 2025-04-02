@@ -12,7 +12,9 @@ import {
   getSavedRecipes, 
   saveRecipe,
   unsaveRecipe,
-  getSavedPantry
+  getSavedPantry,
+  addIngredientToPantry,
+  editQuantityPantry
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -57,6 +59,9 @@ router.post("/save-recipe", saveRecipe);
 router.delete("/remove/remove-recipe", unsaveRecipe);
 
 router.get("/:id/get-saved-pantry", getSavedPantry);
+
+router.put('/:userId/update-pantry', addIngredientToPantry);
+
 
 
 export default router;

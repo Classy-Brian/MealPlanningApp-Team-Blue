@@ -8,13 +8,14 @@ import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 import { fonts } from '@/components/Fonts';
 import Back_butt from "@/assets/images/backbutton.png";
+import { styles } from '@/components/Sheet';
 
 const RecipeCard = ({ imageUri, title, onPress }) => (
-  <TouchableOpacity style={styles.recipeContainer} onPress={onPress} activeOpacity={0.7}>
-    <View style={styles.recipeWrapper}>
-      <Image style={styles.recipePhoto} resizeMode="cover" source={imageUri ? { uri: imageUri } : HomeB} />
-      <View style={styles.overlay} />
-      <Text style={styles.recipeTitle}>{title}</Text>
+  <TouchableOpacity style={det.recipeContainer} onPress={onPress} activeOpacity={0.7}>
+    <View style={det.recipeWrapper}>
+      <Image style={det.recipePhoto} resizeMode="cover" source={imageUri ? { uri: imageUri } : HomeB} />
+      <View style={det.overlay} />
+      <Text style={det.recipeTitle}>{title}</Text>
     </View>
   </TouchableOpacity>
 );
@@ -62,30 +63,30 @@ const RecipeSearch = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
       <FlatList
         data={recipes}
         keyExtractor={(item, index) => index.toString()}
         numColumns={2}
-        columnWrapperStyle={styles.row}
+        columnWrapperStyle={det.row}
         ListHeaderComponent={
-          <View style={styles.header}>
+          <View style={det.header}>
             <TouchableOpacity
-              style={styles.backButton}
+              style={det.backButton}
               onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}
             >
-              <Image source={Back_butt} style={styles.backIcon} />
-              <Text style={styles.backText}>Recipes</Text>
+              <Image source={Back_butt} style={det.backIcon} />
+              <Text style={det.backText}>Recipes</Text>
             </TouchableOpacity>
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Search Recipes</Text>
+            <View style={det.titleContainer}>
+              <Text style={det.title}>Search Recipes</Text>
             </View>
-            <View style={styles.searchContainer}>
-              <Image source={maglass} style={styles.magnifyingGlassIcon} />
+            <View style={det.searchContainer}>
+              <Image source={maglass} style={det.magnifyingGlassIcon} />
               <TextInput
                 placeholder="Search Recipes"
                 placeholderTextColor={textcolors.lightgrey}
-                style={styles.inputText}
+                style={det.inputText}
                 value={searchQuery}
                 onChangeText={(text) => setSearchQuery(text)} // Update the state without fetching
                 onSubmitEditing={handleSearchSubmit} // Fetch when user presses "Enter"
@@ -108,7 +109,7 @@ const RecipeSearch = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',

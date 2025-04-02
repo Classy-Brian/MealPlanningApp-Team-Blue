@@ -6,7 +6,10 @@ import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
+import { styles } from '@/components/Sheet';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
+import { fonts } from '@/components/Fonts';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Recipes() {
   const router = useRouter();
@@ -61,16 +64,16 @@ const fetchSavedRecipes = async () => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
       <Text style={styles.title}>Saved Recipes</Text>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.inputContainer}>
+      <View style={det.searchContainer}>
+        <View style={det.inputContainer}>
           <TextInput
             placeholder='Search through your recipes'
             placeholderTextColor={textcolors.lightgrey}
-            style={styles.inputText}
+            style={det.inputText}
             value={query}
             onChangeText={(text) => setQuery(text)}
           />
@@ -81,7 +84,7 @@ const fetchSavedRecipes = async () => {
       {loading && <ActivityIndicator size="large" color={colors.primary} />}
 
       {/* Display Error */}
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <Text style={det.error}>{error}</Text>}
 
       {/* List of Saved Recipes */}
       <FlatList
@@ -89,7 +92,7 @@ const fetchSavedRecipes = async () => {
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity 
-            style={styles.recipeContainer} 
+            style={det.recipeContainer} 
             onPress={() => 
                 router.push({
                   pathname: "../favoriterecipes",
@@ -104,28 +107,28 @@ const fetchSavedRecipes = async () => {
                   }
                 })}
           >
-            <View style={styles.rectangleView}>
+            <View style={det.rectangleView}>
               <Image 
                 source={{ uri: item.image }}  
-                style={styles.recipeImage} 
+                style={det.recipeImage} 
               />
-              <Text style={styles.recipeTitle}>{item.label}</Text>
+              <Text style={det.recipeTitle}>{item.label}</Text>
             </View>
           </TouchableOpacity>
         )}
-        ListEmptyComponent={!loading && <Text style={styles.noRecipesText}>No saved recipes found.</Text>}
+        ListEmptyComponent={!loading && <Text style={det.noRecipesText}>No saved recipes found.</Text>}
       />
 
       {/* Floating Add Button */}
       <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
-        <Text style={styles.addButtonText}>+</Text>
+        <Ionicons name="add" size={60} color='#d9d9d9' />
       </TouchableOpacity>
     </View>
   );
 }
 
 // Styles
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -184,10 +187,11 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   noRecipesText: {
-    fontSize: 16,
+    fontSize: 24,
     textAlign: 'center',
     marginTop: 20,
     color: textcolors.lightgrey,
+    fontFamily: fonts.semiBold,
   },
   addButton: {
     position: 'absolute',

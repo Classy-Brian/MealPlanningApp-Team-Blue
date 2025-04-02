@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { styles } from '@/components/Sheet';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -82,7 +83,7 @@ export default function ProfileScreen() {
 
   if (!userData) {
     return (
-      <View style={styles.container}>
+      <View style={det.container}>
         <Text>Loading...</Text>
       </View>
     );
@@ -104,21 +105,21 @@ export default function ProfileScreen() {
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
     return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Calorie Intake</Text>
-        <View style={styles.calorieBar}>
-          <View style={[styles.calorieFill, { width: `${clampedProgress}%` }]} />
+      <View style={det.card}>
+        <Text style={det.cardTitle}>Calorie Intake</Text>
+        <View style={det.calorieBar}>
+          <View style={[det.calorieFill, { width: `${clampedProgress}%` }]} />
         </View>
-        <View style={styles.calorieLabels}>
+        <View style={det.calorieLabels}>
           <Text>{min}</Text>
           <Text>{max}</Text>
         </View>
-        <Text style={styles.currentText}>Current: {current}</Text>
+        <Text style={det.currentText}>Current: {current}</Text>
         <TouchableOpacity
-          style={styles.removeButton}
+          style={det.removeButton}
           onPress={() => removeGoal('calories')}
         >
-          <Text style={styles.removeButtonText}>Remove Goal</Text>
+          <Text style={det.removeButtonText}>Remove Goal</Text>
         </TouchableOpacity>
       </View>
     );
@@ -134,52 +135,52 @@ export default function ProfileScreen() {
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
     return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>New Recipes Tried</Text>
-        <View style={styles.recipeProgress}>
-          <View style={[styles.recipeFill, { width: `${clampedProgress}%` }]} />
+      <View style={det.card}>
+        <Text style={det.cardTitle}>New Recipes Tried</Text>
+        <View style={det.recipeProgress}>
+          <View style={[det.recipeFill, { width: `${clampedProgress}%` }]} />
         </View>
-        <View style={styles.recipeLabels}>
+        <View style={det.recipeLabels}>
           <Text>{tried}</Text>
           <Text>{wantToTry}</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.removeButton}
+          style={det.removeButton}
           onPress={() => removeGoal('recipes')}
         >
-          <Text style={styles.removeButtonText}>Remove Goal</Text>
+          <Text style={det.removeButtonText}>Remove Goal</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
       {/* Settings Button in the top-right */}
       <TouchableOpacity
-        style={styles.settingsButton}
+        style={det.settingsButton}
         onPress={() => router.push('settings')}
       >
         <Ionicons name="settings-sharp" size={30} color="#333" />
       </TouchableOpacity>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={det.scrollContent}>
         {/* Profile Image */}
-        <Image source={avatarSource} style={styles.profileImage} />
+        <Image source={avatarSource} style={det.profileImage} />
 
         {/* User Name */}
-        <Text style={styles.username}>{userData.name}</Text>
+        <Text style={det.username}>{userData.name}</Text>
 
         {/* Edit Profile Button */}
         <TouchableOpacity
-          style={styles.editButton}
+          style={det.editButton}
           onPress={() => router.push(`editprofile?userId=${userData._id}`)}
         >
-          <Text style={styles.editButtonText}>Edit Profile</Text>
+          <Text style={det.editButtonText}>Edit Profile</Text>
         </TouchableOpacity>
 
-        <Text style={styles.sectionTitle}>Goals For the Week</Text>
+        <Text style={det.sectionTitle}>Goals For the Week</Text>
         {userData.profile && (
           <>
             {renderCalorieGoalCard()}
@@ -193,13 +194,13 @@ export default function ProfileScreen() {
         style={styles.addButton}
         onPress={() => router.push(`addgoals?userId=${userData._id}`)}
       >
-        <Text style={styles.addButtonText}>+</Text>
+        <Ionicons name="add" size={60} color='#d9d9d9' />
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',

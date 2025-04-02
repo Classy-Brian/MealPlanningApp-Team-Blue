@@ -412,7 +412,7 @@ export const getRecieById = async (req, res) => {
 export const getSavedPantry = async (req, res) => {
   try {
     // Find the user by ID and populate saved pantry ingredients
-    const user = await User.findById(req.params.id).populate('savedPantry');
+    const user = await User.findById(req.params.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -429,7 +429,7 @@ export const getSavedPantry = async (req, res) => {
       return res.status(500).json({message: "Server error: Missing API credentials"});
     }
 
-    const pantryDetailsPromises = user.savedPantry.map(async (foodId) => {
+    const pantryDetailsPromises = user.savedPantry.map(async ({ foodId, quantity }) => {
       try {                
         if (!foodId || typeof foodId !== "string") {
           console.error("Invalid foodId", foodId);
@@ -460,6 +460,7 @@ export const getSavedPantry = async (req, res) => {
         const nutrients = foodData.nutrients || {};
         const image = foodData.image || 'https://via.placeholder.com/150';
 
+
         // if (!response.data.ingredients || response.data.ingredients.length === 0) {
         //   console.error(`No ingredients found for foodId: ${foodId}`);
         //   return null;
@@ -472,10 +473,10 @@ export const getSavedPantry = async (req, res) => {
         //   return null;
         // }
 
-        console.log('Food details:', {label, category, nutrients, image});
+        console.log('Food details:', {label, category, nutrients, image, quantity});
 
         return {
-          label, category, nutrients, image
+          label, category, nutrients, image, quantity
           // uri: foodId,
           // label: parsedData.food,
           // category: parsedData.foodCategory || "Unknown",
@@ -499,4 +500,37 @@ export const getSavedPantry = async (req, res) => {
     console.error("Error fetching user's pantry ingredients recipes:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
+};
+
+export const addIngredientToPantry = async (req, res) => {
+    try {
+      const { userId } = req.params;
+        const { foodId, quantity } = req.body;
+
+        if (!foodId || quantity === undefined ) {
+          return res.status(400).json({message: "Food id and quantity are missing"});
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+          return res.status(404).json({message: "User not found."});
+        }
+      
+      const ingredientIdex = user.savedPantry.findIndex(item => item.foodId === foodId);
+
+      if (ingredientIdex !== -1) {
+        user.savedPantry[ingredientIdex].quantity = quantity;
+        await user.save();
+        console.log("Ingredient added or updated successfully");
+        return res.status(200).json({message: "Pantry updated successfully!"});
+      } else {
+        user.savedPantry.push({ foodId, quantity});
+        await user.save();
+        console.log("Ingredient added or updated successfully");
+        return res.status(200).json({message: "Pantry updated successfully!"});
+      }
+    } catch (err) {
+      console.error("Error updating pantry:", err);
+      res.status(500).json({message: "Internal server error"});
+    }
 };

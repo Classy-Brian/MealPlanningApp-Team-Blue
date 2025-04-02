@@ -110,6 +110,7 @@ export const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: textcolors.darkgrey,
       backgroundColor: colors.grey,
+      marginBottom: 10,
     },
     addButton: {
       position: 'absolute',

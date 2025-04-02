@@ -25,7 +25,7 @@ const PantrySuggestions = () => {
             <View style={[det.greybutton, ]}>
               <Image style={{marginRight:10}}
                       source={backarrow}/>
-              <Text style={styles.regularText}>Survey</Text>
+              <Text style={styles.regularText}>Pantry</Text>
             </View>
           </TouchableOpacity>
           </View>

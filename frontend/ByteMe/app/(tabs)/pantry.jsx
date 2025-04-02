@@ -1,2 +1,2 @@
-import PantryScreen from "@/screens/PantryScreen";
+import PantryScreen from "@/screens/pantry/PantryScreen";
 export default PantryScreen;

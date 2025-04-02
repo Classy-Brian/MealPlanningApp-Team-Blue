@@ -41,11 +41,13 @@ const userSchema = new mongoose.Schema({
     }],
 
     savedGrocery: [{
-        type: String,
+        foodId: { type: String, required: true },
+        quantity: {type: Number, default: 1, min: 0 }
     }],
 
     savedPantry: [{
-        type: String,
+        foodId: { type: String, required: true },
+        quantity: {type: Number, default: 1, min: 0 }
     }],
     
     // JWT token is stored here

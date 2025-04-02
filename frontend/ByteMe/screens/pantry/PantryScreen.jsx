@@ -1,4 +1,4 @@
-import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, FlatList } from 'react-native'
+import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, FlatList, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { styles } from '@/components/Sheet'
 import { Divider } from 'react-native-paper'
@@ -14,6 +14,7 @@ import getUserIdFromToken from '@/components/getUserIdFromToken'
 import axios from 'axios'
 
 const SingleIngredient = ({ ingredient }) => {
+  // console.log("Single ingredient being passed:", ingredient);  // checks what data is passed as ingredient
   return(
     <View style={det.box}>
       <View style={det.boxContainer}>
@@ -21,13 +22,13 @@ const SingleIngredient = ({ ingredient }) => {
           <Image 
             style={det.ingredientIcon}
             source={{
-              uri: ingredient.image || "https://via.placeholder.com/150",
+              uri: ingredient?.image || "https://via.placeholder.com/150",
             }}/>
           <View>                  
             <Text style={styles.regText16}>
-            {ingredient.label} </Text>
+            {ingredient?.label} </Text>
             <Text style={styles.regText16}>
-              Ingredient details </Text>
+              x {ingredient?.quantity} </Text>
           </View>
         </View>
         <TouchableOpacity>
@@ -39,12 +40,14 @@ const SingleIngredient = ({ ingredient }) => {
 }
 
 const Category = ({ category, ingredients }) => {
+  // console.log("Ingredients being passed into Category:", ingredients)
   return(
-    <View> 
+    <View style={{marginHorizontal: 15}}> 
       <Text style={det.heading}>{category}</Text>
       <FlatList
         data={ingredients}
-        keyExtractor={({ item }) => <SingleIngredient ingredient={item} />}
+        keyExtractor={( item, index ) => item.foodId || index.toString()}
+        renderItem={({ item }) => <SingleIngredient ingredient={item} />}
       />
       <Divider />
     </View>
@@ -107,6 +110,7 @@ const Pantry = () => {
   const [query, setQuery] = useState('');
   const [savedPantry, setSavedPantry] = useState([]);
   const [groupedPantry, setGroupedPantry] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const [addPress, setAddPress] = useState(false);
 
@@ -114,10 +118,12 @@ const Pantry = () => {
   const opacity = useSharedValue(0);
 
   const fetchSavedPantry = async () => {
+    setLoading(true);
     try {
       const userId = await getUserIdFromToken();
       if (!userId) {
         console.warn("User ID not found");
+        setLoading(false);
         return;
       }
 
@@ -128,6 +134,7 @@ const Pantry = () => {
       if (!response.data || !response.data.savedPantry || response.data.savedPantry.length === 0) {
         console.warn("No saved pantry ingredients found.");
         setSavedPantry([]);
+        setLoading(false);
         return;
       }
 
@@ -138,12 +145,15 @@ const Pantry = () => {
         return acc;
       }, {});
       setGroupedPantry(groupedData);
+      // console.log("Grouped data: ", groupedData)
       setSavedPantry(response.data.savedPantry);
     } catch (err) {
       console.error("Error fetching saved pantry ingredients:", err);
       setError("Failed to load saved pantry ingredients.");
       Alert.alert("Error!", "Could not load user's saved pantry ingredients.");
-    } 
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -213,14 +223,22 @@ const Pantry = () => {
               />
             </View>
           <Divider />
+
+          {loading && <ActivityIndicator size="large" color={colors.primary} />}
         </View>
         }
+
+        
+
         data={Object.entries(groupedPantry)}
         keyExtractor={(item, index) => item[0]}
         renderItem={({ item }) => (
           <Category category={item[0]} ingredients={item[1]} />
         )}
         ListFooterComponent={<View style={det.space} />}
+        ListEmptyComponent={
+          !loading && <Text style={det.noRecipesText}>No saved pantry ingredients found.</Text>
+        }
         />
       
       <TouchableOpacity onPress={toggleAdd}>
@@ -259,7 +277,7 @@ const det = StyleSheet.create({
       borderRadius: 10,
       borderColor: textcolors.lightgrey,
       borderWidth: 1,
-      paddingHorizontal: 10,
+      paddingRight: 10,
       paddingVertical: 5,
       marginBottom: 10,
     },
@@ -278,7 +296,7 @@ const det = StyleSheet.create({
     resizeMode: 'resize',
     height: 50,
     width: 50,
-    marginHorizontal: 5,
+    marginHorizontal: 10,
   },
   leftcontain: {
     flexDirection: 'row',
@@ -325,5 +343,12 @@ const det = StyleSheet.create({
     width: 30,
     height: 30,
     marginHorizontal: 15, // Space between the icon and input
+  },
+  noRecipesText: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginTop: 20,
+    color: textcolors.lightgrey,
+    fontFamily: fonts.semiBold,
   },
 })
