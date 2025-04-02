@@ -473,10 +473,10 @@ export const getSavedPantry = async (req, res) => {
         //   return null;
         // }
 
-        console.log('Food details:', {label, category, nutrients, image, quantity});
+        console.log('Food details:', {foodId, label, category, nutrients, image, quantity});
 
         return {
-          label, category, nutrients, image, quantity
+          foodId, label, category, nutrients, image, quantity
           // uri: foodId,
           // label: parsedData.food,
           // category: parsedData.foodCategory || "Unknown",
@@ -531,6 +531,6 @@ export const addIngredientToPantry = async (req, res) => {
       }
     } catch (err) {
       console.error("Error updating pantry:", err);
-      res.status(500).json({message: "Internal server error"});
+      return res.status(500).json({message: "Internal server error"});
     }
 };

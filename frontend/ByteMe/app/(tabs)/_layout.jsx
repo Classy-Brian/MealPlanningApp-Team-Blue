@@ -94,6 +94,11 @@ export default function TabLayout() {
 
   return (
     <Tab.Navigator    
+      screenOptions={{
+        tabBarStyle: {
+          position: 'absolute',
+        }
+      }}
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tab.Screen 

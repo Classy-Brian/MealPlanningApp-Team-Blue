@@ -54,7 +54,7 @@ const _layout = () => {
       <Stack.Screen name='index'
         options={{headerShown: false}}
       />
-      <Stack.Screen name="(pantry)/pantrysuggest" 
+      <Stack.Screen name="(pantry)" 
         options={{
           headerShown: true,
           headerLeft: () => null,

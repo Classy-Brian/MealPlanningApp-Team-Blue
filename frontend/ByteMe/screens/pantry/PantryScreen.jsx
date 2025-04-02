@@ -16,6 +16,11 @@ import { useNavigation } from '@react-navigation/native'
 
 const SingleIngredient = ({ ingredient }) => {
   // console.log("Single ingredient being passed:", ingredient);  // checks what data is passed as ingredient
+  const navigation = useNavigation();
+  const handlePress = () => {
+    navigation.navigate('edit_pantry', {ingredient})
+  }
+
   return(
     <View style={det.box}>
       <View style={det.boxContainer}>
@@ -32,7 +37,7 @@ const SingleIngredient = ({ ingredient }) => {
               x {ingredient?.quantity} </Text>
           </View>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handlePress}>
           <Image source={chright}/>
         </TouchableOpacity>
       </View>                         

@@ -35,6 +35,10 @@ export const styles = StyleSheet.create({
       fontSize: 16, 
       fontFamily: fonts.regular,
     },
+    boldfont: {
+      fontSize: 32,
+      fontFamily: fonts.semiBold,
+    },
     forgot: {
       fontSize: 20,
       color: textcolors.red,
