@@ -12,6 +12,7 @@ import chright from "@/assets/images/chevron_right.png"
 import Animated, { Easing, useAnimatedProps, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import getUserIdFromToken from '@/components/getUserIdFromToken'
 import axios from 'axios'
+import { useNavigation } from '@react-navigation/native'
 
 const SingleIngredient = ({ ingredient }) => {
   // console.log("Single ingredient being passed:", ingredient);  // checks what data is passed as ingredient
@@ -107,6 +108,7 @@ function GoPantrySuggest() {
 }
 
 const Pantry = () => {
+  const navigation = useNavigation();
   const [query, setQuery] = useState('');
   const [savedPantry, setSavedPantry] = useState([]);
   const [groupedPantry, setGroupedPantry] = useState({});
@@ -190,7 +192,8 @@ const Pantry = () => {
 
   const handleSuggest = () => {
     if (addPress == true) {
-      route.push('/(pantry)/pantrysuggest')
+      navigation.navigate('pantry_suggest')
+      // route.push('/(pantry)/pantrysuggest')
     } else {
       return
     }
@@ -200,7 +203,7 @@ const Pantry = () => {
     pantry.label.toLowerCase().includes(query.toLowerCase())
   );
 
-  const route = useRouter();
+  // const route = useRouter();
 
   return (
     <View style={styles.whiteBackground}>

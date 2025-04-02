@@ -14,7 +14,6 @@ import {
   unsaveRecipe,
   getSavedPantry,
   addIngredientToPantry,
-  editQuantityPantry
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 

@@ -6,11 +6,26 @@ import { colors } from '@/components/Colors'
 import { textcolors } from '@/components/TextColors'
 import { Divider } from 'react-native-paper'
 import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation } from '@react-navigation/native'
 
 function Recipe() {
   return(
     <View style={det.recipeSuggestionBox}/>
   )
+}
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('pantry1')}>
+                <View style={[det.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Pantry</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
 }
 
 const PantrySuggestions = () => {
@@ -20,15 +35,7 @@ const PantrySuggestions = () => {
     <View style={styles.whiteBackground}>
       <ScrollView>
         <View style={styles.screenContainer}>
-          <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => route.replace('/(tabs)/pantry')}>
-            <View style={[det.greybutton, ]}>
-              <Image style={{marginRight:10}}
-                      source={backarrow}/>
-              <Text style={styles.regularText}>Pantry</Text>
-            </View>
-          </TouchableOpacity>
-          </View>
+          <BackButton />
           
           <Text style={styles.title}>Pantry Suggestions</Text>
 

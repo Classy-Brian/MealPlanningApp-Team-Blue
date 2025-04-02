@@ -18,6 +18,15 @@ import GroceryB from "@/assets/images/grocery_black.png";
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 
+import Homepage from './home';
+import CalendarScreen from './calendar';
+import GroceryScreen from './grocery';
+import SavedRecipesScreen from './savedrecipes';
+import PantryLayout from '../(pantry)/_layout';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+const Tab = createBottomTabNavigator();
+
 
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
@@ -84,15 +93,30 @@ const getTabIcon = (name, isActive) => {
 export default function TabLayout() {
 
   return (
-    <Tabs    
+    <Tab.Navigator    
       tabBar={(props) => <CustomTabBar {...props} />}
     >
-      <Tabs.Screen name="home" options={{ title: 'Home', headerShown: false }} />
-      <Tabs.Screen name="calendar" options={{ title: 'Calendar', headerShown: false }} />
-      <Tabs.Screen name="savedrecipes" options={{ title: 'Recipe', headerShown: false }} />
-      <Tabs.Screen name="grocery" options={{ title: 'Grocery', headerShown: false }} />
-      <Tabs.Screen name="pantry" options={{ title: 'Pantry', headerShown: false }} />
-    </Tabs>
+      <Tab.Screen 
+        name="home" 
+        component={Homepage} 
+        options={{ title: 'Home', headerShown: false }} />
+      <Tab.Screen 
+        name="calendar" 
+        component={CalendarScreen} 
+        options={{ title: 'Calendar', headerShown: false }} />
+      <Tab.Screen 
+        name="savedrecipes" 
+        component={SavedRecipesScreen} 
+        options={{ title: 'Recipe', headerShown: false }} />
+      <Tab.Screen 
+        name="grocery" 
+        component={GroceryScreen} 
+        options={{ title: 'Grocery', headerShown: false }} />
+      <Tab.Screen 
+        name="pantry" 
+        component={PantryLayout} 
+        options={{ title: 'Pantry', headerShown: false }} />
+    </Tab.Navigator>
   );
 }
 
