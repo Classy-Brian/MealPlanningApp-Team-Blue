@@ -33,7 +33,6 @@ function AddButton({ onPress }) {
     )
 }
 
-
 function BackButton() {
     const navigation = useNavigation();
     return (
@@ -51,7 +50,7 @@ function BackButton() {
 function AddIngredient( {ingredient, quantity} ) {
     const navigation = useNavigation();
 
-    const handleSuggest = async () => {
+    const handleAdd = async () => {
         try {
             const userId = await getUserIdFromToken();
             if (!userId) {
@@ -74,7 +73,7 @@ function AddIngredient( {ingredient, quantity} ) {
         }
     }
     return (
-        <TouchableOpacity onPress={handleSuggest}>
+        <TouchableOpacity onPress={handleAdd}>
             <View style={det.bluebutton}> 
                 <Text style={styles.regularText}>
                     Update Ingredient
@@ -82,6 +81,42 @@ function AddIngredient( {ingredient, quantity} ) {
             </View>
         </TouchableOpacity>
         
+    )
+}
+
+function DeleteIngredient( { ingredient } ) {
+    const navigation = useNavigation()
+
+    const handleRemove = async () => {
+        try {
+            const userId = await getUserIdFromToken()
+            if (!userId) {
+                console.warn("User ID not found")
+                return;
+            }
+
+            const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/remove-pantry`, {
+                data: {foodId: ingredient?.foodId}
+            })
+
+            if (response.status === 200) {
+                Alert.alert("Success", "Pantry ingredient successfully removed!")
+                navigation.navigate('pantry1')
+            }
+        } catch (err) {
+            console.error("Error removing pantry ingredient:", err);
+            Alert.alert("Error!", "Could not remove the ingredient from your pantry. Please try again.")
+        }
+    }
+    
+    return (
+        <TouchableOpacity onPress={handleRemove}>
+            <View style={det.redButton}> 
+                <Text style={styles.regularText}>
+                    Remove Ingredient
+                </Text>
+            </View>
+        </TouchableOpacity>
     )
 }
 
@@ -132,6 +167,7 @@ const EditPantryIngredient = ( { route } ) => {
                 {/* final button */}
                 <Divider />
                 <AddIngredient ingredient={ingredient} quantity={quantity}/>
+                <DeleteIngredient ingredient={ingredient} />
 
             </View>
             
@@ -202,5 +238,19 @@ const det = StyleSheet.create({
         elevation: 2,
         height: 40,
         width: 40,
+    },
+    redButton: {
+        flexDirection: 'row',
+        borderRadius: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 5,
+        backgroundColor: colors.red,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 10,
+        elevation: 2,
+        shadowColor: colors.black,
+        marginHorizontal: 70,
+        marginTop: 15,
     }
 })

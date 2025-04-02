@@ -460,28 +460,10 @@ export const getSavedPantry = async (req, res) => {
         const nutrients = foodData.nutrients || {};
         const image = foodData.image || 'https://via.placeholder.com/150';
 
-
-        // if (!response.data.ingredients || response.data.ingredients.length === 0) {
-        //   console.error(`No ingredients found for foodId: ${foodId}`);
-        //   return null;
-        // }
-
-        // const parsedData = response.data.ingredients[0]?.parsed?.[0];
-
-        // if (!parsedData) {
-        //   console.error(`No parsed data found for foodId: ${foodId}`);
-        //   return null;
-        // }
-
         console.log('Food details:', {foodId, label, category, nutrients, image, quantity});
 
         return {
           foodId, label, category, nutrients, image, quantity
-          // uri: foodId,
-          // label: parsedData.food,
-          // category: parsedData.foodCategory || "Unknown",
-          // image: parsedData.image || "https://via.placeholder.com/150",
-          // nutrition: parsedData.totalNutrients || {},
         };
       } catch (err) {
         console.error(`Error fetching ingredient details for foodId ${foodId}:`, err.message);
@@ -533,4 +515,33 @@ export const addIngredientToPantry = async (req, res) => {
       console.error("Error updating pantry:", err);
       return res.status(500).json({message: "Internal server error"});
     }
+};
+
+export const removeIngredientPantry = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { foodId } = req.body;
+
+    if (!foodId) {
+      return res.status(400).json({message: "Food ID is missing"});
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({message: "User not found."});
+    }
+
+    const ingredientIdex = user.savedPantry.findIndex(item => item.foodId === foodId);
+    if (ingredientIdex === -1) {
+      return res.status(404).json({message: "Ingredient not found."});
+    }
+
+    user.savedPantry.splice(ingredientIdex, 1);
+    await user.save();
+    return res.status(200).json({message: "Ingredient successfully removed."});
+
+  } catch (err) {
+    console.error("Error deleting pantry ingredient: ", err);
+    return res.status(500).json({message: "Internal server error"});
+  }
 };

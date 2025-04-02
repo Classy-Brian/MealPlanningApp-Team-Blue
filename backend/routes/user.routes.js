@@ -14,6 +14,7 @@ import {
   unsaveRecipe,
   getSavedPantry,
   addIngredientToPantry,
+  removeIngredientPantry,
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -60,6 +61,8 @@ router.delete("/remove/remove-recipe", unsaveRecipe);
 router.get("/:id/get-saved-pantry", getSavedPantry);
 
 router.put('/:userId/update-pantry', addIngredientToPantry);
+
+router.delete('/:userId/remove-pantry', removeIngredientPantry);
 
 
 
