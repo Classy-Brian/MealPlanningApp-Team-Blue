@@ -75,19 +75,21 @@ const PreferenceSettingsScreen = () => {
                         <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles_preference.settingItem}>
-                        <MaterialIcons name="tune" size={40} color="#000000" />
-                        <View style={styles_preference.textContainer}>
-                            <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
-                                Cuisines
-                            </Text>
-                            <Text style={styles_preference.settingDescriptionText}>
-                                Select the type(s) of cuisines that {"\n"}
-                                you'd like to see more recipes of.
-                            </Text>
-                        </View>
-                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                    </TouchableOpacity>
+                    <Link href={{ pathname: "/(settings)/cuisine", params: { from: 'Cuisines' } }} asChild>
+                        <TouchableOpacity style={styles_preference.settingItem}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_preference.textContainer}>
+                                <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Cuisines
+                                </Text>
+                                <Text style={styles_preference.settingDescriptionText}>
+                                    Select the type(s) of cuisines that {"\n"}
+                                    you'd like to see more recipes of.
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+                    </Link>
 
                     <TouchableOpacity style={styles_preference.settingItem}>
                         <MaterialIcons name="tune" size={40} color="#000000" />
