@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import WelcomeSurvey from './survey_1'
 import SurveyAllergies from './survey_2'
 import SurveryPortion from './survey_3'
+import SurveyCuisines from './survey_4'
 import SurveyFinal from './survey_final'
 import { createStackNavigator } from '@react-navigation/stack'
 import { styles } from '@/components/Sheet'
@@ -23,6 +24,9 @@ const _layout = () => {
           <Stack.Screen 
             name="survey3" 
             component={SurveryPortion} />
+          <Stack.Screen 
+            name="survey4" 
+            component={SurveyCuisines} />
           <Stack.Screen 
             name="surveyfinal" 
             component={SurveyFinal} />

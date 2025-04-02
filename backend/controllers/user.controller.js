@@ -142,6 +142,9 @@ export const updateUserPreferences = async (req, res) => {
   if (req.body.portion !== undefined) {
       updateData.portion = req.body.portion;
   }
+  if (req.body.cuisines !== undefined) {
+      updateData.cuisines = req.body.cuisines;
+  }
 
   if (Object.keys(updateData).length === 0) {
     res.status(400);

@@ -12,7 +12,22 @@ const SurveyFinal = ( { navigation, route } ) => {
   const router = useRouter();
   const [allergies, setAllergies] = useState([]);
   const [portion, setSelectedPortion] = useState(null);
+  const [cuisines, setSelectedCuisines] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Had to clean old data
+  // useEffect(() => {
+  //   const clearOldData = async () => {
+  //       try {
+  //           await AsyncStorage.removeItem('cuisines');
+  //           await AsyncStorage.removeItem('surveyCuisines');
+  //           console.log('Cleared stale survey data from AsyncStorage');
+  //       } catch (e) {
+  //           console.error('Failed to clear AsyncStorage', e);
+  //       }
+  //   };
+  //   clearOldData();
+  // }, []);
 
   const handleSubmitSurvey = async () => {
     setIsLoading(true);
@@ -26,12 +41,14 @@ const SurveyFinal = ( { navigation, route } ) => {
       }
 
       const savedAllergies = await AsyncStorage.getItem('allergies');
-      const savedPortionSize = await AsyncStorage.getItem('portion')
+      const savedPortionSize = await AsyncStorage.getItem('portion');
+      const savedCuisines = await AsyncStorage.getItem('cuisines');
 
       const allergies = savedAllergies ? JSON.parse(savedAllergies) : [];
-      const portion = savedPortionSize ? JSON.parse(savedPortionSize) : "1"; // parseInt(savedPortionSize, 10) : 1;
+      const portion = savedPortionSize ? JSON.parse(savedPortionSize) : "1";
+      const cuisines = savedCuisines ? JSON.parse(savedCuisines) : [];
 
-      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion },
+      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines },
         { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
@@ -39,6 +56,7 @@ const SurveyFinal = ( { navigation, route } ) => {
         await AsyncStorage.removeItem('authToken');
         await AsyncStorage.removeItem('allergies')
         await AsyncStorage.removeItem('portion')
+        await AsyncStorage.removeItem('cuisines')
         router.replace('../../(start)/login');
       }
     } catch (err) {
@@ -60,7 +78,7 @@ const SurveyFinal = ( { navigation, route } ) => {
   }
 
   const prevPage = () => {
-    navigation.navigate('survey3', { allergies, portion });
+    navigation.navigate('survey4', { allergies, portion, cuisines });
   }
 
   return (

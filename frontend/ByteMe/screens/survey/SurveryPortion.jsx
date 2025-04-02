@@ -59,7 +59,7 @@ const SurveyPortion = ({ navigation }) => {
 
     const nextPage = async () => {
         await AsyncStorage.setItem('portion', JSON.stringify(portion));
-        navigation.navigate('surveyfinal', { portion });
+        navigation.navigate('survey4', { portion });
     };
     
     const prevPage = async () => {
