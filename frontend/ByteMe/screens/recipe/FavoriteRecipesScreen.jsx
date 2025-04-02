@@ -6,7 +6,7 @@ import Back_butt from '../../assets/images/backbutton.png';  // Adjusted path fo
 import heartIcon from '../../assets/images/heart.png';  // Add filled heart image
 import emptyHeartIcon from '../../assets/images/empty-heart.png';  // Add empty heart image
 
-const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
+// const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();

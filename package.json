@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Classy-Brian/MealPlanningApp-Team-Blue#readme",
   "dependencies": {
+    "@react-native-picker/picker": "^2.11.0",
     "axios": "^1.8.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
