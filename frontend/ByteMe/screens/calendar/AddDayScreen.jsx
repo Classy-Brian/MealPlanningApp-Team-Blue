@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
+import Back_butt from "@/assets/images/backbutton.png"; // Ensure correct path
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -27,7 +28,6 @@ const AddDayScreen = () => {
   const [showDinner, setShowDinner] = useState(false);
 
   useEffect(() => {
-    // Generate dates for the current week
     const today = new Date();
     const weekDates = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
@@ -36,7 +36,6 @@ const AddDayScreen = () => {
     });
     setDates(weekDates);
 
-    // Fetch saved recipes
     const fetchRecipes = async () => {
       try {
         const response = await axios.get(process.env.EXPO_PUBLIC_BACKEND_URL + '/api/users/saved-recipes');
@@ -50,41 +49,40 @@ const AddDayScreen = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>← Calendar</Text>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}>
+        <Image source={Back_butt} style={styles.backIcon} />
+        <Text style={styles.backText}>Calendar</Text>
       </TouchableOpacity>
       
       <Text style={styles.title}>Add Recipes to Calendar Day</Text>
 
-      {/* Date Picker */}
-      <View style={{ zIndex: 3000, elevation: 3 }}>
+      {/* Date Picker Section */}
+      <View style={styles.datePickerContainer}>
+        {/* Blue Box on Far Left */}
+        <TouchableOpacity style={styles.blueBox}>
+          <Text style={styles.blueBoxText}>Date:</Text>
+        </TouchableOpacity>
+        
+        {/* Dropdown */}
         <DropDownPicker
           items={dates}
           open={openDatePicker}
           setOpen={setOpenDatePicker}
           value={selectedDate}
-          setValue={(val) => {
-            setSelectedDate(val);
-            setShowMorning(true); // Show morning section after date selection
-          }}
-          placeholder="Select a day"
-          containerStyle={styles.dropdown}
+          setValue={setSelectedDate}
+          placeholder="Select Date"
+          containerStyle={styles.dropdownContainer}
+          style={styles.dropdownStyle}
+          dropDownContainerStyle={styles.dropDownContainerStyle}
+          onChangeValue={() => setShowMorning(true)}
         />
       </View>
 
       {/* Morning Section */}
       {showMorning && (
-        <View style={{ zIndex: 2000, elevation: 2 }}>
+        <View>
           <Text style={styles.sectionTitle}>Morning</Text>
-          <DropDownPicker
-            items={times.filter(t => t.value === 'morning')}
-            open={openTimePicker}
-            setOpen={setOpenTimePicker}
-            value={selectedTime}
-            setValue={setSelectedTime}
-            placeholder="Select a time"
-            containerStyle={styles.dropdown}
-          />
           <ScrollView style={styles.recipeList}>
             {recipes.map(recipe => (
               <TouchableOpacity 
@@ -92,7 +90,7 @@ const AddDayScreen = () => {
                 style={[styles.recipeItem, selectedRecipe === recipe.value && styles.selectedRecipe]} 
                 onPress={() => {
                   setSelectedRecipe(recipe.value);
-                  setShowAfternoon(true); // Show afternoon section after morning selection
+                  setShowAfternoon(true);
                 }}>
                 <Text style={styles.recipeText}>{recipe.label}</Text>
               </TouchableOpacity>
@@ -103,26 +101,14 @@ const AddDayScreen = () => {
 
       {/* Afternoon Section */}
       {showAfternoon && (
-        <View style={{ zIndex: 1000, elevation: 1 }}>
+        <View>
           <Text style={styles.sectionTitle}>Afternoon</Text>
-          <DropDownPicker
-            items={times.filter(t => t.value === 'afternoon')}
-            open={openTimePicker}
-            setOpen={setOpenTimePicker}
-            value={selectedTime}
-            setValue={setSelectedTime}
-            placeholder="Select a time"
-            containerStyle={styles.dropdown}
-          />
           <ScrollView style={styles.recipeList}>
             {recipes.map(recipe => (
               <TouchableOpacity 
                 key={recipe.value} 
                 style={[styles.recipeItem, selectedRecipe === recipe.value && styles.selectedRecipe]} 
-                onPress={() => {
-                  setSelectedRecipe(recipe.value);
-                  setShowDinner(true); // Show dinner section after afternoon selection
-                }}>
+                onPress={() => setShowDinner(true)}>
                 <Text style={styles.recipeText}>{recipe.label}</Text>
               </TouchableOpacity>
             ))}
@@ -142,17 +128,67 @@ const AddDayScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  backButton: { padding: 10, marginBottom: 10 },
-  backText: { fontSize: 16, color: 'black' },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' },
-  dropdown: { marginBottom: 15, zIndex: 1000 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginVertical: 10 },
-  recipeList: { marginTop: 10 },
-  recipeItem: { padding: 10, borderBottomWidth: 1, borderColor: '#ddd' },
-  selectedRecipe: { backgroundColor: '#d0f0c0' },
-  recipeText: { fontSize: 16 },
-  saveButton: { marginTop: 20, backgroundColor: 'green', padding: 10, borderRadius: 5, alignItems: 'center' },
-  saveButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    backgroundColor: "#D7E2F1",
+    borderRadius: 10,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+  },
+  backIcon: { width: 20, height: 20, marginRight: 5 },
+  backText: { fontSize: 16, color: '#000' },
+
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+    backgroundColor: "#1F508F",
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    alignSelf: 'center',
+    color: '#fff',
+  },
+
+  datePickerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    marginBottom: 15,
+  },
+
+  blueBox: {
+    backgroundColor: "#1F508F",
+    padding: 10,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+
+  blueBoxText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  dropdownContainer: {
+    width: 180,
+  },
+
+  dropdownStyle: {
+    borderWidth: 1,
+    borderColor: "#1F508F",
+    borderRadius: 5,
+  },
+
+  dropDownContainerStyle: {
+    borderWidth: 1,
+    borderColor: "#1F508F",
+  }
 });
 
 export default AddDayScreen;
