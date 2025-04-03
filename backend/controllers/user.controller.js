@@ -545,3 +545,149 @@ export const removeIngredientPantry = async (req, res) => {
     return res.status(500).json({message: "Internal server error"});
   }
 };
+
+export const addIngredientToGrocery = async (req, res) => {
+  try {
+    const { userId } = req.params;
+      const { foodId, quantity } = req.body;
+
+      if (!foodId || quantity === undefined ) {
+        return res.status(400).json({message: "Food id and quantity are missing"});
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({message: "User not found."});
+      }
+    
+    const ingredientIdex = user.savedGrocery.findIndex(item => item.foodId === foodId);
+
+    if (ingredientIdex !== -1) {
+      user.savedGrocery[ingredientIdex].quantity = quantity;
+      await user.save();
+      console.log("Ingredient added or updated successfully");
+      return res.status(200).json({message: "Grocery updated successfully!"});
+    } else {
+      user.savedGrocery.push({ foodId, quantity});
+      await user.save();
+      console.log("Ingredient added or updated successfully");
+      return res.status(200).json({message: "Grocery updated successfully!"});
+    }
+  } catch (err) {
+    console.error("Error updating pantry:", err);
+    return res.status(500).json({message: "Internal server error"});
+  }
+};
+
+export const getSavedGrocery = async (req, res) => {
+  try {
+    // Find the user by ID and populate saved pantry ingredients
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!Array.isArray(user.savedGrocery) || user.savedGrocery.length === 0) {
+      return res.json({ message: "No saved pantry ingredients found", savedGrocery: [] });
+    }
+
+    const API_ID = process.env.EXPO_PUBLIC_FOODDB_ID;
+    const API_KEY = process.env.EXPO_PUBLIC_FOODDB_KEY;
+
+    if (!API_ID || !API_KEY) {
+      console.error("Missing API credentials");
+      return res.status(500).json({message: "Server error: Missing API credentials"});
+    }
+
+    const groceryDetailsPromises = user.savedGrocery.map(async ({ foodId, quantity }) => {
+      try {                
+        if (!foodId || typeof foodId !== "string") {
+          console.error("Invalid foodId", foodId);
+          return null;
+        }
+
+        const response = await axios.get(
+          `https://api.edamam.com/api/food-database/v2/parser`,
+          {
+            params: {
+              app_id: API_ID,
+              app_key: API_KEY,
+              ingr: foodId,
+            },
+            timeout: 10000,
+          }
+        );
+
+        const foodData = response.data.hints[0]?.food;
+
+        if (!foodData) {
+          console.error("Food data not found for the given foodId");
+          return null;
+        }
+
+        const label = foodData.label || "Unknown";
+        const category = foodData.category || "Other";
+        const nutrients = foodData.nutrients || {};
+        const image = foodData.image || 'https://via.placeholder.com/150';
+
+        console.log('Food details:', {foodId, label, category, nutrients, image, quantity});
+
+        return {
+          foodId, label, category, nutrients, image, quantity
+        };
+      } catch (err) {
+        console.error(`Error fetching ingredient details for foodId ${foodId}:`, err.message);
+        return null;
+      }
+    });
+
+    const detailedGrocery = (await Promise.all(groceryDetailsPromises)).filter(Boolean);
+
+    return res.json({ 
+      message: "Saved pantry ingredients fetched successfully",
+      savedGrocery: detailedGrocery 
+    });
+
+  } catch (error) {
+    console.error("Error fetching user's pantry ingredients recipes:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const removeIngredientGrocery = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { foodIds } = req.body;
+
+    if (!foodIds || !Array.isArray(foodIds)) {
+      return res.status(400).json({message: "Invalid request format. Expected array of foodIds"});
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({message: "User not found."});
+    }
+
+    const result = await User.updateOne(
+      {_id: userId},
+      { $pull: { savedGrocery: { foodId: { $in: foodIds } } } }
+    )
+
+    if (result.nModified === 0) {
+      return res.status(404).json({message: "No ingredient found to remove"})
+    } 
+
+    // const ingredientIdex = user.savedGrocery.findIndex(item => item.foodId === foodIds);
+    // if (ingredientIdex === -1) {
+    //   return res.status(404).json({message: "Ingredient not found."});
+    // }
+
+    // user.savedGrocery.splice(ingredientIdex, 1);
+    // await user.save();
+    return res.status(200).json({message: "Ingredient successfully removed."});
+
+  } catch (err) {
+    console.error("Error deleting pantry ingredient: ", err);
+    return res.status(500).json({message: "Internal server error"});
+  }
+}

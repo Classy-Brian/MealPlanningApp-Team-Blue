@@ -6,7 +6,6 @@ import { textcolors } from '@/components/TextColors'
 import { colors } from '@/components/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import { fonts } from '@/components/Fonts'
-import { useRouter } from 'expo-router'
 import maglass from "@/assets/images/magnifyingglass.png"
 import chright from "@/assets/images/chevron_right.png"
 import Animated, { Easing, useAnimatedProps, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
@@ -165,8 +164,16 @@ const Pantry = () => {
   }
 
   useEffect(() => {
-    fetchSavedPantry();
+    fetchSavedPantry()
   }, []);
+
+  useEffect(() => {
+    if (savedPantry.length > 0) {
+      setIngrLabels(savedPantry.map(ingredient => ingredient.label))
+    } else {
+      setIngrLabels([])
+    };
+  }, [savedPantry])
 
   const toggleAdd = () => {
 
@@ -199,6 +206,14 @@ const Pantry = () => {
   const handleSuggest = () => {
     if (addPress == true) {
       navigation.navigate('pantry_suggest')
+    } else {
+      return
+    }
+  }
+
+  const handleToGrocery = () => {
+    if (addPress == true) {
+      navigation.navigate('add_from_grocery')
     } else {
       return
     }
@@ -268,7 +283,7 @@ const Pantry = () => {
       <Animated.View 
           style={[det.buttonContainer2, animatedStyle]}
           animatedProps={animatedProps}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleToGrocery}>
           <AddFromGList />
         </TouchableOpacity>
       </Animated.View>
@@ -315,7 +330,7 @@ const det = StyleSheet.create({
     alignItems: 'center',
   },
   space: {
-    marginTop: 100,
+    marginTop: 120,
   },
   button: {
     flexDirection: 'row',
