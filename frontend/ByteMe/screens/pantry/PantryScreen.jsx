@@ -45,7 +45,7 @@ const SingleIngredient = ({ ingredient }) => {
   )
 }
 
-const Category = ({ category, ingredients }) => {
+const Category = ({ category, ingredients, filteredPantry }) => {
   // console.log("Ingredients being passed into Category:", ingredients)
   return(
     <View style={{marginHorizontal: 15}}> 
@@ -118,6 +118,7 @@ const Pantry = () => {
   const [savedPantry, setSavedPantry] = useState([]);
   const [groupedPantry, setGroupedPantry] = useState({});
   const [loading, setLoading] = useState(false);
+  const [ingrLabels, setIngrLabels] = useState([]);
 
   const [addPress, setAddPress] = useState(false);
 
@@ -203,9 +204,15 @@ const Pantry = () => {
     }
   }
 
-  const filteredPantry = savedPantry.filter((pantry) =>
-    pantry.label.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredGroupedPantry = Object.entries(groupedPantry).reduce((acc, [category, ingredients]) => {
+    const filteredIngredients = ingredients.filter( ingredient => 
+      ingredient.label.toLowerCase().includes(query.toLowerCase())
+    )
+    if (filteredIngredients.length > 0) {
+      acc[category] = filteredIngredients
+    }
+    return acc
+  }, {})
 
   return (
     <View style={styles.whiteBackground}>
@@ -235,7 +242,7 @@ const Pantry = () => {
 
         
 
-        data={Object.entries(groupedPantry)}
+        data={Object.entries(filteredGroupedPantry)}
         keyExtractor={(item, index) => item[0]}
         renderItem={({ item }) => (
           <Category category={item[0]} ingredients={item[1]} />
