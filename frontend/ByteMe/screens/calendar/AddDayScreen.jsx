@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'rea
 import { useNavigation } from '@react-navigation/native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
-import Back_butt from "@/assets/images/backbutton.png"; // Ensure correct path
+import Back_butt from "@/assets/images/backbutton.png";
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -23,9 +23,8 @@ const AddDayScreen = () => {
 
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [showMorning, setShowMorning] = useState(false);
-  const [showAfternoon, setShowAfternoon] = useState(false);
-  const [showDinner, setShowDinner] = useState(false);
+  const [openRecipePicker, setOpenRecipePicker] = useState(false);
+  const [showDropdowns, setShowDropdowns] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -48,7 +47,7 @@ const AddDayScreen = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}>
         <Image source={Back_butt} style={styles.backIcon} />
@@ -58,76 +57,77 @@ const AddDayScreen = () => {
       <Text style={styles.title}>Add Recipes to Calendar Day</Text>
 
       {/* Date Picker Section */}
-      <View style={styles.datePickerContainer}>
-        {/* Blue Box on Far Left */}
+      <View style={[styles.pickerContainer, { zIndex: 300 }]}>
         <TouchableOpacity style={styles.blueBox}>
           <Text style={styles.blueBoxText}>Date:</Text>
         </TouchableOpacity>
         
-        {/* Dropdown */}
         <DropDownPicker
           items={dates}
           open={openDatePicker}
           setOpen={setOpenDatePicker}
           value={selectedDate}
-          setValue={setSelectedDate}
+          setValue={(value) => {
+            setSelectedDate(value);
+            setShowDropdowns(true);
+          }}
           placeholder="Select Date"
           containerStyle={styles.dropdownContainer}
           style={styles.dropdownStyle}
           dropDownContainerStyle={styles.dropDownContainerStyle}
-          onChangeValue={() => setShowMorning(true)}
+          mode="BADGE"
         />
       </View>
 
-      {/* Morning Section */}
-      {showMorning && (
-        <View>
-          <Text style={styles.sectionTitle}>Morning</Text>
-          <ScrollView style={styles.recipeList}>
-            {recipes.map(recipe => (
-              <TouchableOpacity 
-                key={recipe.value} 
-                style={[styles.recipeItem, selectedRecipe === recipe.value && styles.selectedRecipe]} 
-                onPress={() => {
-                  setSelectedRecipe(recipe.value);
-                  setShowAfternoon(true);
-                }}>
-                <Text style={styles.recipeText}>{recipe.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
+      {showDropdowns && (
+        <>
+          {/* Recipes Picker */}
+          <View style={[styles.pickerContainer, { zIndex: 200 }]}>
+            <TouchableOpacity style={styles.blueBox}>
+              <Text style={styles.blueBoxText}>Recipe:</Text>
+            </TouchableOpacity>
 
-      {/* Afternoon Section */}
-      {showAfternoon && (
-        <View>
-          <Text style={styles.sectionTitle}>Afternoon</Text>
-          <ScrollView style={styles.recipeList}>
-            {recipes.map(recipe => (
-              <TouchableOpacity 
-                key={recipe.value} 
-                style={[styles.recipeItem, selectedRecipe === recipe.value && styles.selectedRecipe]} 
-                onPress={() => setShowDinner(true)}>
-                <Text style={styles.recipeText}>{recipe.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
+            <DropDownPicker
+              items={recipes}
+              open={openRecipePicker}
+              setOpen={setOpenRecipePicker}
+              value={selectedRecipe}
+              setValue={setSelectedRecipe}
+              placeholder="Select Recipe"
+              containerStyle={styles.dropdownContainer}
+              style={styles.dropdownStyle}
+              dropDownContainerStyle={styles.dropDownContainerStyle}
+              mode="BADGE"
+            />
+          </View>
 
-      {/* Save Button */}
-      {showDinner && (
-        <TouchableOpacity style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
+          {/* Time Picker */}
+          <View style={[styles.pickerContainer, { zIndex: 100 }]}>
+            <TouchableOpacity style={styles.blueBox}>
+              <Text style={styles.blueBoxText}>Time:</Text>
+            </TouchableOpacity>
+
+            <DropDownPicker
+              items={times}
+              open={openTimePicker}
+              setOpen={setOpenTimePicker}
+              value={selectedTime}
+              setValue={setSelectedTime}
+              placeholder="Select Time"
+              containerStyle={styles.dropdownContainer}
+              style={styles.dropdownStyle}
+              dropDownContainerStyle={styles.dropDownContainerStyle}
+              mode="BADGE"
+            />
+          </View>
+        </>
       )}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flexGrow: 1, padding: 20, backgroundColor: '#fff' },
 
   backButton: {
     flexDirection: "row",
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 
-  datePickerContainer: {
+  pickerContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
@@ -177,12 +177,13 @@ const styles = StyleSheet.create({
 
   dropdownContainer: {
     width: 180,
+    zIndex: 1000, 
   },
 
   dropdownStyle: {
     borderWidth: 1,
-    borderColor: "#1F508F",
-    borderRadius: 5,
+    borderColor: "#000",
+    borderRadius: 10,
   },
 
   dropDownContainerStyle: {
