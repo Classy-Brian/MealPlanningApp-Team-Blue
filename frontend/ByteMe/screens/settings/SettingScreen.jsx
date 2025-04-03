@@ -69,18 +69,20 @@ const SettingsScreen = () => {
                         </TouchableOpacity>
                     </Link>
 
-                    <TouchableOpacity style={styles_settings.settingItem}>
-                        <MaterialIcons name="account-circle" size={40} color="#000000" />
-                        <View style={styles_settings.textContainer}>
-                            <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
-                                Account Settings
-                            </Text>
-                            <Text style={styles_settings.settingDescriptionText}>
-                                See your account information.
-                            </Text>
-                        </View>
-                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                    </TouchableOpacity>
+                    <Link href={{ pathname: "/(settings)/account" }} asChild>
+                        <TouchableOpacity style={styles_settings.settingItem}>
+                            <MaterialIcons name="account-circle" size={40} color="#000000" />
+                            <View style={styles_settings.textContainer}>
+                                <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Account Settings
+                                </Text>
+                                <Text style={styles_settings.settingDescriptionText}>
+                                    See your account information.
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+                    </Link>
 
                     <TouchableOpacity style={styles_settings.settingItem}>
                         <MaterialIcons name="notifications" size={40} color="#000000" />

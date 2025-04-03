@@ -8,6 +8,8 @@ import { styles } from '@/components/Sheet'
 
 import { MaterialIcons, Ionicons } from '@expo/vector-icons'; // Import icons
 
+const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
+
 const PreferenceSettingsScreen = () => {
     const router = useRouter();
 
@@ -22,7 +24,7 @@ const PreferenceSettingsScreen = () => {
                             onPress={() => router.back()} 
                         >
                             <Image style={{marginRight:10}}
-                                source={require('../../assets/images/back_arrow_navigate.png')}/>
+                                source={backArrowImage}/>
                             <Text style={styles_preference.settingsText}>Settings</Text>
                         </TouchableOpacity>
                     </View>

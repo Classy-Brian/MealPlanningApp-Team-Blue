@@ -12,6 +12,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { colors } from '../../components/Colors'
+
+const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -156,6 +159,18 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
+
+      <View style={styles.header}>
+          <TouchableOpacity
+              style={styles.homeButton}
+              onPress={() => router.push('home')} 
+          >
+              <Image style={{marginRight:10}}
+                  source={backArrowImage}/>
+              <Text style={styles.homeText}>Home</Text>
+          </TouchableOpacity>
+      </View>
+
       {/* Settings Button in the top-right */}
       <TouchableOpacity
         style={styles.settingsButton}
@@ -200,6 +215,35 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    position: 'relative',   
+    height: 60, 
+    marginBottom: 40, 
+  },
+  homeText: {
+    flex: 1,
+    fontSize: 18,
+    color: '#000000',
+    marginLeft: 10,
+  },
+  homeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute', 
+    left: 0,
+    top: 0,
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    backgroundColor: colors.othergrey,
+    justifyContent: 'center',
+    marginVertical: 20,
+    elevation: 2,
+    shadowColor: colors.black,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
