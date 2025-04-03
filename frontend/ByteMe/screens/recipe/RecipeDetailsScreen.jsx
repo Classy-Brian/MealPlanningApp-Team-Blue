@@ -4,6 +4,23 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import Back_butt from '@/assets/images/backbutton.png';  // Adjusted path for back button
 import getUserIdFromToken from '@/components/getUserIdFromToken';
+import { colors } from '@/components/Colors';
+import { styles } from '@/components/Sheet';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('explore_recipe')}>
+                <View style={[det.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={det.regularText}>Search Recipes</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();
@@ -45,8 +62,8 @@ const RecipeDetailsScreen = () => {
 
   if (!recipeId || !title || ingredients.length === 0 || !directions) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
+      <View style={det.container}>
+        <Text style={det.errorText}>Error: Recipe details not passed correctly!</Text>
       </View>
     );
   }
@@ -71,12 +88,10 @@ const RecipeDetailsScreen = () => {
         Alert.alert("Success", "Recipe saved successfully!");
   
         // Navigate to savedrecipes screen and pass the saved recipe info
-        navigation.push('(tabs)', {
-          screen: 'savedrecipes',
-          params: {
+        navigation.navigate('savedrecipes', {
             recipe: { title, imageUri, recipeId, isSaved: true },
           },
-        });
+        );
       } else {
         throw new Error("Failed to save recipe.");
       }
@@ -90,52 +105,46 @@ const RecipeDetailsScreen = () => {
   const renderSaveButton = () => {
     return (
       <TouchableOpacity
-        style={styles.saveButton}
+        style={det.saveButton}
         onPress={saveRecipe}
         disabled={isSaved}
       >
-        <Text style={styles.saveButtonText}>{isSaved ? "Recipe Saved" : "Add Recipe"}</Text>
+        <Text style={det.saveButtonText}>{isSaved ? "Recipe Saved" : "Add Recipe"}</Text>
       </TouchableOpacity>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
       {/* Header with Back Button */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate('explorerecipes')}  // Navigates back to ExplorePage
-        >
-          <Image source={Back_butt} style={styles.backIcon} />
-          <Text style={styles.backText}>Back</Text>
-        </TouchableOpacity>
+      <View style={det.header}>
+        <BackButton />
       </View>
 
       {/* Recipe Image */}
       {imageUri ? (
-        <View style={styles.recipeWrapper}>
-          <Image source={{ uri: imageUri }} style={styles.recipeImage} />
+        <View style={det.recipeWrapper}>
+          <Image source={{ uri: imageUri }} style={det.recipeImage} />
         </View>
       ) : (
-        <Text style={styles.errorText}>No image available</Text>
+        <Text style={det.errorText}>No image available</Text>
       )}
 
       {/* Title */}
-      <Text style={styles.title}>{title}</Text>
+      <Text style={det.title}>{title}</Text>
 
       {/* Save Button - Only show if not already saved */}
       {!isSavedRecipe && renderSaveButton()}
 
       {/* Compact Section Tabs */}
-      <View style={styles.tabContainer}>
+      <View style={det.tabContainer}>
         {sections.map((section, index) => (
           <TouchableOpacity
             key={index}
-            style={[styles.tab, activeSection === index && styles.activeTab]}
+            style={[det.tab, activeSection === index && det.activeTab]}
             onPress={() => setActiveSection(index)}
           >
-            <Text style={[styles.tabText, activeSection === index && styles.activeTabText]}>
+            <Text style={[det.tabText, activeSection === index && det.activeTabText]}>
               {section}
             </Text>
           </TouchableOpacity>
@@ -143,53 +152,53 @@ const RecipeDetailsScreen = () => {
       </View>
 
       {/* Section Content */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.sectionContent}>
+      <ScrollView contentContainerStyle={det.scrollContent}>
+        <View style={det.sectionContent}>
           {activeSection === 0 && (
             <>
-              <Text style={styles.sectionTitle}>Ingredients:</Text>
+              <Text style={det.sectionTitle}>Ingredients:</Text>
               {ingredients.map((ingredient, index) => (
-                <Text key={index} style={styles.sectionText}>- {ingredient}</Text>
+                <Text key={index} style={det.sectionText}>- {ingredient}</Text>
               ))}
             </>
           )}
 
           {activeSection === 1 && (
             <>
-              <Text style={styles.sectionTitle}>Allergy Information:</Text>
+              <Text style={det.sectionTitle}>Allergy Information:</Text>
               {allergies.length > 0 ? (
                 allergies.map((allergy, index) => (
-                  <Text key={index} style={styles.sectionText}>- {allergy}</Text>
+                  <Text key={index} style={det.sectionText}>- {allergy}</Text>
                 ))
               ) : (
-                <Text style={styles.sectionText}>No allergy information available.</Text>
+                <Text style={det.sectionText}>No allergy information available.</Text>
               )}
             </>
           )}
 
           {activeSection === 2 && (
             <>
-              <Text style={styles.sectionTitle}>Directions:</Text>
-              <Text style={styles.sectionText}>{directions}</Text>
+              <Text style={det.sectionTitle}>Directions:</Text>
+              <Text style={det.sectionText}>{directions}</Text>
             </>
           )}
 
           {activeSection === 3 && (
             <>
-              <Text style={styles.sectionTitle}>Nutrition Facts:</Text>
+              <Text style={det.sectionTitle}>Nutrition Facts:</Text>
               {nutrition ? (
                 <>
                   {Object.keys(nutrition).map((key) => {
                     const { label, quantity, unit } = nutrition[key];
                     return (
-                      <Text key={key} style={styles.sectionText}>
+                      <Text key={key} style={det.sectionText}>
                         {label}: {Math.round(quantity || 0)} {unit}
                       </Text>
                     );
                   })}
                 </>
               ) : (
-                <Text style={styles.sectionText}>No nutrition data available.</Text>
+                <Text style={det.sectionText}>No nutrition data available.</Text>
               )}
             </>
           )}
@@ -200,8 +209,8 @@ const RecipeDetailsScreen = () => {
   );
 };
 
-// Styles
-const styles = StyleSheet.create({
+// StyleSheet
+const det = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
@@ -310,6 +319,18 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'flex-start',  // Ensures content starts at the top
+  },
+    greybutton: {
+      flexDirection: 'row',
+      borderRadius: 15,
+      paddingHorizontal: 15,
+      paddingVertical: 5,
+      backgroundColor: colors.othergrey,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginVertical: 10,
+      elevation: 2,
+      shadowColor: colors.black,
   },
 });
 

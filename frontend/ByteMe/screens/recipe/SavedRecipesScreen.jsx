@@ -10,6 +10,8 @@ import { styles } from '@/components/Sheet';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { fonts } from '@/components/Fonts';
 import { Ionicons } from '@expo/vector-icons';
+import maglass from "@/assets/images/magnifyingglass.png"
+import { useNavigation } from '@react-navigation/native';
 
 export default function Recipes() {
   const router = useRouter();
@@ -17,9 +19,9 @@ export default function Recipes() {
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const navigation = useNavigation();
 // Fetch saved recipes from the backend
-const fetchSavedRecipes = async () => {
+const fetchSavedRecipes = async () => {  
   setLoading(true);
   try {
     const userId = await getUserIdFromToken();
@@ -64,39 +66,39 @@ const fetchSavedRecipes = async () => {
   );
 
   return (
-    <View style={det.container}>
-      <Text style={styles.title}>Saved Recipes</Text>
+    <View style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <Text style={styles.title}>Saved Recipes</Text>
 
-      {/* Search Bar */}
-      <View style={det.searchContainer}>
-        <View style={det.inputContainer}>
+        {/* Search Bar */}
+        <View style={styles.searchInput}>
+          <Image
+            style={det.magnifyingGlassIcon}
+            source={maglass} />
           <TextInput
             placeholder='Search through your recipes'
-            placeholderTextColor={textcolors.lightgrey}
-            style={det.inputText}
+            placeholderTextColor={textcolors.darkgrey}
+            style={styles.regularText}
             value={query}
             onChangeText={(text) => setQuery(text)}
           />
         </View>
-      </View>
 
-      {/* Display Loading */}
-      {loading && <ActivityIndicator size="large" color={colors.primary} />}
+        {/* Display Loading */}
+        {loading && <ActivityIndicator size="large" color={colors.primary} />}
 
-      {/* Display Error */}
-      {error && <Text style={det.error}>{error}</Text>}
+        {/* Display Error */}
+        {error && <Text style={det.error}>{error}</Text>}
 
-      {/* List of Saved Recipes */}
-      <FlatList
-        data={filteredRecipes}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={det.recipeContainer} 
-            onPress={() => 
-                router.push({
-                  pathname: "../favoriterecipes",
-                  params: {
+        {/* List of Saved Recipes */}
+        <FlatList
+          data={filteredRecipes}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity 
+              style={det.recipeContainer} 
+              onPress={() => 
+                  navigation.navigate('favorite_recipe', {
                     recipeId: item.uri,  
                     title: item.label,
                     imageUri: item.image || item.images?.THUMBNAIL?.url || "https://via.placeholder.com/150",
@@ -104,25 +106,26 @@ const fetchSavedRecipes = async () => {
                     directions: item.directions || "No directions available.",
                     allergies: item.allergies || [],  //  Send as an array
                     nutrition: JSON.stringify(item.nutrition)
-                  }
-                })}
-          >
-            <View style={det.rectangleView}>
-              <Image 
-                source={{ uri: item.image }}  
-                style={det.recipeImage} 
-              />
-              <Text style={det.recipeTitle}>{item.label}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={!loading && <Text style={det.noRecipesText}>No saved recipes found.</Text>}
-      />
+                  })}
+            >
+              <View style={det.rectangleView}>
+                <Image 
+                  source={{ uri: item.image }}  
+                  style={det.recipeImage} 
+                />
+                <Text style={det.recipeTitle}>{item.label}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={!loading && <Text style={det.noRecipesText}>No saved recipes found.</Text>}
+        />
 
-      {/* Floating Add Button */}
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
-        <Ionicons name="add" size={60} color='#d9d9d9' />
-      </TouchableOpacity>
+        {/* Floating Add Button */}
+        
+      </View>
+      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('explore_recipe')}>
+          <Ionicons name="add" size={60} color='#d9d9d9' />
+        </TouchableOpacity>
     </View>
   );
 }
@@ -213,5 +216,10 @@ const det = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
     marginBottom: 10,
+  },
+  magnifyingGlassIcon: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 15, // Space between the icon and input
   },
 });

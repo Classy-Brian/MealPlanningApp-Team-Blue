@@ -109,8 +109,7 @@ export const styles = StyleSheet.create({
     searchInput: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 10,
-      borderRadius: 22,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: textcolors.darkgrey,
       backgroundColor: colors.grey,

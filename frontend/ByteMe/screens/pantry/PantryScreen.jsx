@@ -198,7 +198,6 @@ const Pantry = () => {
   const handleSuggest = () => {
     if (addPress == true) {
       navigation.navigate('pantry_suggest')
-      // route.push('/(pantry)/pantrysuggest')
     } else {
       return
     }
@@ -208,8 +207,6 @@ const Pantry = () => {
     pantry.label.toLowerCase().includes(query.toLowerCase())
   );
 
-  // const route = useRouter();
-
   return (
     <View style={styles.whiteBackground}>
       <FlatList
@@ -218,14 +215,14 @@ const Pantry = () => {
             <Text style={styles.title}>Pantry</Text>
 
             {/* Search Box */}
-            <View style={[styles.searchInput, {flexDirection: 'row'}]}>
+            <View style={[styles.searchInput]}>
               <Image 
                 style={det.magnifyingGlassIcon} 
                 source={maglass} />          
               <TextInput
                 placeholder='Search for ingredients'
                 placeholderTextColor={textcolors.darkgrey}
-                onChangeText={setQuery}
+                onChangeText={(text) => setQuery(text)}
                 value={query}
                 style={styles.regularText}
               />

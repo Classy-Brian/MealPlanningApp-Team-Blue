@@ -9,6 +9,8 @@ import { textcolors } from '@/components/TextColors';
 import { fonts } from '@/components/Fonts';
 import Back_butt from "@/assets/images/backbutton.png";
 import { styles } from '@/components/Sheet';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+
 
 const RecipeCard = ({ imageUri, title, onPress }) => (
   <TouchableOpacity style={det.recipeContainer} onPress={onPress} activeOpacity={0.7}>
@@ -19,6 +21,20 @@ const RecipeCard = ({ imageUri, title, onPress }) => (
     </View>
   </TouchableOpacity>
 );
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('savedrecipes')}>
+                <View style={[det.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Recipes</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const RecipeSearch = () => {
   const [recipes, setRecipes] = useState([]);
@@ -47,7 +63,7 @@ const RecipeSearch = () => {
   };
 
   const goToRecipeDetails = (recipe) => {
-    navigation.navigate('recipedetails', {
+    navigation.navigate('recipe_details', {
       recipeId: recipe.recipe.uri,
       title: recipe.recipe.label,
       ingredients: recipe.recipe.ingredientLines,
@@ -63,48 +79,42 @@ const RecipeSearch = () => {
   };
 
   return (
-    <View style={det.container}>
-      <FlatList
-        data={recipes}
-        keyExtractor={(item, index) => index.toString()}
-        numColumns={2}
-        columnWrapperStyle={det.row}
-        ListHeaderComponent={
-          <View style={det.header}>
-            <TouchableOpacity
-              style={det.backButton}
-              onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}
-            >
-              <Image source={Back_butt} style={det.backIcon} />
-              <Text style={det.backText}>Recipes</Text>
-            </TouchableOpacity>
-            <View style={det.titleContainer}>
-              <Text style={det.title}>Search Recipes</Text>
+    <View style={styles.whiteBackground}>      
+      <View style={styles.screenContainer}>
+        <FlatList
+          data={recipes}
+          keyExtractor={(item, index) => index.toString()}
+          numColumns={2}
+          columnWrapperStyle={det.row}
+          ListHeaderComponent={
+            <View>
+              <BackButton />
+              <Text style={styles.title}>Search Recipes</Text>
+              <View style={styles.searchInput}>
+                <Image source={maglass} style={det.magnifyingGlassIcon} />
+                <TextInput
+                  placeholder="Search Recipes"
+                  placeholderTextColor={textcolors.darkgrey}
+                  style={styles.regularText}
+                  value={searchQuery}
+                  onChangeText={(text) => setSearchQuery(text)} // Update the state without fetching
+                  onSubmitEditing={handleSearchSubmit} // Fetch when user presses "Enter"
+                  returnKeyType="search"
+                />
+              </View>
             </View>
-            <View style={det.searchContainer}>
-              <Image source={maglass} style={det.magnifyingGlassIcon} />
-              <TextInput
-                placeholder="Search Recipes"
-                placeholderTextColor={textcolors.lightgrey}
-                style={det.inputText}
-                value={searchQuery}
-                onChangeText={(text) => setSearchQuery(text)} // Update the state without fetching
-                onSubmitEditing={handleSearchSubmit} // Fetch when user presses "Enter"
-                returnKeyType="search"
-              />
-            </View>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <RecipeCard
-            title={item.recipe.label}
-            imageUri={item.recipe.image}
-            onPress={() => goToRecipeDetails(item)}
-          />
-        )}
-        ListFooterComponent={loading && <Text>Loading...</Text>}
-        contentContainerStyle={{ paddingTop: 60 }}
-      />
+          }
+          renderItem={({ item }) => (
+            <RecipeCard
+              title={item.recipe.label}
+              imageUri={item.recipe.image}
+              onPress={() => goToRecipeDetails(item)}
+            />
+          )}
+          ListFooterComponent={loading && <Text>Loading...</Text>}
+          contentContainerStyle={{ paddingTop: 60 }}
+        />
+      </View>
     </View>
   );
 };
@@ -161,7 +171,7 @@ const det = StyleSheet.create({
   magnifyingGlassIcon: {
     width: 30,
     height: 30,
-    marginRight: 15, // Space between the icon and input
+    marginHorizontal: 15, // Space between the icon and input
   },
   
   inputText: {
@@ -219,6 +229,18 @@ const det = StyleSheet.create({
     textAlign: "center",
     opacity: 0.8,
   },
+  greybutton: {
+    flexDirection: 'row',
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    backgroundColor: colors.othergrey,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    elevation: 2,
+    shadowColor: colors.black,
+},
 });
 
 export default RecipeSearch;
