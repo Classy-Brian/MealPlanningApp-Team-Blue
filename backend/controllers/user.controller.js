@@ -145,7 +145,7 @@ export const updateUserPreferences = async (req, res) => {
   if (req.body.cuisines !== undefined) {
     updateData.cuisines = req.body.cuisines;
   }
-  if (req.body.cuisines !== undefined) {
+  if (req.body.dislikes !== undefined) {
     updateData.dislikes = req.body.dislikes;
   }
 

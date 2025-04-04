@@ -64,18 +64,20 @@ const PreferenceSettingsScreen = () => {
                         </TouchableOpacity>
                     </Link>
 
-                    <TouchableOpacity style={styles_preference.settingItem}>
-                        <MaterialIcons name="tune" size={40} color="#000000" />
-                        <View style={styles_preference.textContainer}>
-                            <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
-                                Disliked Ingredients
-                            </Text>
-                            <Text style={styles_preference.settingDescriptionText}>
-                                Select your disliked ingredients.
-                            </Text>
-                        </View>
-                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                    </TouchableOpacity>
+                    <Link href={{ pathname: "/(settings)/disliked", params: { from: 'Disliked Ingredients' } }} asChild>
+                        <TouchableOpacity style={styles_preference.settingItem}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_preference.textContainer}>
+                                <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Disliked Ingredients
+                                </Text>
+                                <Text style={styles_preference.settingDescriptionText}>
+                                    Select your disliked ingredients.
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+                    </Link>
 
                     <Link href={{ pathname: "/(settings)/cuisine", params: { from: 'Cuisines' } }} asChild>
                         <TouchableOpacity style={styles_preference.settingItem}>
