@@ -18,7 +18,7 @@ function HeaderLogo() {
   )
 }
 
-const Login = () => {
+const Login = ({ navigation }) => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
@@ -62,6 +62,9 @@ const Login = () => {
     }
   }
 
+  const forgetPassword = async () => {
+    navigation.navigate('forgotpassword');
+  };
 
   return (
     <View style={styles.whiteBackground}>
@@ -106,9 +109,11 @@ const Login = () => {
           </View>        
         </View>
 
-        <View style={styles.container}>
-          <Text style={styles.forgot} >Forgot Password? </Text>
-        </View>
+        <TouchableOpacity onPress={forgetPassword}>
+          <View style={styles.container}>
+            <Text style={styles.forgot} >Forgot Password? </Text>
+          </View>
+        </TouchableOpacity>
         
         <TouchableOpacity onPress={handleLogin}>
           <View style={styles.buttonContainer}>
