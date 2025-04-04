@@ -11,7 +11,6 @@ import {
   Alert,
   ActivityIndicator 
 } from 'react-native';
-import { useRouter } from 'expo-router'; // Use Expo Router
 
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
@@ -20,8 +19,7 @@ import { styles } from '@/components/Sheet'
 
 const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 
-const ForgotPasswordScreen = () => {
-  const router = useRouter();
+const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,15 +30,18 @@ const ForgotPasswordScreen = () => {
     //   return;
     // }
 
+    if(!email){
+      Alert.alert("Invalid Email", "Please enter a valid email address.");
+      return;
+    }
+
     setIsLoading(true);
     console.log("Mock: Pretending to send reset instructions to:", email);
 
     setTimeout(() => {
         setIsLoading(false);
-        router.push({
-            pathname: '/(start)/verifyCode',
-            params: { email: email }
-        });
+        navigation.navigate('verifycode', { email: email });
+
     }, 1500);
 
     const submitResetRequest = async () => {
@@ -54,7 +55,7 @@ const ForgotPasswordScreen = () => {
         // MOCK Success for now:
         console.log("Mock: Pretending to send reset instructions to:", email);
         Alert.alert("Check Your Email", `Password reset instructions sent to ${email} (mock).`);
-        router.push({ pathname: '/(start)/verifyCode', params: { email: email } });
+        navigation.navigate('verifycode', { email: email });
 
       } catch (error) {
         console.error("Forgot Password Error:", error);
@@ -74,7 +75,7 @@ const ForgotPasswordScreen = () => {
 
         {/* Back Button */}
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <TouchableOpacity onPress={() => router.back()} >
+          <TouchableOpacity onPress={() => navigation.goBack()} >
             <View style={styles_forgot.greybutton}>
               <Image style={{marginRight:10}} source={backArrowImage}/>
               <Text style={styles_forgot.backButtonText}>Login</Text>

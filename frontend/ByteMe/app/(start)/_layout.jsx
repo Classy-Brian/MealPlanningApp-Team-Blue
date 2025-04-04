@@ -5,6 +5,8 @@ import { NavigationContainer } from '@react-navigation/native'
 import LoginScreen from './login'
 import SignupScreen from './signup'
 import ForgotPasswordScreen from './forgotPassword'
+import VerifyCodeScreen from './verifyCode'
+import NewPasswordScreen from './newPassword'
 
 const Stack = createStackNavigator();
 
@@ -22,6 +24,12 @@ const _layout = () => {
           <Stack.Screen 
             name="forgotpassword" 
             component={ForgotPasswordScreen} />
+          <Stack.Screen 
+            name="verifycode" 
+            component={VerifyCodeScreen} />
+          <Stack.Screen 
+            name="newpassword" 
+            component={NewPasswordScreen} />
       </Stack.Navigator>
   )
 }
