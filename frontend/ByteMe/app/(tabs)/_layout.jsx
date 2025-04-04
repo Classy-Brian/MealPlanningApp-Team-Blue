@@ -20,7 +20,7 @@ import * as Animatable from 'react-native-animatable';
 
 import Homepage from './home';
 import CalendarScreen from './calendar';
-import GroceryScreen from './grocery';
+import GroceryScreen from '../(grocery)/_layout';
 import SavedRecipesScreen from '../(recipe)/savedrecipes';
 import PantryLayout from '../(pantry)/_layout';
 import RecipeLayout from '../(recipe)/_layout';
