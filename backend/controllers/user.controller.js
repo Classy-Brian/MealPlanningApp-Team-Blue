@@ -140,10 +140,13 @@ export const updateUserPreferences = async (req, res) => {
     updateData.allergies = req.body.allergies; 
   }
   if (req.body.portion !== undefined) {
-      updateData.portion = req.body.portion;
+    updateData.portion = req.body.portion;
   }
   if (req.body.cuisines !== undefined) {
-      updateData.cuisines = req.body.cuisines;
+    updateData.cuisines = req.body.cuisines;
+  }
+  if (req.body.cuisines !== undefined) {
+    updateData.dislikes = req.body.dislikes;
   }
 
   if (Object.keys(updateData).length === 0) {

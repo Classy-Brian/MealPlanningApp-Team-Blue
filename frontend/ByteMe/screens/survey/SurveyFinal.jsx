@@ -13,6 +13,7 @@ const SurveyFinal = ( { navigation, route } ) => {
   const [allergies, setAllergies] = useState([]);
   const [portion, setSelectedPortion] = useState(null);
   const [cuisines, setSelectedCuisines] = useState([]);
+  const [dislikedIngredients, setDislikedIngredients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Had to clean old data
@@ -32,7 +33,7 @@ const SurveyFinal = ( { navigation, route } ) => {
   const handleSubmitSurvey = async () => {
     setIsLoading(true);
     try {
-      const token = await AsyncStorage.getItem('authToken');    // Retrieves the token
+      const token = await AsyncStorage.getItem('authToken');
       if (!token) {
         console.error("AUTHENTICATION TOKEN IS MISSING");
         Alert.alert("Error", "Authentication missing. Please log in again.");
@@ -43,12 +44,16 @@ const SurveyFinal = ( { navigation, route } ) => {
       const savedAllergies = await AsyncStorage.getItem('allergies');
       const savedPortionSize = await AsyncStorage.getItem('portion');
       const savedCuisines = await AsyncStorage.getItem('cuisines');
+      const SavedDislikedIngredients = await AsyncStorage.getItem('dislikes');
 
       const allergies = savedAllergies ? JSON.parse(savedAllergies) : [];
       const portion = savedPortionSize ? JSON.parse(savedPortionSize) : "1";
       const cuisines = savedCuisines ? JSON.parse(savedCuisines) : [];
+      const dislikes = SavedDislikedIngredients ? JSON.parse(SavedDislikedIngredients) : [];
 
-      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines },
+      console.log(allergies, portion, cuisines, dislikes)
+
+      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines, dislikes },
         { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
@@ -57,6 +62,7 @@ const SurveyFinal = ( { navigation, route } ) => {
         await AsyncStorage.removeItem('allergies')
         await AsyncStorage.removeItem('portion')
         await AsyncStorage.removeItem('cuisines')
+        await AsyncStorage.removeItem('dislikes')
         router.replace('../../(start)/login');
       }
     } catch (err) {
@@ -78,7 +84,7 @@ const SurveyFinal = ( { navigation, route } ) => {
   }
 
   const prevPage = () => {
-    navigation.navigate('survey4', { allergies, portion, cuisines });
+    navigation.navigate('survey5', { allergies, portion, cuisines });
   }
 
   return (

@@ -58,7 +58,7 @@ const SurveyCuisines = ({ navigation }) => {
 
     const nextPage = async () => {
         await AsyncStorage.setItem('cuisines', JSON.stringify(cuisines));
-        navigation.navigate('surveyfinal', { cuisines });
+        navigation.navigate('survey5', { cuisines });
     };
 
     const prevPage = async () => {
