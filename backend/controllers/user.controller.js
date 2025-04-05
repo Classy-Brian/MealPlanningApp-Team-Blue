@@ -532,3 +532,41 @@ export const resetPassword = asyncHandler(async (req, res) => {
   // For simplicity now, just send success message.
   res.status(200).json({ message: 'Password reset successful!' });
 });
+
+export const updateUserPassword = asyncHandler(async(req, res) => {
+  console.log("updateUserPassword called");
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    res.status(400);
+    throw new Error('Please provide current and new passwords');
+  }
+
+  // if (newPassword.length < 6) {
+  //   res.status(400);
+  //   throw new Error('New password must be at least 6 characters long');
+  // }
+
+  const user = await User.findById(req.user._id).select('+password');
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+  
+  console.log("Verifying current password for user:", user.email);
+
+  const isMatch = await user.matchPassword(currentPassword);
+
+  if (!isMatch) {
+    console.log("Current password does nat match");
+    res.status(401);
+    throw new Error('Incorrect current password');
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  console.log(`Password updated successfully for user: ${user.email}`);
+  res.status(200).json({ message: 'Password updated successfully' });
+});

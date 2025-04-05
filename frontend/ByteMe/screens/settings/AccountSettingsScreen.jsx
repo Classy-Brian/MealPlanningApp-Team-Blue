@@ -33,19 +33,21 @@ const AccountSettingsScreen = () => {
                     <Text style={[styles.regularText, {paddingBottom: 20}]}>See and edit your account information.</Text>
 
                     {/* Account edit List */}
-                    <TouchableOpacity style={styles_account.settingItem}>
-                        <MaterialIcons name="tune" size={40} color="#000000" />
-                        <View style={styles_account.textContainer}>
-                            <Text style={[styles_account.settingTitleText, {fontWeight: 'bold'}]}>
-                                Reset Password
-                            </Text>
-                            <Text style={styles_account.settingDescriptionText}>
-                                See how you can reset your {"\n"}
-                                password.
-                            </Text>
-                        </View>
-                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                    </TouchableOpacity>
+                    <Link href={{ pathname: "/(settings)/updatepassword", params: { from: 'Reset Password' } }} asChild>
+                        <TouchableOpacity style={styles_account.settingItem}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_account.textContainer}>
+                                <Text style={[styles_account.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Reset Password
+                                </Text>
+                                <Text style={styles_account.settingDescriptionText}>
+                                    See how you can reset your {"\n"}
+                                    password.
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+                    </Link>
 
                     <TouchableOpacity style={styles_account.settingItem}>
                         <MaterialIcons name="tune" size={40} color="#000000" />

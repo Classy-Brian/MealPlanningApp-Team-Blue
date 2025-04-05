@@ -14,6 +14,7 @@ import {
   unsaveRecipe,
   forgotPasswordRequest,
   resetPassword,
+  updateUserPassword,
   
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
@@ -37,6 +38,9 @@ router.get('/profile/:token', authenticateJWT, getUserProfile);
 
 //UPDATE: user allergies by ID
 router.patch('/preferences', authenticateJWT, updateUserPreferences);
+
+//UPDATE: user password
+router.patch('/profile/password', authenticateJWT, updateUserPassword);
 
 //READ: get all users (may want admin-only or we remove in production)
 // router.get('/', getAllUsers);
