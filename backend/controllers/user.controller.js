@@ -4,6 +4,8 @@ import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 import axios from 'axios'
+import crypto from 'crypto'; 
+
 dotenv.config();
 const JWT_SECRET = `${process.env.JWT_SECRET}` 
 
@@ -426,3 +428,107 @@ export const getRecieById = async (req, res) => {
       res.status(500).json({ message: error.message });
   }
 };
+
+// REQUEST PASSWORD RESET (Generates Token, NO EMAIL SENT YET)
+export const forgotPasswordRequest = asyncHandler(async (req, res) => {
+  console.log("forgotPasswordRequest called for email:", req.body.email);
+  const { email } = req.body;
+
+  if (!email) {
+      res.status(400);
+      throw new Error('Please provide an email address');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+      console.log(`Password reset requested for non-existent email: ${email}`);
+      return res.status(200).json({ message: 'If an account with that email exists, password reset instructions have been sent (mock).' });
+  }
+
+  const resetToken = user.getPasswordResetToken(); 
+  await user.save({ validateBeforeSave: false });
+
+  console.log(`Generated reset token (unhashed - FOR TESTING ONLY): ${resetToken}`);
+  console.log(`Saved hashed token to user ${user.email}`);
+
+  // --- MOCK RESPONSE (FOR TESTING WITHOUT EMAIL) ---
+  res.status(200).json({
+      message: 'Password reset token generated (mock - normally emailed). Use this token to reset.',
+      resetToken: resetToken 
+  });
+  // --- END MOCK RESPONSE ---
+
+  /*
+  // --- REAL EMAIL SENDING LOGIC (For later) ---
+  try {
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`; // Link to your frontend reset page
+      const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a POST request to: \n\n ${resetUrl} \n\n If you did not request this, please ignore this email and your password will remain unchanged.\n This link is valid for 10 minutes.`;
+
+      await sendEmail({
+          email: user.email,
+          subject: 'ByteMe Password Reset Token',
+          message
+      });
+      res.status(200).json({ message: 'Password reset instructions sent to your email.' });
+  } catch(emailError) {
+      console.error("Error sending password reset email:", emailError);
+      user.passwordResetToken = undefined; // Clear fields on email failure
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      throw new Error('Email could not be sent'); // Let asyncHandler handle response
+  }
+  */
+});
+
+// RESET PASSWORD (Uses Token)
+export const resetPassword = asyncHandler(async (req, res) => {
+  console.log("resetPassword called");
+  const { email, token, newPassword } = req.body;
+
+  if (!email || !token || !newPassword) {
+      res.status(400);
+      throw new Error('Please provide email, reset token, and new password');
+  }
+
+  // Hash the token received from the request body
+  const hashedToken = crypto
+      .createHash('sha256')
+      .update(token) // Hash the UNHASHED token from the request
+      .digest('hex');
+
+  console.log("Searching for user with email:", email);
+  console.log("Searching with hashed token:", hashedToken);
+
+  // Find user by email, HASHED token, and expiry date
+  const user = await User.findOne({
+      email: email,
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }, // Check if token is still valid
+  });
+
+  // Check if user found and token is valid
+  if (!user) {
+    console.log("User not found or token invalid/expired");
+    res.status(400);
+    throw new Error('Invalid or expired password reset token');
+  }
+
+  // // Basic password length validation
+  // if (newPassword.length < 6) {
+  //   res.status(400);
+  //   throw new Error('Password must be at least 6 characters long');
+  // }
+
+  // Set the new password (pre-save hook will hash it)
+  user.password = newPassword;
+  user.passwordResetToken = undefined; // Clear the reset token fields
+  user.passwordResetExpires = undefined;
+  await user.save(); // Save the user with the new password and cleared token
+
+  console.log(`Password successfully reset for user: ${user.email}`);
+
+  // Generate a new LOGIN JWT token immediately? Or force user to log in again?
+  // For simplicity now, just send success message.
+  res.status(200).json({ message: 'Password reset successful!' });
+});

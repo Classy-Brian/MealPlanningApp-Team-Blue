@@ -11,7 +11,10 @@ import {
   getUserProfile,
   getSavedRecipes, 
   saveRecipe,
-  unsaveRecipe
+  unsaveRecipe,
+  forgotPasswordRequest,
+  resetPassword,
+  
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -22,6 +25,12 @@ router.post('/', createUser);
 
 //LOGIN: user
 router.post('/login', loginUser);
+
+// FORGET PASSWORD: user
+router.post('/forgot-password', forgotPasswordRequest);
+
+// RESET PASSWORD: user
+router.post('/reset-password', resetPassword);
 
 // READ: Get current user's profile by JWT
 router.get('/profile/:token', authenticateJWT, getUserProfile);

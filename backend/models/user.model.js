@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto'
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -46,7 +47,19 @@ const userSchema = new mongoose.Schema({
 
     savedRecipes: [{
         type: String 
-    }]
+    }],
+
+    isVerified: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
+
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+
     }, {
     timestamps: true
   });
@@ -76,6 +89,33 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
         return resizeBy.status(400).json({ message: "Invalid credentials"}); // <- Need to add a way to handle the error
     }
 };
+
+userSchema.methods.getEmailVerificationToken = function() {
+    const verificationToken = crypto.randomBytes(20).toString('hex');
+
+    this.emailVerificationToken = crypto
+        .createHash('sha256')
+        .update(verificationToken)
+        .digest('hex');
+
+    this.emailVerificationToken = DataTransfer.now() + 15 * 60 * 1000 // Set token expiration time, 15 minutes
+
+    return verificationToken;
+};
+
+userSchema.methods.getPasswordResetToken = function() {
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hashes the token before saving
+    this.passwordResetToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+    return resetToken;
+}
 
 const User = mongoose.model('User', userSchema);
 export default User;
