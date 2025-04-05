@@ -30,31 +30,31 @@ const VerifyCodeScreen = ({ navigation, route }) => {
     const inputRefs = useRef([]); // Refs for input fields to manage focus automatically
 
     useEffect(() => {
-        inputRefs.current[0]?.focus();
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
     }, []);
 
     const handleInputChange = (text, index) => {
-    // Allow only digits and limit to 1 character
-    const digit = text.replace(/[^0-9]/g, '');
-    if (digit.length <= 1) {
-        const newCode = [...code];
-        newCode[index] = digit;
-        setCode(newCode);
+        // Allow only digits and limit to 1 character
+        const digit = text.replace(/[^0-9]/g, '');
+        if (digit.length <= 1) {
+            const newCode = [...code];
+            newCode[index] = digit;
+            setCode(newCode);
 
-        // Auto-focus next input if a digit was entered
-        if (digit && index < code.length - 1) {
-            inputRefs.current[index + 1]?.focus();
+            // Auto-focus next input if a digit was entered
+            if (digit && index < code.length - 1) {
+                inputRefs.current[index + 1]?.focus();
+            }
+            // Auto-focus previous input if digit was deleted (Backspace)
+            else if (!digit && index > 0) {
+                inputRefs.current[index - 1]?.focus();
+            }
         }
-        // Auto-focus previous input if digit was deleted (Backspace)
-        else if (!digit && index > 0) {
-            inputRefs.current[index - 1]?.focus();
+        // Dismiss keyboard if last digit is entered
+        if (digit && index === code.length - 1) {
+            Keyboard.dismiss();
         }
-    }
-    // Dismiss keyboard if last digit is entered
-    if (digit && index === code.length - 1) {
-        Keyboard.dismiss();
-    }
-  };
+    };
 
     const handleVerifyCode = () => {
         const enteredCode = code.join('');
@@ -75,6 +75,7 @@ const VerifyCodeScreen = ({ navigation, route }) => {
                 resetToken: resetToken
             });
         }, 1000);
+    };
 
     const submitVerifyRequest = async () => {
         setIsLoading(true);
@@ -98,7 +99,6 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         }
     };
     // submitVerifyRequest();
-  };
 
     const handleResendCode = () => {
         console.log("Mock: Pretending to resend code for:", email);
@@ -118,7 +118,7 @@ const VerifyCodeScreen = ({ navigation, route }) => {
             }
         };
         // resendRequest();
-  };
+    };
 
   return (
       <SafeAreaView style={styles.safeArea}>
@@ -174,6 +174,7 @@ const VerifyCodeScreen = ({ navigation, route }) => {
       </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
     safeArea: {
