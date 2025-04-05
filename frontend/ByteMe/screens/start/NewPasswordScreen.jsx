@@ -11,6 +11,7 @@ import {
     Image,
     Keyboard
 } from 'react-native';
+import axios from 'axios';
 
 import { Ionicons } from '@expo/vector-icons';
 
@@ -29,7 +30,7 @@ const NewPasswordScreen = ({ navigation, route }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null); 
 
-    const handleSetNewPassword = () => {
+    const handleSetNewPassword = async () => {
         // Basic Validation
         if (!newPassword.trim() || !confirmPassword.trim()) {
             Alert.alert("Error", "Please enter and confirm your new password.");
@@ -47,51 +48,47 @@ const NewPasswordScreen = ({ navigation, route }) => {
         Keyboard.dismiss();
 
         setIsLoading(true);
-        console.log("Mock: Pretending to set new password for:", email);
-        console.log("Mock: Using reset token:", resetToken); 
+        setError(null);
 
-        setTimeout(() => {
+        try {
+            console.log("Attempting to reset password for:", email);
+            console.log("Using reset token:", resetToken);
+    
+            const response = await axios.post(process.env.EXPO_PUBLIC_BACKEND_URL + '/api/users/reset-password', {
+                email: email,
+                token: resetToken,
+                newPassword: newPassword
+            });
+    
+            console.log("Reset password response:", response.data);
+    
             setIsLoading(false);
-            Alert.alert("Success", "Password has been reset successfully! Please log in with your new password.");
-            // navigation.navigate('login');
+            Alert.alert("Success", response.data.message || "Password has been reset successfully!");
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'login' }],
             });
-        }, 1500);
-
-        const submitNewPassword = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-            // Replace with actual API call to reset the password
-            // Backend needs an endpoint like POST /api/users/reset-password
-            // It should expect email, the *verified* resetToken (from verify code step), and newPassword
-            // const response = await axiosInstance.post(process.env.EXPO_PUBLIC_BACKEND_URL + '/api/users/reset-password', {
-            //     email,
-            //     resetToken: resetToken, // Or whatever token backend provides after code verification
-            //     newPassword
-            // });
-            // console.log("Reset password response:", response.data);
-
-            // MOCK Success:
-            console.log("Mock: Pretending to set new password for:", email);
-            // Alert.alert("Success", "Password has been reset successfully! Please log in.");
-            // navigation.navigate('login');
-
-            Alert.alert("Success", "Password has been reset successfully! Please log in.");
-            navigation.reset({ index: 0, routes: [{ name: 'login' }] });
-
-            } catch (error) {
-                console.error("Set New Password Error:", error);
-                const message = error.response?.data?.message || "Could not reset password. Please try again.";
-                Alert.alert("Error", message);
-                setError(message);
-            } finally {
-                setIsLoading(false);
+    
+        } catch (error) {
+            console.error("Set New Password Error:", error); 
+    
+            let errorMessage = "An unexpected error occurred. Please try again.";
+            if (error.response) {
+                console.error("Backend Error Data:", error.response.data);
+                console.error("Backend Error Status:", error.response.status);
+                errorMessage = error.response.data?.message || `Server Error (${error.response.status})`;
+            } else if (error.request) {
+                console.error("Network Error/No Response:", error.request);
+                errorMessage = "Cannot reach server. Please check your network connection.";
+            } else {
+                console.error('Axios Setup Error:', error.message);
+                errorMessage = error.message || errorMessage;
             }
-        };
-        // submitNewPassword();  
+    
+            Alert.alert("Error", errorMessage);
+            setError(errorMessage);
+            setIsLoading(false);
+        }
     };
 
     return (
