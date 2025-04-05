@@ -8,7 +8,8 @@ import {
     SafeAreaView, 
     Alert, 
     ActivityIndicator, 
-    Image 
+    Image,
+    Keyboard
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +20,7 @@ import { fonts } from '../../components/Fonts'
 // import { styles } from '@/components/Sheet'
 
 const NewPasswordScreen = ({ navigation, route }) => {
-    const { email = '', verificationCode = '' } = route.params || {}; 
+    const { email = '', resetToken = '' } = route.params || {}; 
 
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,49 +44,54 @@ const NewPasswordScreen = ({ navigation, route }) => {
         //      return;
         // }
 
+        Keyboard.dismiss();
+
         setIsLoading(true);
         console.log("Mock: Pretending to set new password for:", email);
-        console.log("Mock: Using verification code/token:", verificationCode); 
+        console.log("Mock: Using reset token:", resetToken); 
 
         setTimeout(() => {
             setIsLoading(false);
             Alert.alert("Success", "Password has been reset successfully! Please log in with your new password.");
-            navigation.navigate('login');
-            // navigation.reset({
-            //     index: 0,
-            //     routes: [{ name: 'login' }],
-            // });
+            // navigation.navigate('login');
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'login' }],
+            });
         }, 1500);
 
         const submitNewPassword = async () => {
-          setIsLoading(true);
-          setError(null);
-          try {
+            setIsLoading(true);
+            setError(null);
+            try {
             // Replace with actual API call to reset the password
             // Backend needs an endpoint like POST /api/users/reset-password
             // It should expect email, the *verified* resetToken (from verify code step), and newPassword
-            // const response = await axiosInstance.post('/api/users/reset-password', {
+            // const response = await axiosInstance.post(process.env.EXPO_PUBLIC_BACKEND_URL + '/api/users/reset-password', {
             //     email,
-            //     resetToken: verificationCode, // Or whatever token backend provides after code verification
+            //     resetToken: resetToken, // Or whatever token backend provides after code verification
             //     newPassword
             // });
             // console.log("Reset password response:", response.data);
 
             // MOCK Success:
             console.log("Mock: Pretending to set new password for:", email);
-            Alert.alert("Success", "Password has been reset successfully! Please log in.");
-            navigation.navigate('login');
+            // Alert.alert("Success", "Password has been reset successfully! Please log in.");
+            // navigation.navigate('login');
 
-          } catch (error) {
-            console.error("Set New Password Error:", error);
-            const message = error.response?.data?.message || "Could not reset password. Please try again.";
-            Alert.alert("Error", message);
-            setError(message);
-          } finally {
-            setIsLoading(false);
-          }
+            Alert.alert("Success", "Password has been reset successfully! Please log in.");
+            navigation.reset({ index: 0, routes: [{ name: 'login' }] });
+
+            } catch (error) {
+                console.error("Set New Password Error:", error);
+                const message = error.response?.data?.message || "Could not reset password. Please try again.";
+                Alert.alert("Error", message);
+                setError(message);
+            } finally {
+                setIsLoading(false);
+            }
         };
-        submitNewPassword();
+        // submitNewPassword();  
     };
 
     return (

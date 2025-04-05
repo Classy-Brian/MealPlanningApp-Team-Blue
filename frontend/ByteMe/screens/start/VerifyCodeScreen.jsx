@@ -22,100 +22,102 @@ import { fonts } from '../../components/Fonts'
 const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 
 const VerifyCodeScreen = ({ navigation, route }) => {
-  const { email = "your email" } = route.params || {};
+    const { email = "your email", resetToken = "" } = route.params || {};
+    const [code, setCode] = useState(['', '', '', '', '']);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-  const [code, setCode] = useState(['', '', '', '', '']);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+    const inputRefs = useRef([]); // Refs for input fields to manage focus automatically
 
-  const inputRefs = useRef([]); // Refs for input fields to manage focus automatically
+    useEffect(() => {
+        inputRefs.current[0]?.focus();
+    }, []);
 
-  useEffect(() => {
-      inputRefs.current[0]?.focus();
-  }, []);
+    const handleInputChange = (text, index) => {
+    // Allow only digits and limit to 1 character
+    const digit = text.replace(/[^0-9]/g, '');
+    if (digit.length <= 1) {
+        const newCode = [...code];
+        newCode[index] = digit;
+        setCode(newCode);
 
-  const handleInputChange = (text, index) => {
-      // Allow only digits and limit to 1 character
-      const digit = text.replace(/[^0-9]/g, '');
-      if (digit.length <= 1) {
-          const newCode = [...code];
-          newCode[index] = digit;
-          setCode(newCode);
-
-          // Auto-focus next input if a digit was entered
-          if (digit && index < code.length - 1) {
-              inputRefs.current[index + 1]?.focus();
-          }
-          // Auto-focus previous input if digit was deleted (Backspace)
-          else if (!digit && index > 0) {
-              inputRefs.current[index - 1]?.focus();
-          }
-      }
+        // Auto-focus next input if a digit was entered
+        if (digit && index < code.length - 1) {
+            inputRefs.current[index + 1]?.focus();
+        }
+        // Auto-focus previous input if digit was deleted (Backspace)
+        else if (!digit && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        }
+    }
+    // Dismiss keyboard if last digit is entered
+    if (digit && index === code.length - 1) {
+        Keyboard.dismiss();
+    }
   };
 
-  const handleVerifyCode = () => {
-      const enteredCode = code.join('');
-      if (enteredCode.length !== 5) {
-          Alert.alert("Invalid Code", "Please enter the complete 5-digit code.");
-          return;
-      }
+    const handleVerifyCode = () => {
+        const enteredCode = code.join('');
+        if (enteredCode.length !== 5) {
+            Alert.alert("Invalid Code", "Please enter the complete 5-digit code.");
+            return;
+        }
 
-      setIsLoading(true);
-      console.log("Mock: Pretending to verify code:", enteredCode, "for email:", email);
+        setIsLoading(true);
+        console.log("Mock: Pretending to verify code:", enteredCode, "for email:", email);
+        console.log("Mock: Using reset token:", resetToken);
 
-      setTimeout(() => {
-          setIsLoading(false);
-          // Navigate to the New Password screen, passing the email and code/token
-          // The actual backend verification would return a specific short-lived token
-          // For the mock, we can just pass the email and maybe the entered code.
-          navigation.navigate('newpassword', {
-            email: email,
-            verificationCode: enteredCode // Pass email and code
-          });
-      }, 1500);
+        setTimeout(() => {
+            setIsLoading(false);
+            // Navigate to the New Password screen, passing the email and the resetToken
+            navigation.navigate('newpassword', {
+                email: email,
+                resetToken: resetToken
+            });
+        }, 1000);
 
-      const submitVerifyRequest = async () => {
+    const submitVerifyRequest = async () => {
         setIsLoading(true);
         setError(null);
         try {
-          // const response = await axiosInstance.post('/api/users/verify-reset-code', { email, code: enteredCode });
-          // console.log("Verify code response:", response.data);
-          // const resetToken = response.data.resetToken; // Backend should return a new token
+            // const response = await axiosInstance.post('/api/users/verify-reset-code', { email, code: enteredCode });
+            // console.log("Verify code response:", response.data);
+            // const resetToken = response.data.resetToken; // Backend should return a new token
 
-          // MOCK Success:
-          console.log("Mock: Pretending to verify code:", enteredCode, "for email:", email);
-          navigation.navigate('newpassword', { email: email, resetToken: 'mockResetToken' + enteredCode }); // Pass email and maybe a mock reset token
+            // MOCK Success:
+            console.log("Mock: Pretending to verify code:", enteredCode, "for email:", email);
+            navigation.navigate('newpassword', { email: email, resetToken: 'mockResetToken' + enteredCode }); // Pass email and maybe a mock reset token
 
         } catch (error) {
-          console.error("Verify Code Error:", error);
-          const message = error.response?.data?.message || "Could not verify code. Please try again.";
-          Alert.alert("Error", message);
-          setError(message);
+            console.error("Verify Code Error:", error);
+            const message = error.response?.data?.message || "Could not verify code. Please try again.";
+            Alert.alert("Error", message);
+            setError(message);
         } finally {
-          setIsLoading(false);
+            setIsLoading(false);
         }
-      };
-      submitVerifyRequest();
+    };
+    // submitVerifyRequest();
   };
 
-  const handleResendCode = () => {
-      console.log("Mock: Pretending to resend code for:", email);
-      Alert.alert("Code Resent", `A new verification code has been sent to ${email} (mock).`);
+    const handleResendCode = () => {
+        console.log("Mock: Pretending to resend code for:", email);
+        Alert.alert("Code Resent", `A new verification code has been sent to ${email} (mock).`);
 
-      // --- REAL ACTION (Keep commented out for later) ---
-      const resendRequest = async () => {
-        try {
-            // const response = await axiosInstance.post('/api/users/resend-verify-code', { email });
-            // Alert.alert("Code Resent", `A new verification code has been sent to ${email}.`);
-            console.log("Mock: Pretending to resend code for:", email);
-            Alert.alert("Code Resent", `A new verification code has been sent to ${email} (mock).`);
+        // --- REAL ACTION (Keep commented out for later) ---
+        const resendRequest = async () => {
+            try {
+                // const response = await axiosInstance.post('/api/users/resend-verify-code', { email });
+                // Alert.alert("Code Resent", `A new verification code has been sent to ${email}.`);
+                console.log("Mock: Pretending to resend code for:", email);
+                Alert.alert("Code Resent", `A new verification code has been sent to ${email} (mock).`);
 
-        } catch (error) {
-            console.error("Resend Code Error:", error);
-            Alert.alert("Error", "Could not resend code. Please try again.");
-        }
-      };
-      resendRequest();
+            } catch (error) {
+                console.error("Resend Code Error:", error);
+                Alert.alert("Error", "Could not resend code. Please try again.");
+            }
+        };
+        // resendRequest();
   };
 
   return (

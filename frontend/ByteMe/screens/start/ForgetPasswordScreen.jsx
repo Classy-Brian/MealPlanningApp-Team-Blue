@@ -11,6 +11,7 @@ import {
   Alert,
   ActivityIndicator 
 } from 'react-native';
+import axios from 'axios';
 
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
@@ -24,50 +25,51 @@ const ForgotPasswordScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     // if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
     //   Alert.alert("Invalid Email", "Please enter a valid email address.");
     //   return;
     // }
 
     if(!email){
-      Alert.alert("Invalid Email", "Please enter a valid email address.");
+      Alert.alert("No email detected", "Please enter a valid email address.");
       return;
     }
 
+    setError(null);
     setIsLoading(true);
-    console.log("Mock: Pretending to send reset instructions to:", email);
 
-    setTimeout(() => {
+    try {
+      console.log("Requesting password reset for:", email)
+
+      const response = await axios.post(process.env.EXPO_PUBLIC_BACKEND_URL + '/api/users/forgot-password', { email });
+      
+      console.log("Forgot password response:", response.data)
+
+      const resetToken = response.data.resetToken;
+      
+      if (!resetToken) {
+        console.warn("Backend did not return a reset token, but returned 200 OK.");
+        Alert.alert("Check your email", `If an account exist for ${email}, password reset instructions have been sent.`);
         setIsLoading(false);
-        navigation.navigate('verifycode', { email: email });
-
-    }, 1500);
-
-    const submitResetRequest = async () => {
-      setIsLoading(true);
-      setError(null); // Clear previous errors
-      try {
-        // const response = await axiosInstance.post('/api/users/forgot-password', { email }); // <- Make API call later once completed email verif
-        // console.log("Forgot password response:", response.data);
-        // Alert.alert("Check Your Email", `Password reset instructions sent to ${email}.`);
-
-        // MOCK Success for now:
-        console.log("Mock: Pretending to send reset instructions to:", email);
-        Alert.alert("Check Your Email", `Password reset instructions sent to ${email} (mock).`);
-        navigation.navigate('verifycode', { email: email });
-
-      } catch (error) {
-        console.error("Forgot Password Error:", error);
-        const message = error.response?.data?.message || "Could not request password reset. Please try again.";
-        Alert.alert("Error", message);
-        setError(message);
-      } finally {
-        setIsLoading(false);
+        navigation.navigate('login');
+        return;
       }
-    };
-    submitResetRequest();
-  }
+
+      navigation.navigate('verifycode', {
+         email: email,
+         resetToken: resetToken, 
+        });
+
+    } catch (err) {
+      console.error("Forgot Password Error:", error);
+      const message = error.response?.data?.message || "Could not request password reset. Please try again.";
+      Alert.alert("Error", message);
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles_forgot.safeArea}>
