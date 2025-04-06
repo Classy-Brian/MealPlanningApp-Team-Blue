@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
 
 import Back_butt from "@/assets/images/backbutton.png";
-import Sunset from "@/assets/images/sunset.png";
-import Sun from "@/assets/images/sun.png";
-import Moon from "@/assets/images/moon.png";
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -16,7 +13,25 @@ const AddDayScreen = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
 
-  const [morningTimes] = useState([
+  const [recipes, setRecipes] = useState([]);
+
+  const [openRecipe1, setOpenRecipe1] = useState(false);
+  const [openRecipe2, setOpenRecipe2] = useState(false);
+  const [openRecipe3, setOpenRecipe3] = useState(false);
+
+  const [openTime1, setOpenTime1] = useState(false);
+  const [openTime2, setOpenTime2] = useState(false);
+  const [openTime3, setOpenTime3] = useState(false);
+
+  const [selectedRecipe1, setSelectedRecipe1] = useState(null);
+  const [selectedRecipe2, setSelectedRecipe2] = useState(null);
+  const [selectedRecipe3, setSelectedRecipe3] = useState(null);
+
+  const [selectedTime1, setSelectedTime1] = useState(null);
+  const [selectedTime2, setSelectedTime2] = useState(null);
+  const [selectedTime3, setSelectedTime3] = useState(null);
+
+  const morningTimes = [
     { label: '05:00 AM', value: '05:00 AM' },
     { label: '06:00 AM', value: '06:00 AM' },
     { label: '07:00 AM', value: '07:00 AM' },
@@ -25,30 +40,29 @@ const AddDayScreen = () => {
     { label: '10:00 AM', value: '10:00 AM' },
     { label: '11:00 AM', value: '11:00 AM' },
     { label: '12:00 PM', value: '12:00 PM' },
-  ]);
+  ];
 
-  const [afternoonTimes] = useState([
+  const afternoonTimes = [
     { label: '01:00 PM', value: '01:00 PM' },
     { label: '02:00 PM', value: '02:00 PM' },
     { label: '03:00 PM', value: '03:00 PM' },
     { label: '04:00 PM', value: '04:00 PM' },
-  ]);
-
-  const [dinnerTimes] = useState([
     { label: '05:00 PM', value: '05:00 PM' },
     { label: '06:00 PM', value: '06:00 PM' },
     { label: '07:00 PM', value: '07:00 PM' },
     { label: '08:00 PM', value: '08:00 PM' },
-  ]);
+  ];
 
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [openTimePicker, setOpenTimePicker] = useState(false);
-
-  const [recipes, setRecipes] = useState([]);
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [openRecipePicker, setOpenRecipePicker] = useState(false);
-  const [showDropdowns, setShowDropdowns] = useState(false);
-  const [recipeIndex, setRecipeIndex] = useState(0); // Keep track of the current recipe index
+  const dinnerTimes = [
+    { label: '09:00 PM', value: '09:00 PM' },
+    { label: '10:00 PM', value: '10:00 PM' },
+    { label: '11:00 PM', value: '11:00 PM' },
+    { label: '12:00 AM', value: '12:00 AM' },
+    { label: '01:00 AM', value: '01:00 AM' },
+    { label: '02:00 AM', value: '02:00 AM' },
+    { label: '03:00 AM', value: '03:00 AM' },
+    { label: '04:00 AM', value: '04:00 AM' },
+  ];
 
   useEffect(() => {
     const today = new Date();
@@ -61,9 +75,8 @@ const AddDayScreen = () => {
 
     const fetchRecipes = async () => {
       try {
-        const response = await axios.get(process.env.EXPO_PUBLIC_BACKEND_URL + '/api/users/saved-recipes');
+        const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/saved-recipes`);
         setRecipes(response.data.map(recipe => ({ label: recipe.title, value: recipe.id })));
-        console.log("Fetched Recipes:", response.data); // Debugging the recipes
       } catch (error) {
         console.error("Error fetching recipes:", error);
       }
@@ -71,40 +84,33 @@ const AddDayScreen = () => {
     fetchRecipes();
   }, []);
 
-  // Handle Date Selection
-  const handleDateSelection = (value) => {
-    console.log("Selected Date:", value); // Debugging date selection
-    setSelectedDate(value);
-    setShowDropdowns(true); // Show the dropdowns after selecting the date
-  };
+  const handleSave = async () => {
+    if (!selectedDate || !selectedRecipe1 || !selectedTime1) {
+      alert("Please complete the morning recipe and time first.");
+      return;
+    }
 
-  // Handle Time Selection
-  const handleTimeSelection = (value) => {
-    console.log("Selected Time:", value); // Debugging time selection
-    setSelectedTime(value);
-  };
+    const meals = [];
 
-  // Increment the recipe index for alternating morning, afternoon, dinner
-  const handleRecipeSelection = (recipeId) => {
-    console.log("Selected Recipe ID:", recipeId); // Debugging recipe selection
-    setSelectedRecipe(recipeId);
-    setRecipeIndex(recipeIndex + 1); // Move to the next recipe
-  };
+    if (selectedRecipe1 && selectedTime1) meals.push({ meal: "morning", recipeId: selectedRecipe1, time: selectedTime1 });
+    if (selectedRecipe2 && selectedTime2) meals.push({ meal: "afternoon", recipeId: selectedRecipe2, time: selectedTime2 });
+    if (selectedRecipe3 && selectedTime3) meals.push({ meal: "dinner", recipeId: selectedRecipe3, time: selectedTime3 });
 
-  // Logic for alternating between morning, afternoon, and dinner times
-  const getTimeForRecipe = () => {
-    if (recipeIndex % 3 === 0) {
-      return morningTimes;
-    } else if (recipeIndex % 3 === 1) {
-      return afternoonTimes;
-    } else {
-      return dinnerTimes;
+    try {
+      await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/calendar/save-day`, {
+        date: selectedDate,
+        meals,
+      });
+      alert("Day saved successfully!");
+      navigation.goBack();
+    } catch (err) {
+      console.error("Failed to save day:", err);
+      alert("Failed to save. Try again.");
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}>
         <Image source={Back_butt} style={styles.backIcon} />
         <Text style={styles.backText}>Calendar</Text>
@@ -113,72 +119,126 @@ const AddDayScreen = () => {
       <Text style={styles.title}>Add Recipes to Calendar Day</Text>
 
       {/* Date Picker */}
-      <View style={[styles.pickerContainer, { zIndex: 300 }]}>
-        <TouchableOpacity style={styles.blueBox}>
-          <Text style={styles.blueBoxText}>Date:</Text>
-        </TouchableOpacity>
-
+      <View style={[styles.pickerWrapper, { zIndex: 3000 }]}>
+        <Text style={styles.label}>Date:</Text>
         <DropDownPicker
           items={dates}
           open={openDatePicker}
           setOpen={setOpenDatePicker}
           value={selectedDate}
-          setValue={handleDateSelection}
-          placeholder="Select Date"
-          containerStyle={styles.dropdownContainer}
-          style={styles.dropdownStyle}
-          dropDownContainerStyle={styles.dropDownContainerStyle}
-          mode="BADGE"
+          setValue={(val) => setSelectedDate(val)}
+          placeholder="Pick a date"
+          style={styles.dropdown}
+          dropDownContainerStyle={styles.dropDownContainer}
         />
       </View>
 
-      {/* Show recipe dropdown after selecting a date */}
-      {showDropdowns && (
+      {/* Morning */}
+      {selectedDate && (
         <>
-          {/* Recipe Picker */}
-          {recipes.length > 0 && recipeIndex < recipes.length && (
-            <View style={[styles.pickerContainer, { zIndex: 200 }]}>
-              <TouchableOpacity style={styles.blueBox}>
-                <Text style={styles.blueBoxText}>Recipe {recipeIndex + 1}:</Text>
-              </TouchableOpacity>
+          <View style={[styles.pickerWrapper, { zIndex: 2500 }]}>
+            <Text style={styles.label}>🥣 Morning Recipe:</Text>
+            <DropDownPicker
+              items={recipes}
+              open={openRecipe1}
+              setOpen={setOpenRecipe1}
+              value={selectedRecipe1}
+              setValue={(val) => setSelectedRecipe1(val)}
+              placeholder="Pick a recipe"
+              style={styles.dropdown}
+              dropDownContainerStyle={styles.dropDownContainer}
+            />
+          </View>
 
-              <DropDownPicker
-                items={recipes}
-                open={openRecipePicker}
-                setOpen={setOpenRecipePicker}
-                value={selectedRecipe}
-                setValue={handleRecipeSelection}
-                placeholder="Select Recipe"
-                containerStyle={styles.dropdownContainer}
-                style={styles.dropdownStyle}
-                dropDownContainerStyle={styles.dropDownContainerStyle}
-                mode="BADGE"
-              />
-            </View>
-          )}
-
-          {/* Time Picker for the current recipe */}
-          {selectedRecipe && recipeIndex < recipes.length && (
-            <View style={[styles.pickerContainer, { zIndex: 100 }]}>
-              <TouchableOpacity style={styles.blueBox}>
-                <Text style={styles.blueBoxText}>Time for Recipe {recipeIndex + 1}:</Text>
-              </TouchableOpacity>
-
-              <DropDownPicker
-                items={getTimeForRecipe()}
-                open={openTimePicker}
-                setOpen={setOpenTimePicker}
-                value={selectedTime}
-                setValue={handleTimeSelection}
-                placeholder="Select Time"
-                containerStyle={styles.dropdownContainer}
-                style={styles.dropdownStyle}
-                dropDownContainerStyle={styles.dropDownContainerStyle}
-                mode="BADGE"
-              />
-            </View>
-          )}
+          <View style={[styles.pickerWrapper, { zIndex: 2400 }]}>
+            <Text style={styles.label}>🌅 Morning Time:</Text>
+            <DropDownPicker
+              items={morningTimes}
+              open={openTime1}
+              setOpen={setOpenTime1}
+              value={selectedTime1}
+              setValue={(val) => setSelectedTime1(val)}
+              placeholder="Pick a time"
+              style={styles.dropdown}
+              dropDownContainerStyle={styles.dropDownContainer}
+            />
+          </View>
         </>
+      )}
+
+      {/* Afternoon */}
+      {selectedRecipe1 && selectedTime1 && (
+        <>
+          <View style={[styles.pickerWrapper, { zIndex: 2000 }]}>
+            <Text style={styles.label}>🥗 Afternoon Recipe:</Text>
+            <DropDownPicker
+              items={recipes}
+              open={openRecipe2}
+              setOpen={setOpenRecipe2}
+              value={selectedRecipe2}
+              setValue={(val) => setSelectedRecipe2(val)}
+              placeholder="Pick a recipe"
+              style={styles.dropdown}
+              dropDownContainerStyle={styles.dropDownContainer}
+            />
+          </View>
+
+          <View style={[styles.pickerWrapper, { zIndex: 1900 }]}>
+            <Text style={styles.label}>🌞 Afternoon Time:</Text>
+            <DropDownPicker
+              items={afternoonTimes}
+              open={openTime2}
+              setOpen={setOpenTime2}
+              value={selectedTime2}
+              setValue={(val) => setSelectedTime2(val)}
+              placeholder="Pick a time"
+              style={styles.dropdown}
+              dropDownContainerStyle={styles.dropDownContainer}
+            />
+          </View>
+        </>
+      )}
+
+      {/* Dinner */}
+      {selectedRecipe2 && selectedTime2 && (
+        <>
+          <View style={[styles.pickerWrapper, { zIndex: 1500 }]}>
+            <Text style={styles.label}>🍝 Dinner Recipe:</Text>
+            <DropDownPicker
+              items={recipes}
+              open={openRecipe3}
+              setOpen={setOpenRecipe3}
+              value={selectedRecipe3}
+              setValue={(val) => setSelectedRecipe3(val)}
+              placeholder="Pick a recipe"
+              style={styles.dropdown}
+              dropDownContainerStyle={styles.dropDownContainer}
+            />
+          </View>
+
+          <View style={[styles.pickerWrapper, { zIndex: 1400 }]}>
+            <Text style={styles.label}>🌙 Dinner Time:</Text>
+            <DropDownPicker
+              items={dinnerTimes}
+              open={openTime3}
+              setOpen={setOpenTime3}
+              value={selectedTime3}
+              setValue={(val) => setSelectedTime3(val)}
+              placeholder="Pick a time"
+              style={styles.dropdown}
+              dropDownContainerStyle={styles.dropDownContainer}
+            />
+          </View>
+        </>
+      )}
+
+      {/* Save Button */}
+      {selectedRecipe1 && selectedTime1 && (
+        <View style={styles.saveButtonWrapper}>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </ScrollView>
   );
@@ -190,12 +250,10 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
-
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 30,
+    padding: 10,
     backgroundColor: "#D7E2F1",
     borderRadius: 10,
     marginBottom: 10,
@@ -210,7 +268,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
-
   title: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -223,59 +280,42 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     color: '#fff',
   },
-
-  pickerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    marginBottom: 70,
+  pickerWrapper: {
+    marginBottom: 30,
   },
-
-  blueBox: {
-    backgroundColor: "#1F508F",
-    padding: 10,
-    borderRadius: 5,
-    marginRight: 10,
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: "#1F508F"
   },
-
-  blueBoxText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-
-  dropdownContainer: {
-    width: 180,
-    zIndex: 1000,
-  },
-
-  dropdownStyle: {
+  dropdown: {
+    borderColor: "#1F508F",
     borderWidth: 1,
-    borderColor: "#000",
     borderRadius: 10,
   },
-
-  dropDownContainerStyle: {
-    borderWidth: 1,
+  dropDownContainer: {
     borderColor: "#1F508F",
+    borderWidth: 1,
+    borderRadius: 10,
   },
-
-  imageWrapper: {
-    width: 60,
-    height: 60,
-    alignSelf: 'flex-start',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    borderRadius: 60, // Makes it round if needed
+  saveButtonWrapper: {
+    alignItems: 'center',
+    marginVertical: 40,
   },
-
-  timeImage: {
-    width: 60,
-    height: 60,
-    alignSelf: 'flex-start',
-    marginBottom: -50,
-    zIndex: 101,
-    tintColor: '#DC9729', // Change color of the sun image
+  saveButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
