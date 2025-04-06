@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
@@ -84,33 +84,44 @@ const AddDayScreen = () => {
     fetchRecipes();
   }, []);
 
-  const handleSave = async () => {
+  const handleSaveDay = async () => {
     if (!selectedDate || !selectedRecipe1 || !selectedTime1) {
-      alert("Please complete the morning recipe and time first.");
+      Alert.alert("Incomplete", "Please complete the morning recipe and time first.");
       return;
     }
 
-    const meals = [];
+    const meals = [
+      { meal: "morning", recipeId: selectedRecipe1, time: selectedTime1 }
+    ];
 
-    if (selectedRecipe1 && selectedTime1) meals.push({ meal: "morning", recipeId: selectedRecipe1, time: selectedTime1 });
-    if (selectedRecipe2 && selectedTime2) meals.push({ meal: "afternoon", recipeId: selectedRecipe2, time: selectedTime2 });
-    if (selectedRecipe3 && selectedTime3) meals.push({ meal: "dinner", recipeId: selectedRecipe3, time: selectedTime3 });
+    if (selectedRecipe2 && selectedTime2) {
+      meals.push({ meal: "afternoon", recipeId: selectedRecipe2, time: selectedTime2 });
+    }
+
+    if (selectedRecipe3 && selectedTime3) {
+      meals.push({ meal: "dinner", recipeId: selectedRecipe3, time: selectedTime3 });
+    }
 
     try {
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/calendar/save-day`, {
         date: selectedDate,
-        meals,
+        meals
       });
-      alert("Day saved successfully!");
-      navigation.goBack();
+
+      Alert.alert("Success", "Day saved successfully!");
+
+      navigation.navigate('CalendarScreen', {
+        savedDate: selectedDate,
+        savedMeals: meals,
+      });
     } catch (err) {
-      console.error("Failed to save day:", err);
-      alert("Failed to save. Try again.");
+      console.error("Error saving day:", err);
+      Alert.alert("Error", "Could not save. Please try again.");
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}>
         <Image source={Back_butt} style={styles.backIcon} />
         <Text style={styles.backText}>Calendar</Text>
@@ -119,24 +130,31 @@ const AddDayScreen = () => {
       <Text style={styles.title}>Add Recipes to Calendar Day</Text>
 
       {/* Date Picker */}
-      <View style={[styles.pickerWrapper, { zIndex: 3000 }]}>
+      <View style={[styles.pickerWrapper, { zIndex: 3000 }]}> {/* Date */}
         <Text style={styles.label}>Date:</Text>
         <DropDownPicker
           items={dates}
           open={openDatePicker}
           setOpen={setOpenDatePicker}
           value={selectedDate}
-          setValue={(val) => setSelectedDate(val)}
+          setValue={(val) => {
+            setSelectedDate(val);
+            setSelectedRecipe1(null);
+            setSelectedTime1(null);
+            setSelectedRecipe2(null);
+            setSelectedTime2(null);
+            setSelectedRecipe3(null);
+            setSelectedTime3(null);
+          }}
           placeholder="Pick a date"
           style={styles.dropdown}
           dropDownContainerStyle={styles.dropDownContainer}
         />
       </View>
 
-      {/* Morning */}
       {selectedDate && (
         <>
-          <View style={[styles.pickerWrapper, { zIndex: 2500 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 2600, marginBottom: 30 }]}>
             <Text style={styles.label}>🥣 Morning Recipe:</Text>
             <DropDownPicker
               items={recipes}
@@ -147,29 +165,34 @@ const AddDayScreen = () => {
               placeholder="Pick a recipe"
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
+              dropDownDirection="BOTTOM"
             />
           </View>
 
-          <View style={[styles.pickerWrapper, { zIndex: 2400 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 2500, marginBottom: 30 }]}>
             <Text style={styles.label}>🌅 Morning Time:</Text>
             <DropDownPicker
               items={morningTimes}
               open={openTime1}
               setOpen={setOpenTime1}
               value={selectedTime1}
-              setValue={(val) => setSelectedTime1(val)}
+              setValue={(val) => {
+                setSelectedTime1(val);
+                setSelectedRecipe2(null);
+                setSelectedTime2(null);
+              }}
               placeholder="Pick a time"
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
+              dropDownDirection="BOTTOM"
             />
           </View>
         </>
       )}
 
-      {/* Afternoon */}
-      {selectedRecipe1 && selectedTime1 && (
+      {selectedTime1 && (
         <>
-          <View style={[styles.pickerWrapper, { zIndex: 2000 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 2000, marginBottom: 30 }]}>
             <Text style={styles.label}>🥗 Afternoon Recipe:</Text>
             <DropDownPicker
               items={recipes}
@@ -180,29 +203,34 @@ const AddDayScreen = () => {
               placeholder="Pick a recipe"
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
+              dropDownDirection="BOTTOM"
             />
           </View>
 
-          <View style={[styles.pickerWrapper, { zIndex: 1900 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 1900, marginBottom: 30 }]}>
             <Text style={styles.label}>🌞 Afternoon Time:</Text>
             <DropDownPicker
               items={afternoonTimes}
               open={openTime2}
               setOpen={setOpenTime2}
               value={selectedTime2}
-              setValue={(val) => setSelectedTime2(val)}
+              setValue={(val) => {
+                setSelectedTime2(val);
+                setSelectedRecipe3(null);
+                setSelectedTime3(null);
+              }}
               placeholder="Pick a time"
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
+              dropDownDirection="BOTTOM"
             />
           </View>
         </>
       )}
 
-      {/* Dinner */}
-      {selectedRecipe2 && selectedTime2 && (
+      {selectedTime2 && (
         <>
-          <View style={[styles.pickerWrapper, { zIndex: 1500 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 1500, marginBottom: 30 }]}>
             <Text style={styles.label}>🍝 Dinner Recipe:</Text>
             <DropDownPicker
               items={recipes}
@@ -213,10 +241,11 @@ const AddDayScreen = () => {
               placeholder="Pick a recipe"
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
+              dropDownDirection="BOTTOM"
             />
           </View>
 
-          <View style={[styles.pickerWrapper, { zIndex: 1400 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 1400, marginBottom: 30 }]}>
             <Text style={styles.label}>🌙 Dinner Time:</Text>
             <DropDownPicker
               items={dinnerTimes}
@@ -227,15 +256,15 @@ const AddDayScreen = () => {
               placeholder="Pick a time"
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
+              dropDownDirection="BOTTOM"
             />
           </View>
         </>
       )}
 
-      {/* Save Button */}
       {selectedRecipe1 && selectedTime1 && (
         <View style={styles.saveButtonWrapper}>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveDay}>
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
