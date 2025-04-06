@@ -231,22 +231,68 @@ export const updateUser = async (req, res) => {
   }
 };
 
-//DELETE: Remove a User by ID
-export const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
+export const verifyCurrentUserPassword = asyncHandler(async (req, res) => {
+  console.log("verifyCurrentUserPassword called");
+  const { password } = req.body; 
 
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found or already deleted' });
-    }
-
-    return res.json({ message: `User ${id} deleted successfully` });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+  if (!password) {
+      res.status(400);
+      throw new Error('Password is required for verification');
   }
-};
+
+  const user = await User.findById(req.user._id).select('+password');
+
+  if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+  }
+
+  console.log("Verifying entered password for user:", user.email);
+
+  const isMatch = await user.matchPassword(password);
+
+  if (!isMatch) {
+      console.log("Password verification failed.");
+      res.status(401); // Unauthorized - incorrect password
+      throw new Error('Incorrect password');
+  }
+
+  // Password matches! Send success response.
+  console.log("Password verified successfully.");
+  res.status(200).json({ message: 'Password verified successfully' });
+});
+
+
+//DELETE: Remove a User by ID
+export const deleteUser = asyncHandler(async (req, res) => {
+  console.log("deleteUser controller called for user ID:", req.user?._id);
+
+  if (!req.user || !req.user._id) {
+       res.status(401);
+       throw new Error('Not authorized, user ID missing');
+  }
+
+  const userId = req.user._id;
+  const user = await User.findById(userId);
+
+  if (!user) {
+      res.status(404);
+      throw new Error('User not found or already deleted');
+  }
+
+  const userEmail = user.email;
+
+  const deleteResult = await User.deleteOne({ _id: userId });
+
+  if (deleteResult.deletedCount === 0) {
+       console.log(`Deletion failed for user: ${userEmail} (${userId}) - Already deleted?`);
+       res.status(404);
+       throw new Error('User not found or already deleted');
+  }
+
+  console.log(`User ${userEmail} (${userId}) deleted successfully`);
+  res.status(200).json({ message: `Account deleted successfully` });
+});
 
 //LOGIN: log user in
 export const loginUser = async (req, res) => {

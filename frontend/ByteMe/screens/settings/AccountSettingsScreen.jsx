@@ -49,19 +49,21 @@ const AccountSettingsScreen = () => {
                         </TouchableOpacity>
                     </Link>
 
-                    <TouchableOpacity style={styles_account.settingItem}>
-                        <MaterialIcons name="tune" size={40} color="#000000" />
-                        <View style={styles_account.textContainer}>
-                            <Text style={[styles_account.settingTitleText, {fontWeight: 'bold'}]}>
-                                Delete Account
-                            </Text>
-                            <Text style={styles_account.settingDescriptionText}>
-                                See how you can delete your {"\n"}
-                                account.
-                            </Text>
-                        </View>
-                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                    </TouchableOpacity>
+                    <Link href={{ pathname: "/(settings)/verifypassdelete", params: { from: 'Delete Account' } }} asChild>
+                        <TouchableOpacity style={styles_account.settingItem}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_account.textContainer}>
+                                <Text style={[styles_account.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Delete Account
+                                </Text>
+                                <Text style={styles_account.settingDescriptionText}>
+                                    See how you can delete your {"\n"}
+                                    account.
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+                    </Link>
 
                 </View>
             </ScrollView>

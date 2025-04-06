@@ -15,6 +15,7 @@ import {
   forgotPasswordRequest,
   resetPassword,
   updateUserPassword,
+  verifyCurrentUserPassword,
   
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
@@ -51,8 +52,12 @@ router.get('/:id', getUserById);
 //UPDATE: user by ID
 router.patch('/:id', updateUser);
 
+// Route to verify current password
+router.post('/verify-password', authenticateJWT, verifyCurrentUserPassword);
+
 //DELETE: user by ID
-router.delete('/:id', deleteUser);
+// router.delete('/:id', deleteUser);
+router.delete('/profile', authenticateJWT, deleteUser);
 
 //Add recipe to user
 router.patch('/:userId/add-recipe/:recipeId', addRecipeToUser);
