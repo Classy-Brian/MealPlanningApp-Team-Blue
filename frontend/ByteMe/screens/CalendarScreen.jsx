@@ -1,19 +1,32 @@
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
-import React, { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
 
 const CalendarScreen = () => {
-  const router = useRouter();
-  
-  // Track selected date
-  const [selectedDate, setSelectedDate] = useState(null);
+  const route = useRoute();
+  const navigation = useNavigation();
 
-  // Sample meal plan data
-  const mealPlans = {
-    "2025-04-01": ["Breakfast: Oatmeal", "Lunch: Chicken Salad", "Dinner: Pasta"],
-    "2025-04-02": ["Breakfast: Pancakes", "Lunch: Sushi", "Dinner: Steak"],
-  };
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [mealPlans, setMealPlans] = useState({});
+
+  const { savedDate, savedMeals } = route.params || {};
+
+  // Save passed meals into mealPlans when coming from AddDayScreen
+  useEffect(() => {
+    if (savedDate && savedMeals) {
+      const formattedMeals = savedMeals.map(
+        (m) => `${m.meal.charAt(0).toUpperCase() + m.meal.slice(1)}: ${m.time}`
+      );
+
+      setMealPlans(prev => ({
+        ...prev,
+        [savedDate]: formattedMeals
+      }));
+
+      setSelectedDate(savedDate); // Automatically select it
+    }
+  }, [savedDate, savedMeals]);
 
   return (
     <View style={styles.container}>
@@ -24,7 +37,8 @@ const CalendarScreen = () => {
       <Calendar
         onDayPress={(day) => setSelectedDate(day.dateString)}
         markedDates={{
-          [selectedDate]: { selected: true, selectedColor: "#133E7C" },
+          ...(selectedDate && { [selectedDate]: { selected: true, selectedColor: "#133E7C" } }),
+          ...(savedDate && { [savedDate]: { marked: true, dotColor: "#4CAF50" } })
         }}
         theme={{
           calendarBackground: "#fff",
@@ -54,7 +68,10 @@ const CalendarScreen = () => {
       </View>
 
       {/* Floating Add Button */}
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('addday')}>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => navigation.navigate('addday')} // or 'addday' depending on your navigator
+      >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
     </View>
