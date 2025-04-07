@@ -78,24 +78,32 @@ const AddDayScreen = () => {
       return { label: date.toDateString(), value: date.toDateString() };
     });
     setDates(weekDates);
-
-    const fetchRecipes = async () => {
-      try {
-        const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/saved-recipes`);
-        setRecipes(response.data.map(recipe => ({ label: recipe.title, value: recipe.id })));
-      } catch (error) {
-        console.error("Error fetching recipes:", error);
-      }
-    };
-    fetchRecipes();
   }, []);
 
+  //Fetch user ID & saved recipes
   useEffect(() => {
-    const fetchUserId = async () => {
-      const id = await getUserIdFromToken(); // this must return userId from token
-      setUserId(id);
+    const fetchUserIdAndRecipes = async () => {
+      try {
+        const id = await getUserIdFromToken();
+        setUserId(id);
+
+        const response = await axios.get(
+          `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${id}/get-saved-recipes`
+        );
+
+        const formatted = response.data.savedRecipes.map((recipe, index) => ({
+          label: recipe.label || `Recipe ${index + 1}`,
+          value: recipe.uri || `recipe-${index}`,
+        }));
+
+        setRecipes(formatted);
+      } catch (error) {
+        console.error("Error fetching saved recipes:", error);
+        setRecipes([]);
+      }
     };
-    fetchUserId();
+
+    fetchUserIdAndRecipes();
   }, []);
 
   const handleSaveDay = async () => {
