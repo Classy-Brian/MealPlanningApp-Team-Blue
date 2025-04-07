@@ -1,4 +1,3 @@
-//frontend/ByteMe/screens/grocery/AddGroceryIngredientScreen.jsx
 import {
   View,
   Text,
@@ -17,6 +16,7 @@ import { textcolors } from '@/components/TextColors';
 import { fonts } from '@/components/Fonts';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 const AddGroceryIngredientScreen = () => {
   const navigation = useNavigation();
@@ -73,8 +73,8 @@ const AddGroceryIngredientScreen = () => {
         console.warn("User ID not found");
         return;
       }
-      const response = await axios.post(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/add-ingredient-to-grocery`,
+      const response = await axios.put(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/update-grocery`,
         {
           foodId: ingredient.foodId,
           quantity: quantity,
@@ -109,9 +109,20 @@ const AddGroceryIngredientScreen = () => {
     </TouchableOpacity>
   );
 
+  //just a back button to return to Grocery
+  const handleGoBack = () => {
+    navigation.navigate('grocery');
+  };
+
   return (
     <View style={stylesContainer.container}>
-      <Text style={stylesContainer.title}>Add Grocery Ingredient</Text>
+      <View style={stylesContainer.header}>
+        <TouchableOpacity style={stylesContainer.backButton} onPress={handleGoBack}>
+          <Ionicons name="arrow-back" size={26} color={colors.primary} />
+        </TouchableOpacity>
+        <Text style={stylesContainer.title}>Add Grocery Ingredient</Text>
+      </View>
+
       <TextInput
         style={stylesContainer.searchInput}
         placeholder="Search ingredient..."
@@ -119,6 +130,7 @@ const AddGroceryIngredientScreen = () => {
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
+
       <TouchableOpacity
         style={stylesContainer.searchButton}
         onPress={searchIngredients}
@@ -130,9 +142,11 @@ const AddGroceryIngredientScreen = () => {
         data={results}
         keyExtractor={(item) => item.foodId}
         renderItem={renderResult}
-        ListEmptyComponent={!loading && (
-          <Text style={stylesContainer.noResultsText}>No ingredients found.</Text>
-        )}
+        ListEmptyComponent={
+          !loading && (
+            <Text style={stylesContainer.noResultsText}>No ingredients found.</Text>
+          )
+        }
       />
     </View>
   );
@@ -146,10 +160,17 @@ const stylesContainer = StyleSheet.create({
     backgroundColor: colors.white,
     padding: 15,
   },
-  title: {
-    fontSize: 28,
-    fontFamily: fonts.semiBold,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 15,
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontFamily: fonts.semiBold,
     color: colors.primary,
   },
   searchInput: {
