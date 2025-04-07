@@ -88,7 +88,7 @@ const CalendarScreen = () => {
 
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddDayScreen')}
+        onPress={() => navigation.navigate('addday')}
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
