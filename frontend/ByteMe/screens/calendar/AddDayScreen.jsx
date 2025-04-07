@@ -93,7 +93,7 @@ const AddDayScreen = () => {
 
         const formatted = response.data.savedRecipes.map((recipe, index) => ({
           label: recipe.label || `Recipe ${index + 1}`,
-          value: recipe.uri || `recipe-${index}`,
+          value: recipe.id || recipe._id || recipe.uri || `recipe-${index}`, // <- match this to what gets sent to backend
         }));
 
         setRecipes(formatted);
@@ -151,13 +151,23 @@ const AddDayScreen = () => {
   };
 
   const addExtraMeal = () => {
-    setExtraMeals([...extraMeals, { recipeId: null, time: null }]);
+    setExtraMeals((prev) => [
+      ...prev,
+      {
+        recipeId: null,
+        time: null,
+        openRecipe: false,
+        openTime: false
+      }
+    ]);
   };
 
   const updateExtraMeal = (index, key, value) => {
-    const updated = [...extraMeals];
-    updated[index][key] = value;
-    setExtraMeals(updated);
+    setExtraMeals((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [key]: value };
+      return updated;
+    });
   };
 
   return (
@@ -190,6 +200,7 @@ const AddDayScreen = () => {
           placeholder="Pick a date"
           style={styles.dropdown}
           dropDownContainerStyle={styles.dropDownContainer}
+          listMode="SCROLLVIEW"
         />
       </View>
 
@@ -208,6 +219,7 @@ const AddDayScreen = () => {
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
               dropDownDirection="BOTTOM"
+              listMode="SCROLLVIEW"
             />
           </View>
 
@@ -227,6 +239,7 @@ const AddDayScreen = () => {
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
               dropDownDirection="BOTTOM"
+              listMode="SCROLLVIEW"
             />
           </View>
         </>
@@ -247,6 +260,7 @@ const AddDayScreen = () => {
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
               dropDownDirection="BOTTOM"
+              listMode="SCROLLVIEW"
             />
           </View>
 
@@ -266,6 +280,7 @@ const AddDayScreen = () => {
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
               dropDownDirection="BOTTOM"
+              listMode="SCROLLVIEW"
             />
           </View>
         </>
@@ -286,6 +301,7 @@ const AddDayScreen = () => {
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
               dropDownDirection="BOTTOM"
+              listMode="SCROLLVIEW"
             />
           </View>
 
@@ -301,6 +317,7 @@ const AddDayScreen = () => {
               style={styles.dropdown}
               dropDownContainerStyle={styles.dropDownContainer}
               dropDownDirection="BOTTOM"
+              listMode="SCROLLVIEW"
             />
           </View>
 
@@ -314,19 +331,20 @@ const AddDayScreen = () => {
       )}
 
       {/* Extra Meals */}
-      {selectedTime3 && extraMeals.map((meal, index) => {
+      {extraMeals.map((meal, index) => {
         const z = 1300 - index * 10;
         const isLast = index === extraMeals.length - 1;
 
         return (
           <View key={index}>
+            {/* Recipe Picker */}
             <View style={[styles.pickerWrapper, { zIndex: z }]}>
               <Text style={styles.label}>Recipe:</Text>
               <DropDownPicker
                 items={recipes}
-                open={meal.openRecipe || false}
+                open={meal.openRecipe ?? false}
                 setOpen={(open) => updateExtraMeal(index, 'openRecipe', open)}
-                value={meal.recipeId}
+                value={meal.recipeId ?? null}
                 setValue={(val) => updateExtraMeal(index, 'recipeId', val)}
                 placeholder="Pick a recipe"
                 style={styles.dropdown}
@@ -336,6 +354,7 @@ const AddDayScreen = () => {
               />
             </View>
 
+            {/* Time Picker */}
             <View style={[styles.pickerWrapper, {
               zIndex: z - 1,
               marginBottom: isLast ? 150 : 30
@@ -343,14 +362,15 @@ const AddDayScreen = () => {
               <Text style={styles.label}>Time:</Text>
               <DropDownPicker
                 items={timeOptions}
-                open={meal.openTime || false}
+                open={meal.openTime ?? false}
                 setOpen={(open) => updateExtraMeal(index, 'openTime', open)}
-                value={meal.time}
+                value={meal.time ?? null}
                 setValue={(val) => updateExtraMeal(index, 'time', val)}
                 placeholder="Pick a time"
                 style={styles.dropdown}
                 dropDownContainerStyle={styles.dropDownContainer}
                 dropDownDirection="BOTTOM"
+                listMode="SCROLLVIEW"
               />
             </View>
           </View>
