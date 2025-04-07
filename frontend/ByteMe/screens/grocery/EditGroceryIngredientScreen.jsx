@@ -93,7 +93,7 @@ function DeleteIngredient({ ingredient }) {
         return;
       }
       const response = await axios.delete(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/remove-ingredient-grocery`,
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/remove-grocery`,
         { data: { foodId: ingredient?.foodId } }
       );
       if (response.status === 200) {

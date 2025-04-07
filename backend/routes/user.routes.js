@@ -17,6 +17,7 @@ import {
   removeIngredientPantry,
   addIngredientToGrocery,
   getSavedGrocery,
+  batchRemoveIngredientGrocery,
   removeIngredientGrocery,
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
@@ -71,6 +72,8 @@ router.put('/:userId/update-grocery', addIngredientToGrocery);
 
 router.get("/:id/get-saved-grocery", getSavedGrocery);
 
-router.delete('/:userId/remove-grocery', removeIngredientGrocery);
+router.delete('/:userId/batch-remove-grocery', batchRemoveIngredientGrocery);
+
+router.delete('/:userId/remove-grocery', removeIngredientGrocery)
 
 export default router;

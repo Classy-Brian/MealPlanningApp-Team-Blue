@@ -10,7 +10,7 @@ import {
   FlatList,
   ActivityIndicator
 } from 'react-native';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { styles } from '@/components/Sheet';
 import { Divider } from 'react-native-paper';
 import { textcolors } from '@/components/TextColors';
@@ -58,7 +58,7 @@ const Category = ({ category, items }) => {
       <Text style={det.heading}>{category}</Text>
       <FlatList
         data={items}
-        keyExtractor={(item, index) => item.foodId || index.toString()}
+        keyExtractor={(item) => item.foodId ?? `${item.label}-${Math.random()}`}
         renderItem={({ item }) => <SingleGroceryItem item={item} />}
       />
       <Divider />
@@ -97,6 +97,7 @@ const GroceryScreen = () => {
       if (!response.data || !response.data.savedGrocery || response.data.savedGrocery.length === 0) {
         console.warn("No saved grocery ingredients found.");
         setSavedGrocery([]);
+        setGroupedGrocery({});
         setLoading(false);
         return;
       }
@@ -122,6 +123,7 @@ const GroceryScreen = () => {
       fetchSavedGrocery();
     }, [])
   );
+
 
   // Directly navigate to add screen when the add button is pressed.
   const handleAddGrocery = () => {
@@ -163,7 +165,10 @@ const GroceryScreen = () => {
         data={Object.entries(filteredGroupedGrocery)}
         keyExtractor={(item, index) => item[0]}
         renderItem={({ item }) => (
-          <Category category={item[0]} items={item[1]} />
+          <Category 
+            category={item[0]} 
+            items={item[1]} 
+            key={`${item[0]}-${item[1].length}`} />
         )}
         ListFooterComponent={<View style={det.space} />}
         ListEmptyComponent={

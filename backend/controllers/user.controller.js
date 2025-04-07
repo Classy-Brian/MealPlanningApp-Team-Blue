@@ -654,7 +654,7 @@ export const getSavedGrocery = async (req, res) => {
   }
 };
 
-export const removeIngredientGrocery = async (req, res) => {
+export const batchRemoveIngredientGrocery = async (req, res) => {
   try {
     const { userId } = req.params;
     const { foodIds } = req.body;
@@ -676,14 +676,6 @@ export const removeIngredientGrocery = async (req, res) => {
     if (result.nModified === 0) {
       return res.status(404).json({message: "No ingredient found to remove"})
     } 
-
-    // const ingredientIdex = user.savedGrocery.findIndex(item => item.foodId === foodIds);
-    // if (ingredientIdex === -1) {
-    //   return res.status(404).json({message: "Ingredient not found."});
-    // }
-
-    // user.savedGrocery.splice(ingredientIdex, 1);
-    // await user.save();
     return res.status(200).json({message: "Ingredient successfully removed."});
 
   } catch (err) {
@@ -691,3 +683,32 @@ export const removeIngredientGrocery = async (req, res) => {
     return res.status(500).json({message: "Internal server error"});
   }
 }
+
+export const removeIngredientGrocery = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { foodId } = req.body;
+
+    if (!foodId) {
+      return res.status(400).json({message: "Food ID is missing"});
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({message: "User not found."});
+    }
+
+    const ingredientIdex = user.savedGrocery.findIndex(item => item.foodId === foodId);
+    if (ingredientIdex === -1) {
+      return res.status(404).json({message: "Ingredient not found."});
+    }
+
+    user.savedGrocery.splice(ingredientIdex, 1);
+    await user.save();
+    return res.status(200).json({message: "Ingredient successfully removed."});
+
+  } catch (err) {
+    console.error("Error deleting pantry ingredient: ", err);
+    return res.status(500).json({message: "Internal server error"});
+  }
+};

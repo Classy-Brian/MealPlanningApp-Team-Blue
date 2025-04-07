@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native'
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { Checkbox } from 'react-native-paper'
 
+
 function BackButton() {
     const navigation = useNavigation();
     return (
@@ -84,6 +85,7 @@ const AddingGroceryToPantry = () => {
   const [groupedPantry, setGroupedPantry] = useState({});
   const [loading, setLoading] = useState(false);
   const [ingrLabels, setIngrLabels] = useState([]);
+  const [clearEnabled, setClearEnabled] = useState(false)
 
   const [selectedIngredients, setSelectedIngredients] = useState([])
   const [savedPantry, setSavedPantry] = useState([])
@@ -142,6 +144,10 @@ const AddingGroceryToPantry = () => {
     };
   }, [savedGrocery])
 
+  useEffect(() => {
+    setClearEnabled(selectedIngredients.length > 0)
+  }, [selectedIngredients])
+
   const toggleSelection = (ingredient) => {
     setSelectedIngredients((prevSelected) => {
       const alreadySelected = prevSelected.some(item => item.foodId === ingredient.foodId)
@@ -156,11 +162,22 @@ const AddingGroceryToPantry = () => {
   }
 
   const toggleClear = () => {
-    if (savedGrocery.length > 1) {
+    if (savedGrocery.length > 0) {
       setSelectedIngredients([])
     }
   }
 
+  const ClearButton = () => {
+    return (
+      <View style={[det.greybutton, {backgroundColor: colors.grey}]}>          
+          <Text style={[styles.regularText, {color: clearEnabled ? colors.dark : colors.lightgrey}]}>
+              Clear
+          </Text>
+      </View>
+    )
+  }
+
+  
   const handleAddToPantry = async () => {
     
     if (selectedIngredients.length === 0) {
@@ -194,7 +211,7 @@ const AddingGroceryToPantry = () => {
       const foodIdsToRemove = ingredientsToAdd.map(ingredient => ingredient.foodId)
 
       const response = await axios.delete(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/remove-grocery`, {
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/batch-remove-grocery`, {
             data: {foodIds: foodIdsToRemove}
         }
       )
@@ -250,16 +267,14 @@ const AddingGroceryToPantry = () => {
         )}
         ListFooterComponent={<View style={det.space} />}
         ListEmptyComponent={
-          !loading && <Text style={det.noRecipesText}>No saved pantry ingredients found.</Text>
+          !loading && <Text style={det.noRecipesText}>No saved grocery ingredients found.</Text>
         }
         />
         <View style={[det.boxContainer, {paddingHorizontal: 20}]}>
             <TouchableOpacity 
-              style={[det.greybutton, {backgroundColor: colors.grey}]}
+              disabled={!clearEnabled}
               onPress={toggleClear}>
-                <Text style={styles.regularText}>
-                    Clear
-                </Text>
+              <ClearButton />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[det.greybutton, {backgroundColor: colors.othergrey}]}
