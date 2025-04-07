@@ -1,45 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
+import axios from 'axios';
+import getUserIdFromToken from '@/components/getUserIdFromToken';
 
 const CalendarScreen = () => {
-  const route = useRoute();
   const navigation = useNavigation();
-
   const [selectedDate, setSelectedDate] = useState(null);
   const [mealPlans, setMealPlans] = useState({});
 
-  const { savedDate, savedMeals } = route.params || {};
-
-  // Save passed meals into mealPlans when coming from AddDayScreen
+  // Load saved days from backend
   useEffect(() => {
-    if (savedDate && savedMeals) {
-      const formattedMeals = savedMeals.map(
-        (m) => `${m.meal.charAt(0).toUpperCase() + m.meal.slice(1)}: ${m.time}`
-      );
+    const fetchSavedDays = async () => {
+      try {
+        const userId = await getUserIdFromToken();
+        const response = await axios.get(
+          `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/saved-days`
+        );
 
-      setMealPlans(prev => ({
-        ...prev,
-        [savedDate]: formattedMeals
-      }));
+        const loadedMealPlans = {};
+        response.data.savedDays.forEach(day => {
+          loadedMealPlans[day.date] = day.meals.map(
+            m => `${m.meal.charAt(0).toUpperCase() + m.meal.slice(1)}: ${m.time}`
+          );
+        });
 
-      setSelectedDate(savedDate); // Automatically select it
-    }
-  }, [savedDate, savedMeals]);
+        setMealPlans(loadedMealPlans);
+      } catch (error) {
+        console.error('Failed to load saved calendar days:', error);
+      }
+    };
+
+    fetchSavedDays();
+  }, []);
+
+  const generateMarkedDates = () => {
+    const marks = {};
+    Object.keys(mealPlans).forEach((date) => {
+      marks[date] = {
+        marked: true,
+        dotColor: '#4CAF50',
+        ...(selectedDate === date && {
+          selected: true,
+          selectedColor: "#133E7C",
+          selectedTextColor: "#fff"
+        }),
+      };
+    });
+    return marks;
+  };
 
   return (
     <View style={styles.container}>
-      {/* Calendar Title */}
       <Text style={styles.title}>Calendar</Text>
 
-      {/* Calendar Component */}
       <Calendar
         onDayPress={(day) => setSelectedDate(day.dateString)}
-        markedDates={{
-          ...(selectedDate && { [selectedDate]: { selected: true, selectedColor: "#133E7C" } }),
-          ...(savedDate && { [savedDate]: { marked: true, dotColor: "#4CAF50" } })
-        }}
+        markedDates={generateMarkedDates()}
         theme={{
           calendarBackground: "#fff",
           textSectionTitleColor: "#133E7C",
@@ -53,9 +71,10 @@ const CalendarScreen = () => {
         }}
       />
 
-      {/* Meal Plan Section */}
       <View style={styles.mealContainer}>
-        <Text style={styles.mealTitle}>Meal Plan for {selectedDate || "Select a date"}</Text>
+        <Text style={styles.mealTitle}>
+          Meal Plan for {selectedDate || "Select a date"}
+        </Text>
         {selectedDate && mealPlans[selectedDate] ? (
           <FlatList
             data={mealPlans[selectedDate]}
@@ -67,10 +86,9 @@ const CalendarScreen = () => {
         )}
       </View>
 
-      {/* Floating Add Button */}
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('addday')} // or 'addday' depending on your navigator
+        onPress={() => navigation.navigate('AddDayScreen')}
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>

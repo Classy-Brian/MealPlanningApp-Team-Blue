@@ -448,3 +448,14 @@ export const saveCalendarDayForUser = async (req, res) => {
     return res.status(500).json({ message: "Server error saving calendar day" });
   }
 };
+
+export const getUserSavedDays = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user || !user.savedDays) return res.json({ savedDays: [] });
+
+    res.json({ savedDays: user.savedDays });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load saved days" });
+  }
+};
