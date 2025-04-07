@@ -410,7 +410,7 @@ export const getRecieById = async (req, res) => {
   } catch (error) {
       res.status(500).json({ message: error.message });
   }
-};saveCalendarDayForUser
+};
 
 
 export const saveCalendarDayForUser = async (req, res) => {
