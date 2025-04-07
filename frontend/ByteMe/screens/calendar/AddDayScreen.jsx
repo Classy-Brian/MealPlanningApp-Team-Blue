@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import DropDownPicker from 'react-native-dropdown-picker';
+import getUserIdFromToken from '@/components/getUserIdFromToken';
 import axios from 'axios';
 
 import Back_butt from "@/assets/images/backbutton.png";
@@ -32,6 +33,7 @@ const AddDayScreen = () => {
   const [selectedTime3, setSelectedTime3] = useState(null);
 
   const [extraMeals, setExtraMeals] = useState([]);
+  const [userId, setUserId] = useState(null);
 
   const morningTimes = [
     { label: '05:00 AM', value: '05:00 AM' },
@@ -88,6 +90,14 @@ const AddDayScreen = () => {
     fetchRecipes();
   }, []);
 
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await getUserIdFromToken(); // this must return userId from token
+      setUserId(id);
+    };
+    fetchUserId();
+  }, []);
+
   const handleSaveDay = async () => {
     if (!selectedDate || !selectedRecipe1 || !selectedTime1) {
       Alert.alert("Incomplete", "Please complete the morning recipe and time first.");
@@ -113,7 +123,7 @@ const AddDayScreen = () => {
     });
 
     try {
-      await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/calendar/save-day`, {
+      await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
         date: selectedDate,
         meals
       });
@@ -176,7 +186,7 @@ const AddDayScreen = () => {
       {selectedDate && (
         <>
           <View style={[styles.pickerWrapper, { zIndex: 2600 }]}>
-            <Text style={styles.label}>🥣 Morning Recipe:</Text>
+            <Text style={styles.label}>Morning Recipe:</Text>
             <DropDownPicker
               items={recipes}
               open={openRecipe1}
@@ -191,7 +201,7 @@ const AddDayScreen = () => {
           </View>
 
           <View style={[styles.pickerWrapper, { zIndex: 2500 }]}>
-            <Text style={styles.label}>🌅 Morning Time:</Text>
+            <Text style={styles.label}>Morning Time:</Text>
             <DropDownPicker
               items={morningTimes}
               open={openTime1}
@@ -215,7 +225,7 @@ const AddDayScreen = () => {
             {selectedTime1 && (
         <>
           <View style={[styles.pickerWrapper, { zIndex: 2000 }]}>
-            <Text style={styles.label}>🥗 Afternoon Recipe:</Text>
+            <Text style={styles.label}>Afternoon Recipe:</Text>
             <DropDownPicker
               items={recipes}
               open={openRecipe2}
@@ -230,7 +240,7 @@ const AddDayScreen = () => {
           </View>
 
           <View style={[styles.pickerWrapper, { zIndex: 1900 }]}>
-            <Text style={styles.label}>🌞 Afternoon Time:</Text>
+            <Text style={styles.label}>Afternoon Time:</Text>
             <DropDownPicker
               items={afternoonTimes}
               open={openTime2}
@@ -254,7 +264,7 @@ const AddDayScreen = () => {
       {selectedTime2 && (
         <>
           <View style={[styles.pickerWrapper, { zIndex: 1500 }]}>
-            <Text style={styles.label}>🍝 Dinner Recipe:</Text>
+            <Text style={styles.label}>Dinner Recipe:</Text>
             <DropDownPicker
               items={recipes}
               open={openRecipe3}
@@ -269,7 +279,7 @@ const AddDayScreen = () => {
           </View>
 
           <View style={[styles.pickerWrapper, { zIndex: 1400 }]}>
-            <Text style={styles.label}>🌙 Dinner Time:</Text>
+            <Text style={styles.label}>Dinner Time:</Text>
             <DropDownPicker
               items={dinnerTimes}
               open={openTime3}
@@ -300,7 +310,7 @@ const AddDayScreen = () => {
         return (
           <View key={index}>
             <View style={[styles.pickerWrapper, { zIndex: z }]}>
-              <Text style={styles.label}>🍽️ Extra Recipe {index + 1}:</Text>
+              <Text style={styles.label}>Recipe:</Text>
               <DropDownPicker
                 items={recipes}
                 open={meal.openRecipe || false}
@@ -319,7 +329,7 @@ const AddDayScreen = () => {
               zIndex: z - 1,
               marginBottom: isLast ? 150 : 30
             }]}>
-              <Text style={styles.label}>🕒 Time:</Text>
+              <Text style={styles.label}>Time:</Text>
               <DropDownPicker
                 items={timeOptions}
                 open={meal.openTime || false}
@@ -391,7 +401,10 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   pickerWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 30,
+    gap: 5, // Optional: spacing between label and dropdown
   },
   label: {
     fontSize: 16,
@@ -402,11 +415,13 @@ const styles = StyleSheet.create({
   dropdown: {
     borderColor: "#1F508F",
     borderWidth: 1,
+    width: 200,
     borderRadius: 10,
   },
   dropDownContainer: {
     borderColor: "#1F508F",
     borderWidth: 1,
+    width: 200,
     borderRadius: 10,
   },
   addExtraWrapper: {

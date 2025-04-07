@@ -35,6 +35,19 @@ const userSchema = new mongoose.Schema({
       }
     },
 
+    savedDays: [
+        {
+          date: { type: String, required: true },
+          meals: [
+            {
+              meal: { type: String, required: true },
+              recipeId: { type: String, required: true },
+              time: { type: String, required: true }
+            }
+          ]
+        }
+      ],
+
     savedRecipes: [{
         type: String 
     }]

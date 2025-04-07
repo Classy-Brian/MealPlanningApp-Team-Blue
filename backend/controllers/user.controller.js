@@ -411,3 +411,40 @@ export const getRecieById = async (req, res) => {
       res.status(500).json({ message: error.message });
   }
 };
+
+
+export const saveCalendarDayForUser = async (req, res) => {
+  const { userId } = req.params;
+  const { date, meals } = req.body;
+
+  if (!date || !Array.isArray(meals)) {
+    return res.status(400).json({ message: "Date and meals are required." });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    // Check if a savedDay already exists for the date
+    const existingDayIndex = user.savedDays.findIndex((day) => day.date === date);
+
+    if (existingDayIndex >= 0) {
+      // Overwrite the meals for that day
+      user.savedDays[existingDayIndex].meals = meals;
+    } else {
+      // Add a new saved day
+      user.savedDays.push({ date, meals });
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Calendar day saved successfully!",
+      savedDays: user.savedDays
+    });
+
+  } catch (error) {
+    console.error("Error saving calendar day:", error);
+    return res.status(500).json({ message: "Server error saving calendar day" });
+  }
+};
