@@ -106,34 +106,73 @@ const AddDayScreen = () => {
     fetchUserIdAndRecipes();
   }, []);
 
+  const getLabelById = (id) => {
+    const match = recipes.find((r) => r.value === id);
+    return match?.label || id;
+  };
+  
+  const getCaloriesById = (id) => {
+    const match = recipes.find((r) => r.value === id);
+    return match?.calories || 0;
+  };
+
+  const totalCalories = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+
+
   const handleSaveDay = async () => {
     if (!selectedDate || !selectedRecipe1 || !selectedTime1) {
       Alert.alert("Incomplete", "Please complete the morning recipe and time first.");
       return;
     }
 
-    const meals = [
-      { meal: "morning", recipeId: selectedRecipe1, time: selectedTime1 }
-    ];
+    const meals = [];
+    if (selectedRecipe1 && selectedTime1) {
+      meals.push({
+        meal: "morning",
+        recipeId: selectedRecipe1,
+        recipeLabel: getLabelById(selectedRecipe1),
+        calories: getCaloriesById(selectedRecipe1),
+        time: selectedTime1
+      });
+    }
 
     if (selectedRecipe2 && selectedTime2) {
-      meals.push({ meal: "afternoon", recipeId: selectedRecipe2, time: selectedTime2 });
+      meals.push({
+        meal: "afternoon",
+        recipeId: selectedRecipe2,
+        recipeLabel: getLabelById(selectedRecipe2),
+        calories: getCaloriesById(selectedRecipe2),
+        time: selectedTime2
+      });
     }
 
     if (selectedRecipe3 && selectedTime3) {
-      meals.push({ meal: "dinner", recipeId: selectedRecipe3, time: selectedTime3 });
+      meals.push({
+        meal: "dinner",
+        recipeId: selectedRecipe3,
+        recipeLabel: getLabelById(selectedRecipe3),
+        calories: getCaloriesById(selectedRecipe3),
+        time: selectedTime3
+      });
     }
 
     extraMeals.forEach((entry) => {
       if (entry.recipeId && entry.time) {
-        meals.push({ meal: "extra", recipeId: entry.recipeId, time: entry.time });
+        meals.push({
+          meal: "extra",
+          recipeId: entry.recipeId,
+          recipeLabel: getLabelById(entry.recipeId),
+          calories: getCaloriesById(entry.recipeId),
+          time: entry.time
+        });
       }
     });
 
     try {
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
         date: selectedDate,
-        meals
+        meals,
+        totalCalories
       });
 
       Alert.alert("Success", "Day saved successfully!");

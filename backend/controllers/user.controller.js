@@ -410,12 +410,12 @@ export const getRecieById = async (req, res) => {
   } catch (error) {
       res.status(500).json({ message: error.message });
   }
-};
+};saveCalendarDayForUser
 
 
 export const saveCalendarDayForUser = async (req, res) => {
   const { userId } = req.params;
-  const { date, meals } = req.body;
+  const { date, meals, totalCalories } = req.body;
 
   if (!date || !Array.isArray(meals)) {
     return res.status(400).json({ message: "Date and meals are required." });
@@ -425,15 +425,14 @@ export const saveCalendarDayForUser = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found." });
 
-    // Check if a savedDay already exists for the date
-    const existingDayIndex = user.savedDays.findIndex((day) => day.date === date);
+    const existingDayIndex = user.savedDays.findIndex(day => day.date === date);
 
-    if (existingDayIndex >= 0) {
-      // Overwrite the meals for that day
-      user.savedDays[existingDayIndex].meals = meals;
+    const newDay = { date, meals, totalCalories };
+
+    if (existingDayIndex !== -1) {
+      user.savedDays[existingDayIndex] = newDay;
     } else {
-      // Add a new saved day
-      user.savedDays.push({ date, meals });
+      user.savedDays.push(newDay);
     }
 
     await user.save();
@@ -444,7 +443,7 @@ export const saveCalendarDayForUser = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error saving calendar day:", error);
+    console.error("Save day error:", error);
     return res.status(500).json({ message: "Server error saving calendar day" });
   }
 };
