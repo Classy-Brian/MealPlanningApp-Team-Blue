@@ -137,9 +137,12 @@ const AddDayScreen = () => {
       });
 
       Alert.alert("Success", "Day saved successfully!");
-      navigation.navigate('CalendarScreen', {
-        savedDate: selectedDate,
-        savedMeals: meals,
+      navigation.push('(tabs)', {
+        screen: 'calendar',
+        params: {
+          savedDate: selectedDate,
+          savedMeals: meals,
+        }
       });
     } catch (err) {
       console.error("Error saving day:", err);
