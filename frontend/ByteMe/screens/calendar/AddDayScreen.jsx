@@ -31,6 +31,8 @@ const AddDayScreen = () => {
   const [selectedTime2, setSelectedTime2] = useState(null);
   const [selectedTime3, setSelectedTime3] = useState(null);
 
+  const [extraMeals, setExtraMeals] = useState([]);
+
   const morningTimes = [
     { label: '05:00 AM', value: '05:00 AM' },
     { label: '06:00 AM', value: '06:00 AM' },
@@ -63,6 +65,8 @@ const AddDayScreen = () => {
     { label: '03:00 AM', value: '03:00 AM' },
     { label: '04:00 AM', value: '04:00 AM' },
   ];
+
+  const timeOptions = [...morningTimes, ...afternoonTimes, ...dinnerTimes];
 
   useEffect(() => {
     const today = new Date();
@@ -102,6 +106,12 @@ const AddDayScreen = () => {
       meals.push({ meal: "dinner", recipeId: selectedRecipe3, time: selectedTime3 });
     }
 
+    extraMeals.forEach((entry) => {
+      if (entry.recipeId && entry.time) {
+        meals.push({ meal: "extra", recipeId: entry.recipeId, time: entry.time });
+      }
+    });
+
     try {
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/calendar/save-day`, {
         date: selectedDate,
@@ -109,7 +119,6 @@ const AddDayScreen = () => {
       });
 
       Alert.alert("Success", "Day saved successfully!");
-
       navigation.navigate('CalendarScreen', {
         savedDate: selectedDate,
         savedMeals: meals,
@@ -120,9 +129,19 @@ const AddDayScreen = () => {
     }
   };
 
+  const addExtraMeal = () => {
+    setExtraMeals([...extraMeals, { recipeId: null, time: null }]);
+  };
+
+  const updateExtraMeal = (index, key, value) => {
+    const updated = [...extraMeals];
+    updated[index][key] = value;
+    setExtraMeals(updated);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.push('(tabs)', { screen: 'calendar' })}>
         <Image source={Back_butt} style={styles.backIcon} />
         <Text style={styles.backText}>Calendar</Text>
       </TouchableOpacity>
@@ -130,7 +149,7 @@ const AddDayScreen = () => {
       <Text style={styles.title}>Add Recipes to Calendar Day</Text>
 
       {/* Date Picker */}
-      <View style={[styles.pickerWrapper, { zIndex: 3000 }]}> {/* Date */}
+      <View style={[styles.pickerWrapper, { zIndex: 3000 }]}>
         <Text style={styles.label}>Date:</Text>
         <DropDownPicker
           items={dates}
@@ -145,6 +164,7 @@ const AddDayScreen = () => {
             setSelectedTime2(null);
             setSelectedRecipe3(null);
             setSelectedTime3(null);
+            setExtraMeals([]);
           }}
           placeholder="Pick a date"
           style={styles.dropdown}
@@ -152,9 +172,10 @@ const AddDayScreen = () => {
         />
       </View>
 
+      {/* Morning */}
       {selectedDate && (
         <>
-          <View style={[styles.pickerWrapper, { zIndex: 2600, marginBottom: 30 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 2600 }]}>
             <Text style={styles.label}>🥣 Morning Recipe:</Text>
             <DropDownPicker
               items={recipes}
@@ -169,7 +190,7 @@ const AddDayScreen = () => {
             />
           </View>
 
-          <View style={[styles.pickerWrapper, { zIndex: 2500, marginBottom: 30 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 2500 }]}>
             <Text style={styles.label}>🌅 Morning Time:</Text>
             <DropDownPicker
               items={morningTimes}
@@ -190,9 +211,10 @@ const AddDayScreen = () => {
         </>
       )}
 
-      {selectedTime1 && (
+            {/* Afternoon */}
+            {selectedTime1 && (
         <>
-          <View style={[styles.pickerWrapper, { zIndex: 2000, marginBottom: 30 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 2000 }]}>
             <Text style={styles.label}>🥗 Afternoon Recipe:</Text>
             <DropDownPicker
               items={recipes}
@@ -207,7 +229,7 @@ const AddDayScreen = () => {
             />
           </View>
 
-          <View style={[styles.pickerWrapper, { zIndex: 1900, marginBottom: 30 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 1900 }]}>
             <Text style={styles.label}>🌞 Afternoon Time:</Text>
             <DropDownPicker
               items={afternoonTimes}
@@ -228,9 +250,10 @@ const AddDayScreen = () => {
         </>
       )}
 
+      {/* Dinner */}
       {selectedTime2 && (
         <>
-          <View style={[styles.pickerWrapper, { zIndex: 1500, marginBottom: 30 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 1500 }]}>
             <Text style={styles.label}>🍝 Dinner Recipe:</Text>
             <DropDownPicker
               items={recipes}
@@ -245,7 +268,7 @@ const AddDayScreen = () => {
             />
           </View>
 
-          <View style={[styles.pickerWrapper, { zIndex: 1400, marginBottom: 30 }]}>
+          <View style={[styles.pickerWrapper, { zIndex: 1400 }]}>
             <Text style={styles.label}>🌙 Dinner Time:</Text>
             <DropDownPicker
               items={dinnerTimes}
@@ -259,19 +282,77 @@ const AddDayScreen = () => {
               dropDownDirection="BOTTOM"
             />
           </View>
+
+          {/* Add Extra Button - appears right after Dinner */}
+          <View style={styles.addExtraWrapper}>
+            <TouchableOpacity onPress={addExtraMeal} style={styles.addExtraButton}>
+              <Text style={styles.addExtraText}>+ Add Another Recipe</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
 
-      {selectedRecipe1 && selectedTime1 && (
-        <View style={styles.saveButtonWrapper}>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveDay}>
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      {/* Extra Meals */}
+      {selectedTime3 && extraMeals.map((meal, index) => {
+        const z = 1300 - index * 10;
+        const isLast = index === extraMeals.length - 1;
+
+        return (
+          <View key={index}>
+            <View style={[styles.pickerWrapper, { zIndex: z }]}>
+              <Text style={styles.label}>🍽️ Extra Recipe {index + 1}:</Text>
+              <DropDownPicker
+                items={recipes}
+                open={meal.openRecipe || false}
+                setOpen={(open) => updateExtraMeal(index, 'openRecipe', open)}
+                value={meal.recipeId}
+                setValue={(val) => updateExtraMeal(index, 'recipeId', val)}
+                placeholder="Pick a recipe"
+                style={styles.dropdown}
+                dropDownContainerStyle={styles.dropDownContainer}
+                dropDownDirection="BOTTOM"
+                listMode="SCROLLVIEW"
+              />
+            </View>
+
+            <View style={[styles.pickerWrapper, {
+              zIndex: z - 1,
+              marginBottom: isLast ? 150 : 30
+            }]}>
+              <Text style={styles.label}>🕒 Time:</Text>
+              <DropDownPicker
+                items={timeOptions}
+                open={meal.openTime || false}
+                setOpen={(open) => updateExtraMeal(index, 'openTime', open)}
+                value={meal.time}
+                setValue={(val) => updateExtraMeal(index, 'time', val)}
+                placeholder="Pick a time"
+                style={styles.dropdown}
+                dropDownContainerStyle={styles.dropDownContainer}
+                dropDownDirection="BOTTOM"
+              />
+            </View>
+          </View>
+        );
+      })}
+
+      {/* Save Button */}
+      <View style={styles.saveButtonWrapper}>
+        <TouchableOpacity
+          style={[
+            styles.saveButton,
+            { backgroundColor: selectedRecipe1 && selectedTime1 ? '#4CAF50' : '#ccc' }
+          ]}
+          onPress={handleSaveDay}
+          disabled={!(selectedRecipe1 && selectedTime1)}
+        >
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -328,15 +409,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
   },
+  addExtraWrapper: {
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 40,
+  },
+  addExtraButton: {
+    backgroundColor: '#e6eefc',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  addExtraText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1F508F',
+  },
   saveButtonWrapper: {
     alignItems: 'center',
-    marginVertical: 40,
+    marginVertical: 20,
   },
   saveButton: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 5,
@@ -349,3 +446,7 @@ const styles = StyleSheet.create({
 });
 
 export default AddDayScreen;
+
+
+
+  
