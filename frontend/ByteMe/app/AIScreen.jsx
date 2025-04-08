@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -31,20 +31,12 @@ export default function ChatBot() {
 
     try {
       const token = await AsyncStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No token found. Please log in.');
-      }
+      if (!token) throw new Error('No token found. Please log in.');
 
       const res = await axios.post(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai/generate-plan/`,
-        {
-          preferences: getPreferences(input),
-        },
-        {
-          headers: {
-          Authorization: `Bearer ${token}`,
-          }
-        }
+        { preferences: getPreferences(input) },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const aiResponse = res.data.plan;
@@ -53,22 +45,20 @@ export default function ChatBot() {
       console.error('Chatbot error:', err.message);
       setMessages([
         ...newMessages,
-        {
-          role: 'assistant',
-          content: 'Sorry, I couldn’t process your request. Please try again.',
-        },
+        { role: 'assistant', content: 'Sorry, I couldn’t process your request. Please try again.' },
       ]);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={80}
+    >
       <ScrollView style={styles.chatBox}>
         {messages.map((msg, index) => (
-          <Text
-            key={index}
-            style={msg.role === 'user' ? styles.userMsg : styles.assistantMsg}
-          >
+          <Text key={index} style={msg.role === 'user' ? styles.userMsg : styles.assistantMsg}>
             {msg.content}
           </Text>
         ))}
@@ -80,29 +70,21 @@ export default function ChatBot() {
           onChangeText={setInput}
           placeholder="Type something..."
           style={styles.input}
+          onSubmitEditing={handleSend}     // 🎯 Pressing Enter sends message
+          blurOnSubmit={false}            // 👌 Keeps keyboard open
         />
         <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  chatBox: {
-    flex: 1,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  chatBox: { flex: 1 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
   input: {
     flex: 1,
     borderColor: '#ccc',

@@ -325,7 +325,12 @@ export const getSavedRecipes = async (req, res) => {
         ingredients: recipe.ingredientLines,
         allergies: recipe.healthLabels,
         nutrition: recipe.totalNutrients,
-        calories: Math.round(recipe.totalNutrients?.ENERC_KCAL?.quantity || 0),
+        mealType: recipe.mealType,
+        cuisineType: recipe.cuisineType,
+        calories: recipe.calories,
+        dietLabels: recipe.dietLabels || [],
+        healthLabels: recipe.healthLabels || [],
+        cautions: recipe.cautions || [],
     };
   })
   .filter(Boolean); // Remove null values
@@ -410,52 +415,5 @@ export const getRecieById = async (req, res) => {
       res.json(user);
   } catch (error) {
       res.status(500).json({ message: error.message });
-  }
-};
-
-
-export const saveCalendarDayForUser = async (req, res) => {
-  const { userId } = req.params;
-  const { date, meals, totalCalories } = req.body;
-
-  if (!date || !Array.isArray(meals)) {
-    return res.status(400).json({ message: "Date and meals are required." });
-  }
-
-  try {
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found." });
-
-    const existingDayIndex = user.savedDays.findIndex(day => day.date === date);
-
-    const newDay = { date, meals, totalCalories };
-
-    if (existingDayIndex !== -1) {
-      user.savedDays[existingDayIndex] = newDay;
-    } else {
-      user.savedDays.push(newDay);
-    }
-
-    await user.save();
-
-    return res.status(200).json({
-      message: "Calendar day saved successfully!",
-      savedDays: user.savedDays
-    });
-
-  } catch (error) {
-    console.error("Save day error:", error);
-    return res.status(500).json({ message: "Server error saving calendar day" });
-  }
-};
-
-export const getUserSavedDays = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId);
-    if (!user || !user.savedDays) return res.json({ savedDays: [] });
-
-    res.json({ savedDays: user.savedDays });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to load saved days" });
   }
 };

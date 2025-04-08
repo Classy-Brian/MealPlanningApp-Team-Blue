@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/Classy-Brian/MealPlanningApp-Team-Blue#readme",
   "dependencies": {
-    "@react-native-picker/picker": "^2.11.0",
     "axios": "^1.8.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -29,7 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "mongoose": "^8.11.0",
-    "openai": "^4.91.1"
+    "openai": "^4.92.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

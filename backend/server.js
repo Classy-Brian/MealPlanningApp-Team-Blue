@@ -20,7 +20,6 @@ app.use('/api/recipes', recipeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/ai', aiRoutes);
 
-
 app.listen(PORT, () => {
     connectDB(); // Connect to DB after starting server
     console.log(`Server started at http://localhost:${PORT}`);
