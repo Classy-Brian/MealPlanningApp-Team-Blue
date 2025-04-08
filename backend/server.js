@@ -10,7 +10,7 @@ import userRoutes from './routes/user.routes.js';
 import aiRoutes from './routes/AI.route.js'
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 app.use(express.json()); // Allows us to accept JSON data in the req body
 app.use(cors());

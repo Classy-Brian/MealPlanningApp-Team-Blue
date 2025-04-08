@@ -11,7 +11,9 @@ import {
   getUserProfile,
   getSavedRecipes, 
   saveRecipe,
-  unsaveRecipe
+  getUserSavedDays,
+  unsaveRecipe,
+  saveCalendarDayForUser,
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -54,6 +56,12 @@ router.post("/save-recipe", saveRecipe);
 
 //removing saved recipe 
 router.delete("/remove/remove-recipe", unsaveRecipe);
+
+//Save calendar day for a user
+router.post('/:userId/save-day', saveCalendarDayForUser);
+
+// GET saved-days
+router.get('/:userId/saved-days', getUserSavedDays);
 
 
 export default router;
