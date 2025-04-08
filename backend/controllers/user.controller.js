@@ -325,6 +325,7 @@ export const getSavedRecipes = async (req, res) => {
         ingredients: recipe.ingredientLines,
         allergies: recipe.healthLabels,
         nutrition: recipe.totalNutrients,
+        calories: Math.round(recipe.totalNutrients?.ENERC_KCAL?.quantity || 0),
     };
   })
   .filter(Boolean); // Remove null values

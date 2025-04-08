@@ -69,43 +69,63 @@ const CalendarScreen = () => {
       />
 
       <ScrollView style={styles.cardsContainer}>
-        {displayedDays.length === 0 ? (
-          <Text style={styles.noMealText}>No meals saved for this day.</Text>
-        ) : (
-          displayedDays.map((day, index) => {
-            const mealList = day.meals.map(m => (
-              <View key={m.time} style={styles.mealBox}>
-                <Text style={styles.mealText}>{m.recipeId}</Text>
-              </View>
-            ));
+      {displayedDays.map((day, index) => {
+        const formatted = new Date(day.date);
+        const dayOfWeek = formatted.toLocaleDateString('en-US', { weekday: 'long' });
+        const monthDay = formatted.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
 
-            // Optional total calories logic if you store it
-            const totalCalories = day.meals.length * 500; // Replace with real calc later
+        const mealList = day.meals.map((m, i) => (
+          <View key={i} style={[styles.mealRow, i < day.meals.length - 1 && styles.mealRowBorder]}>
+            <View style={styles.mealBox}>
+              <Text style={styles.mealText}>{m.recipeLabel || m.recipeId}</Text>
+            </View>
+          </View>
+        ));
 
-            return (
-              <View key={index} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <View style={styles.dateBox}>
-                    <Text style={styles.dateDay}>{new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' })}</Text>
-                    <Text style={styles.dateNumber}>{new Date(day.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => navigation.navigate('AddDayScreen')}>
-                    <Image source={EditIcon} style={styles.editIcon} />
-                  </TouchableOpacity>
+        const totalCalories = day.totalCalories ?? day.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+
+        return (
+          <React.Fragment key={index}>
+            <View style={styles.card}>
+              {/* 🖊️ Edit icon */}
+              <TouchableOpacity
+                style={styles.editIconWrapper}
+                onPress={() => navigation.navigate('AddDayScreen')}
+              >
+                <Image source={EditIcon} style={styles.editIcon} />
+              </TouchableOpacity>
+
+              <View style={styles.cardRow}>
+                {/* 📅 Date Box */}
+                <View style={styles.dateBox}>
+                  <Text style={styles.dateDay}>{dayOfWeek}</Text>
+                  <Text style={styles.dateNumber}>{monthDay}</Text>
                 </View>
-                {mealList}
-                <View style={styles.footerBox}>
-                  <Text style={styles.footerText}>Total Calories: {totalCalories.toLocaleString()}</Text>
+
+                {/* Vertical Line */}
+                <View style={styles.verticalDivider} />
+
+                {/* 🍽️ Meals */}
+                <View style={styles.cardContent}>
+                  {mealList}
                 </View>
               </View>
-            );
-          })
-        )}
+            </View>
+
+            {/* 🔢 Total Calories Below Card */}
+            <View style={styles.footerBox}>
+              <Text style={styles.footerText}>
+                Total Calories: {totalCalories.toLocaleString()}
+              </Text>
+            </View>
+          </React.Fragment>
+        );
+      })}
       </ScrollView>
 
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddDayScreen')}
+        onPress={() => navigation.navigate('addday')}
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -119,33 +139,55 @@ const styles = StyleSheet.create({
   cardsContainer: { marginTop: 20 },
   card: {
     backgroundColor: '#e5efff',
-    padding: 15,
     borderRadius: 15,
-    marginBottom: 20,
+    padding: 10,
+    marginBottom: 0,
+    position: 'relative',
   },
-  cardHeader: {
+  cardRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   dateBox: {
     backgroundColor: '#b4c9f0',
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dateDay: {
-    fontSize: 16,
-    color: '#1F508F',
+    fontSize: 14,
     fontWeight: 'bold',
+    color: '#000',
+    textAlign: 'center',
   },
   dateNumber: {
     fontSize: 18,
-    color: '#1F508F',
     fontWeight: 'bold',
+    color: '#000',
+    textAlign: 'center',
+  },
+  verticalDivider: {
+    width: 1,
+    backgroundColor: '#ccc',
+    height: '100%',
+    marginHorizontal: 10,
+  },
+  cardContent: {
+    flex: 1,
+    paddingVertical: 5,
+    paddingRight: 25,
+  },
+  mealRow: {
+    paddingVertical: 10,
+  },
+  mealRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
   mealBox: {
     backgroundColor: '#fff',
-    marginTop: 10,
     padding: 10,
     borderRadius: 8,
   },
@@ -155,26 +197,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   footerBox: {
-    marginTop: 15,
-    backgroundColor: '#b4c9f0',
-    padding: 8,
-    borderRadius: 8,
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    paddingTop: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 10,
     alignSelf: 'flex-start',
+    backgroundColor: '#b4c9f0',
+    borderRadius: 8,
+    marginBottom: 20,
   },
   footerText: {
     fontWeight: 'bold',
     color: '#1F508F',
+  },
+  editIconWrapper: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
+  },
+  editIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#000',
   },
   noMealText: {
     fontSize: 16,
     color: 'gray',
     textAlign: 'center',
     marginTop: 40,
-  },
-  editIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#1F508F',
   },
   addButton: {
     position: 'absolute',

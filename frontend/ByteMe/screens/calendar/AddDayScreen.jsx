@@ -94,6 +94,7 @@ const AddDayScreen = () => {
         const formatted = response.data.savedRecipes.map((recipe, index) => ({
           label: recipe.label || `Recipe ${index + 1}`,
           value: recipe.id || recipe._id || recipe.uri || `recipe-${index}`, // <- match this to what gets sent to backend
+          calories: recipe.calories || 0
         }));
 
         setRecipes(formatted);
@@ -116,7 +117,6 @@ const AddDayScreen = () => {
     return match?.calories || 0;
   };
 
-  const totalCalories = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
 
 
   const handleSaveDay = async () => {
@@ -167,6 +167,8 @@ const AddDayScreen = () => {
         });
       }
     });
+
+    const totalCalories = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
 
     try {
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
