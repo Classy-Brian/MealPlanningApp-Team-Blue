@@ -5,13 +5,34 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { styles } from '@/components/Sheet';
+
+
+function BackButton(userId) {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('add_goals', {userId: userId})}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Add Goals</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 export default function NewRecipesGoalScreen() {
-  const { userId } = useLocalSearchParams();
-  const router = useRouter();
+  const route = useRoute();
+  const { userId } = route.params;  
+  // const router = useRouter();
+  const navigation = useNavigation();
 
   const [wantToTry, setWantToTry] = useState('5');
 
@@ -33,7 +54,7 @@ export default function NewRecipesGoalScreen() {
       });
 
       Alert.alert('Success', 'New Recipes Tried Goal added!');
-      router.back();
+      navigation.navigate('add_goals', {userId: userId});
     } catch (error) {
       console.error('Error setting recipes goal:', error);
       Alert.alert('Error', 'Could not set recipes goal.');
@@ -41,36 +62,37 @@ export default function NewRecipesGoalScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
+      <BackButton userId={userId}/>
       <Text style={styles.title}>New Recipes Tried</Text>
 
       {/* Progress bar */}
-      <View style={styles.recipeBar}>
-        <View style={styles.recipeFill} />
+      <View style={det.recipeBar}>
+        <View style={det.recipeFill} />
       </View>
-      <View style={styles.recipeLabels}>
+      <View style={det.recipeLabels}>
         <Text>0</Text>
         <Text>{wantToTry}</Text>
       </View>
 
-      <Text style={styles.question}>
+      <Text style={det.question}>
         How many new recipes would you like to try in a week?
       </Text>
       <TextInput
-        style={styles.input}
+        style={det.input}
         keyboardType="numeric"
         value={wantToTry}
         onChangeText={setWantToTry}
       />
 
-      <TouchableOpacity style={styles.addButton} onPress={handleAddGoal}>
-        <Text style={styles.addButtonText}>Add Goal</Text>
+      <TouchableOpacity style={det.addButton} onPress={handleAddGoal}>
+        <Text style={det.addButtonText}>Add Goal</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',

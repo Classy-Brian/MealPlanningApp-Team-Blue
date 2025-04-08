@@ -28,6 +28,7 @@ function BackButton() {
 }
 const ConfirmDeleteScreen = () => {
     const router = useRouter();
+    const navigation = useNavigation();
     const [isLoading, setIsLoading] = useState(false);
     const [token, setToken] = useState(null); 
     const [axiosInstance, setAxiosInstance] = useState(null);
@@ -88,7 +89,7 @@ const ConfirmDeleteScreen = () => {
         <SafeAreaView style={styles_confirmDel.safeArea}>
             <View style={styles_confirmDel.container}>
                  {/* Back Button */}
-                <BackButton />
+                {/* <BackButton /> */}
 
                 <Text style={styles_confirmDel.title}>Are you sure?</Text>
                 <Text style={styles_confirmDel.subtitle}>
@@ -110,7 +111,7 @@ const ConfirmDeleteScreen = () => {
 
                     <TouchableOpacity
                         style={[styles_confirmDel.button, styles_confirmDel.cancelButton]}
-                        onPress={() => router.back()}
+                        onPress={() => navigation.navigate('account_settings')}
                         disabled={isLoading}
                     >
                         <Text style={[styles_confirmDel.buttonText, styles_confirmDel.cancelButtonText]}>Cancel</Text>

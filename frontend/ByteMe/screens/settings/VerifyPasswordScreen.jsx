@@ -32,6 +32,7 @@ function BackButton() {
 
 const VerifyPasswordScreen = () => {
     const router = useRouter();
+    const navigation = useNavigation();
     const [currentPassword, setCurrentPassword] = useState('');
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -83,7 +84,7 @@ const VerifyPasswordScreen = () => {
             console.log("Password verification response:", response.data);
 
             setIsLoading(false);
-            router.push('/(settings)/confirmdelete');
+            navigation.navigate('confirm_delete');
 
         } catch (error) {
             setIsLoading(false);

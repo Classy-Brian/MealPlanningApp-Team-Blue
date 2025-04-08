@@ -1,10 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { styles } from '@/components/Sheet';
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('profile')}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Profile</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 export default function EditProfile() {
-  const router = useRouter();
-  const { userId } = useLocalSearchParams(); // Get userId from URL
+  // const router = useRouter();
+  const route = useRoute();
+  const { userId } = route.params; // Get userId 
+  const navigation = useNavigation();
 
   // Local state for user's data
   const [username, setUsername] = useState('');
@@ -44,70 +63,68 @@ export default function EditProfile() {
       });
 
       // Navigate back to profile after saving
-      router.back();
+      navigation.navigate('profile');
     } catch (error) {
       console.error('Error updating user:', error);
     }
   };
 
-  const handleCancel = () => {
-    router.back();
-  };
+  // const handleCancel = () => {
+  //   router.back();
+  // };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
     {/* A back arrow*/}
-      <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
-        <Text style={styles.backButtonText}>{"< Profile"}</Text>
-      </TouchableOpacity>
+      <BackButton />
 
       <Text style={styles.title}>Edit Profile</Text>
 
       {/* Avatar Display */}
       {avatar ? (
-        <Image source={{ uri: avatar }} style={styles.avatarImage} />
+        <Image source={{ uri: avatar }} style={det.avatarImage} />
       ) : (
-        <Image source={require('../../assets/images/profile.png')} style={styles.avatarImage} />
+        <Image source={require('../../assets/images/profile.png')} style={det.avatarImage} />
       )}
 
       {/* Change Avatar Input */}
-      <Text style={styles.label}>Avatar URL</Text>
+      <Text style={det.label}>Avatar URL</Text>
       <TextInput
-        style={styles.input}
+        style={det.input}
         value={avatar}
         onChangeText={setAvatar}
         placeholder="Enter image URL"
       />
 
       {/* Remove Avatar Button */}
-      <TouchableOpacity style={styles.removeAvatarButton} onPress={handleRemoveAvatar}>
-        <Text style={styles.removeAvatarButtonText}>Remove Avatar</Text>
+      <TouchableOpacity style={det.removeAvatarButton} onPress={handleRemoveAvatar}>
+        <Text style={det.removeAvatarButtonText}>Remove Avatar</Text>
       </TouchableOpacity>
 
       {/* Username Input */}
-      <Text style={styles.label}>Username</Text>
+      <Text style={det.label}>Username</Text>
       <TextInput
-        style={styles.input}
+        style={det.input}
         value={username}
         onChangeText={setUsername}
         placeholder="Enter username"
       />
 
       {/* Action Buttons */}
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+      <View style={det.buttonRow}>
+        <TouchableOpacity style={det.cancelButton} onPress={() => navigation.navigate('profile')}>
+          <Text style={det.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+        <TouchableOpacity style={det.saveButton} onPress={handleSaveChanges}>
+          <Text style={det.saveButtonText}>Save Changes</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
     container: {
       flex: 1,
       padding: 20,

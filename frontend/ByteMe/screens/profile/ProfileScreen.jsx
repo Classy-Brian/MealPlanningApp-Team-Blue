@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '@/components/Sheet';
 import { colors } from '../../components/Colors'
@@ -20,6 +20,7 @@ const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 export default function ProfileScreen() {
   const router = useRouter();
   const [userData, setUserData] = useState(null);
+  const navigation = useNavigation();
 
   // Fetch the authenticated user from backend using the token
   const fetchUser = async () => {
@@ -164,7 +165,7 @@ export default function ProfileScreen() {
       <View style={det.header}>
           <TouchableOpacity
               style={det.homeButton}
-              onPress={() => router.push('/(tabs)/home')} 
+              onPress={() => navigation.navigate('home')} 
           >
               <Image style={{marginRight:10}}
                   source={backArrowImage}/>
@@ -190,7 +191,8 @@ export default function ProfileScreen() {
         {/* Edit Profile Button */}
         <TouchableOpacity
           style={det.editButton}
-          onPress={() => router.push(`editprofile?userId=${userData._id}`)}
+          onPress={() => navigation.navigate('edit_profile', {userId: userData._id})}
+          // onPress={() => router.push(`editprofile?userId=${userData._id}`)}
         >
           <Text style={det.editButtonText}>Edit Profile</Text>
         </TouchableOpacity>
@@ -207,7 +209,8 @@ export default function ProfileScreen() {
       {/* Floating Add Button -> navigates to AddGoals screen */}
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => router.push(`addgoals?userId=${userData._id}`)}
+        onPress={() => navigation.navigate('add_goals', {userId: userData._id})}
+        // onPress={() => router.push(`addgoals?userId=${userData._id}`)}
       >
         <Ionicons name="add" size={60} color='#d9d9d9' />
       </TouchableOpacity>
