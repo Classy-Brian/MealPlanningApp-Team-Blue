@@ -18,6 +18,22 @@ const mexicanFood = require('../../assets/images/mexican_food_icon.png');
 const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 const nextArrowImage = require('../../assets/images/next_arrow_navigate.png');
 const nextButtonImage = require('../../assets/images/next_arrow.png');
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation } from "@react-navigation/native";
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('preference_settings')}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Preference Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const CuisineSettingScreen = () => {
     const [cuisines, setSelectedCuisines] = useState([]);
@@ -119,17 +135,9 @@ const CuisineSettingScreen = () => {
         <SafeAreaView style={styles_cuisine.safeArea}>
             <View style={styles_cuisine.container}>
 
-                <View style={styles_cuisine.header}>
-                    <TouchableOpacity
-                        style={styles_cuisine.settingsButton}
-                        onPress={() => router.back()} 
-                    >
-                        <Image style={{marginRight:10}} source={backArrowImage}/>
-                        <Text style={styles_cuisine.settingsText}>Preference</Text>
-                    </TouchableOpacity>
-                </View>
+                <BackButton />
 
-                <Text style={[styles.title, {marginTop: 10}]}>{from}</Text>
+                <Text style={[styles.title, {marginTop: 10}]}>Cuisines</Text>
                 <Text style={styles_cuisine.normalText}>Select the cuisines you like most for your recommendations.</Text>
 
             <FlatList

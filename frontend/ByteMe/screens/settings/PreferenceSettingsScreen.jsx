@@ -7,49 +7,57 @@ import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 
 import { MaterialIcons, Ionicons } from '@expo/vector-icons'; // Import icons
+import { useNavigation } from '@react-navigation/native';
 
-const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('settings')}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const PreferenceSettingsScreen = () => {
     const router = useRouter();
+    const navigation = useNavigation();
 
     return (
         <SafeAreaView style={styles_preference.safeArea}>
             <ScrollView style={styles_preference.scrollView}>
                 <View style={styles_preference.container}>
                     {/* Header Section */}
-                    <View style={styles_preference.header}>
-                        <TouchableOpacity
-                            style={styles_preference.settingsButton}
-                            onPress={() => router.back()} 
-                        >
-                            <Image style={{marginRight:10}}
-                                source={backArrowImage}/>
-                            <Text style={styles_preference.settingsText}>Settings</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <BackButton />
 
                     <Text style={[styles.title]}>Preference Settings</Text>
                     <Text style={[styles.regularText, {paddingBottom: 20}]}>Manage your overall preferences.{'\n'}Including allergens, your portion sizes and more.</Text>
 
                     {/* Preference List */}
-                    <Link href={{ pathname: "/(settings)/portion", params: { from: 'Portion Size' } }} asChild>
-                        <TouchableOpacity style={styles_preference.settingItem}>
-                            <MaterialIcons name="tune" size={40} color="#000000" />
-                            <View style={styles_preference.textContainer}>
-                                <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
-                                    Portion Size
-                                </Text>
-                                <Text style={styles_preference.settingDescriptionText}>
-                                    Select your preferred portion size.
-                                </Text>
-                            </View>
-                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                        </TouchableOpacity>
-                    </Link>
+                    <TouchableOpacity 
+                        style={styles_preference.settingItem}
+                        onPress={() => navigation.navigate('portion_settings')}>
+                        <MaterialIcons name="tune" size={40} color="#000000" />
+                        <View style={styles_preference.textContainer}>
+                            <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                Portion Size
+                            </Text>
+                            <Text style={styles_preference.settingDescriptionText}>
+                                Select your preferred portion size.
+                            </Text>
+                        </View>
+                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                    </TouchableOpacity>
 
-                    <Link href={{ pathname: "/(settings)/allergies", params: { from: 'Allergies' } }} asChild>
-                        <TouchableOpacity style={styles_preference.settingItem}>
+                        <TouchableOpacity 
+                            style={styles_preference.settingItem}
+                            onPress={() => navigation.navigate('allergy_settings')}>
                             <MaterialIcons name="tune" size={40} color="#000000" />
                             <View style={styles_preference.textContainer}>
                                 <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
@@ -62,10 +70,10 @@ const PreferenceSettingsScreen = () => {
                             </View>
                             <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                         </TouchableOpacity>
-                    </Link>
 
-                    <Link href={{ pathname: "/(settings)/disliked", params: { from: 'Disliked Ingredients' } }} asChild>
-                        <TouchableOpacity style={styles_preference.settingItem}>
+                        <TouchableOpacity 
+                            style={styles_preference.settingItem}
+                            onPress={() => navigation.navigate('disliked_settings')}>
                             <MaterialIcons name="tune" size={40} color="#000000" />
                             <View style={styles_preference.textContainer}>
                                 <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
@@ -77,10 +85,11 @@ const PreferenceSettingsScreen = () => {
                             </View>
                             <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                         </TouchableOpacity>
-                    </Link>
 
                     <Link href={{ pathname: "/(settings)/cuisine", params: { from: 'Cuisines' } }} asChild>
-                        <TouchableOpacity style={styles_preference.settingItem}>
+                        <TouchableOpacity 
+                            style={styles_preference.settingItem}
+                            onPress={() => navigation.navigate('cuisine_settings')}>
                             <MaterialIcons name="tune" size={40} color="#000000" />
                             <View style={styles_preference.textContainer}>
                                 <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>

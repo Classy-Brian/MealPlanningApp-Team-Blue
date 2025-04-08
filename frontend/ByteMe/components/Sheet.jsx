@@ -63,7 +63,7 @@ export const styles = StyleSheet.create({
     },
     buttonText: {
       fontFamily: fonts.bold,
-      marginBottom: 10,
+      marginBottom: 20,
     },
     inputContainer: {
       flexDirection: 'row',
@@ -137,4 +137,16 @@ export const styles = StyleSheet.create({
       alignItems: 'center',
       elevation: 2,
     },
+    greybutton: {
+      flexDirection: 'row',
+      borderRadius: 15,
+      paddingHorizontal: 15,
+      paddingVertical: 5,
+      backgroundColor: colors.othergrey,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginVertical: 10,
+      elevation: 2,
+      shadowColor: colors.black,
+  },
   })

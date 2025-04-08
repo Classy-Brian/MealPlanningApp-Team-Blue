@@ -13,7 +13,22 @@ import { textcolors } from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 
-const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation } from "@react-navigation/native";
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('account_settings')}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Account Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const VerifyPasswordScreen = () => {
     const router = useRouter();
@@ -94,17 +109,9 @@ const VerifyPasswordScreen = () => {
         <SafeAreaView style={styles_verifPass.safeArea}>
             <View style={styles_verifPass.container}>
 
-                <View style={styles_verifPass.header}>
-                    <TouchableOpacity
-                        style={styles_verifPass.settingsButton}
-                        onPress={() => router.back()} 
-                    >
-                        <Image style={{marginRight:10}} source={backArrowImage}/>
-                        <Text style={styles_verifPass.settingsText}>Account Settings</Text>
-                    </TouchableOpacity>
-                </View>
+                <BackButton />
 
-                <Text style={[styles.title, {marginTop: 10}]}>{from}</Text>
+                <Text style={[styles.title, {marginTop: 10}]}>Delete Account</Text>
                 <Text style={styles_verifPass.normalText}>
                 For your security, please enter your current password to proceed with account deletion.
                 </Text>

@@ -164,7 +164,7 @@ export default function ProfileScreen() {
       <View style={det.header}>
           <TouchableOpacity
               style={det.homeButton}
-              onPress={() => router.push('home')} 
+              onPress={() => router.push('/(tabs)/home')} 
           >
               <Image style={{marginRight:10}}
                   source={backArrowImage}/>

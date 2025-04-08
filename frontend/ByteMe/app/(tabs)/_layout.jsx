@@ -21,7 +21,6 @@ import * as Animatable from 'react-native-animatable';
 import Homepage from './home';
 import CalendarScreen from './calendar';
 import GroceryScreen from '../(grocery)/_layout';
-import SavedRecipesScreen from '../(recipe)/savedrecipes';
 import PantryLayout from '../(pantry)/_layout';
 import RecipeLayout from '../(recipe)/_layout';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -80,7 +79,7 @@ const getTabIcon = (name, isActive) => {
       return <Image source={isActive ? HomeW : HomeB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'calendar':
       return <Image source={isActive ? CalendarW : CalendarB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
-    case 'savedrecipes':
+    case 'recipe':
       return <Image source={isActive ? RecipeW : RecipeB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'grocery':
       return <Image source={isActive ? GroceryW : GroceryB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;

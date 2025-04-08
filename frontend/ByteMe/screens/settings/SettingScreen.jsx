@@ -8,9 +8,11 @@ import { colors } from '../../components/Colors'
 import { textcolors } from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
+import { useNavigation } from '@react-navigation/native';
 
 const SettingsScreen = () => {
     const router = useRouter();
+    const navigation = useNavigation();
 
     const handleLogout = async () => {
         try {
@@ -54,35 +56,35 @@ const SettingsScreen = () => {
                     </View>
 
                     {/* Settings List */}
-                    <Link href={{ pathname: "/(settings)/preference" }} asChild>
-                        <TouchableOpacity style={styles_settings.settingItem}>
-                            <MaterialIcons name="tune" size={40} color="#000000" />
-                            <View style={styles_settings.textContainer}>
-                                <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
-                                    Preference Settings
-                                </Text>
-                                <Text style={styles_settings.settingDescriptionText}>
-                                    Edit your food preferences.
-                                </Text>
-                            </View>
-                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                        </TouchableOpacity>
-                    </Link>
+                    <TouchableOpacity 
+                        style={styles_settings.settingItem}
+                        onPress={() => navigation.navigate('preference_settings')}>
+                        <MaterialIcons name="tune" size={40} color="#000000" />
+                        <View style={styles_settings.textContainer}>
+                            <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
+                                Preference Settings
+                            </Text>
+                            <Text style={styles_settings.settingDescriptionText}>
+                                Edit your food preferences.
+                            </Text>
+                        </View>
+                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                    </TouchableOpacity>
 
-                    <Link href={{ pathname: "/(settings)/account" }} asChild>
-                        <TouchableOpacity style={styles_settings.settingItem}>
-                            <MaterialIcons name="account-circle" size={40} color="#000000" />
-                            <View style={styles_settings.textContainer}>
-                                <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
-                                    Account Settings
-                                </Text>
-                                <Text style={styles_settings.settingDescriptionText}>
-                                    See your account information.
-                                </Text>
-                            </View>
-                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                        </TouchableOpacity>
-                    </Link>
+                    <TouchableOpacity 
+                        style={styles_settings.settingItem}
+                        onPress={() => navigation.navigate('account_settings')}>
+                        <MaterialIcons name="account-circle" size={40} color="#000000" />
+                        <View style={styles_settings.textContainer}>
+                            <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
+                                Account Settings
+                            </Text>
+                            <Text style={styles_settings.settingDescriptionText}>
+                                See your account information.
+                            </Text>
+                        </View>
+                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                    </TouchableOpacity>
 
                     <TouchableOpacity style={styles_settings.settingItem}>
                         <MaterialIcons name="notifications" size={40} color="#000000" />

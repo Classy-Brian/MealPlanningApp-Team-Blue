@@ -14,8 +14,22 @@ import { textcolors} from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation } from "@react-navigation/native";
 
-const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('account_settings')}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Account Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const UpdatePasswordScreen = () => {
     const router = useRouter();
@@ -121,17 +135,9 @@ const UpdatePasswordScreen = () => {
         <SafeAreaView style={styles_updatePass.safeArea}>
             <View style={styles_updatePass.container}>
                 {/* Header */}
-                 <View style={styles_updatePass.header}>
-                    <TouchableOpacity
-                        style={styles_updatePass.settingsButton}
-                        onPress={() => router.back()} 
-                    >
-                        <Image style={{marginRight:10}} source={backArrowImage}/>
-                        <Text style={styles_updatePass.settingsText}>Account Settings</Text>
-                    </TouchableOpacity>
-                </View>
+                 <BackButton />
 
-                <Text style={[styles.title, {marginTop: 10}]}>{from}</Text>
+                <Text style={[styles.title, {marginTop: 10}]}>Reset Password</Text>
                 <Text style={styles_updatePass.normalText}>
                     Create a new password. {'\n'} 
                     Ensure it differs from previous ones for security.

@@ -21,7 +21,7 @@ function ProfileIcon() {
   const router = useRouter();
 
   return (
-    <TouchableOpacity onPress={() => router.push('/profile')}>
+    <TouchableOpacity onPress={() => router.push('/(profile)/profile')}>
       <Image
         source={require('../assets/images/profile.png')}
         style={styles.profileImage}
@@ -56,6 +56,12 @@ const _layout = () => {
         options={{headerShown: false}}
       />
       <Stack.Screen name='index'
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name='(profile)'
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name='(settings)'
         options={{headerShown: false}}
       />
       <Stack.Screen name="(pantry)" 
