@@ -19,6 +19,11 @@ import {
   getSavedGrocery,
   batchRemoveIngredientGrocery,
   removeIngredientGrocery,
+  forgotPasswordRequest,
+  resetPassword,
+  updateUserPassword,
+  verifyCurrentUserPassword,
+  
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -27,28 +32,39 @@ const router = express.Router();
 //CREATE: register new user
 router.post('/', createUser);
 
+//LOGIN: user
+router.post('/login', loginUser);
+
+// FORGET PASSWORD: user
+router.post('/forgot-password', forgotPasswordRequest);
+
+// RESET PASSWORD: user
+router.post('/reset-password', resetPassword);
+
+// READ: Get current user's profile by JWT
+router.get('/profile/:token', authenticateJWT, getUserProfile);
+
+//UPDATE: user allergies by ID
+router.patch('/preferences', authenticateJWT, updateUserPreferences);
+
+//UPDATE: user password
+router.patch('/profile/password', authenticateJWT, updateUserPassword);
+
 //READ: get all users (may want admin-only or we remove in production)
 // router.get('/', getAllUsers);
 
 //READ: get single user by ID
 router.get('/:id', getUserById);
 
-// READ: Get current user's profile by JWT
-// router.get('/profile', authenticateJWT, getUserProfile);
-// router.get('/profile/:token', getUserProfile); // TEMPORARY - Remove authenticateJWT <- Not protected and unsafe
-router.get('/profile/:token', authenticateJWT, getUserProfile);
-
 //UPDATE: user by ID
 router.patch('/:id', updateUser);
 
-//UPDATE: user allergies by ID
-router.put('/preferences', authenticateJWT, updateUserPreferences);
+// Route to verify current password
+router.post('/verify-password', authenticateJWT, verifyCurrentUserPassword);
 
 //DELETE: user by ID
-router.delete('/:id', deleteUser);
-
-//LOGIN: user
-router.post('/login', loginUser);
+// router.delete('/:id', deleteUser);
+router.delete('/profile', authenticateJWT, deleteUser);
 
 //Add recipe to user
 router.patch('/:userId/add-recipe/:recipeId', addRecipeToUser);

@@ -43,6 +43,10 @@ const _layout = () => {
           headerStyle: {
             backgroundColor: colors.header,
           },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
         }}
       />
       <Stack.Screen name="(start)"
@@ -63,6 +67,10 @@ const _layout = () => {
           headerRight: () => <ProfileIcon />,
           headerStyle: {
             backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
           },
         }}
       />

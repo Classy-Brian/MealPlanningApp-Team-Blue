@@ -63,7 +63,7 @@ export const styles = StyleSheet.create({
     },
     buttonText: {
       fontFamily: fonts.bold,
-      fontSize: 20,
+      marginBottom: 10,
     },
     inputContainer: {
       flexDirection: 'row',
@@ -136,5 +136,5 @@ export const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
       elevation: 2,
-    }
+    },
   })

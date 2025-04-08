@@ -80,7 +80,7 @@ const getTabIcon = (name, isActive) => {
       return <Image source={isActive ? HomeW : HomeB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'calendar':
       return <Image source={isActive ? CalendarW : CalendarB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
-    case 'recipe':
+    case 'savedrecipes':
       return <Image source={isActive ? RecipeW : RecipeB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;
     case 'grocery':
       return <Image source={isActive ? GroceryW : GroceryB} style={[styles.iconImage, {tintColor: iconColor, width: w, height: h}]} />;

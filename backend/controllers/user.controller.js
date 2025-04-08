@@ -4,6 +4,8 @@ import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 import axios from 'axios'
+import crypto from 'crypto'; 
+
 dotenv.config();
 const JWT_SECRET = `${process.env.JWT_SECRET}` 
 
@@ -18,7 +20,7 @@ export const createUser = async (req, res) => {
   console.log("Recieved registration request:", req.body);
   
   try {
-    const { name, email, password, allergies, profile, avatar } = req.body;
+    const { name, email, password, allergies, portion, profile, avatar } = req.body;
 
     // Check if user already exists by email
     const userExists = await User.findOne({ email });
@@ -33,6 +35,7 @@ export const createUser = async (req, res) => {
       avatar,
       password,
       allergies,
+      portion,
       profile
     });
 
@@ -49,6 +52,7 @@ export const createUser = async (req, res) => {
         email: user.email,
         avatar: user.avatar,
         allergies: user.allergies,
+        portion: user.portion,
         profile: user.profile,
         recipes: user.recipes,
       },
@@ -95,20 +99,6 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// export const getUserProfile = async (req, res) => {
-//   console.log("getUserProfile called");
-//   console.log("req.user:", req.user);
-
-//   const user = await User.findById(req.user._id).select('-password');
-
-//   if (user) {
-//     res.json(user);
-//   } else {
-//     res.status(404);
-//     throw new Error('User not found');
-//   }
-// };
-
 export const getUserProfile = async (req, res) => {
   console.log("getUserProfile called");
   const token = req.params.token; // Get token from URL parameter
@@ -143,15 +133,47 @@ export const getUserProfile = async (req, res) => {
 };
 
 export const updateUserPreferences = async (req, res) => {
-  const { allergies } = req.body;
-  const userId = req.user._id;  // Extracted from token
+  console.log("updateUserPreferences called");
+  console.log("req.body:", req.body);
+  console.log("req.user:", req.user);
+
+  const updateData = {};
+  if (req.body.allergies !== undefined) {
+    updateData.allergies = req.body.allergies; 
+  }
+  if (req.body.portion !== undefined) {
+    updateData.portion = req.body.portion;
+  }
+  if (req.body.cuisines !== undefined) {
+    updateData.cuisines = req.body.cuisines;
+  }
+  if (req.body.dislikes !== undefined) {
+    updateData.dislikes = req.body.dislikes;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    res.status(400);
+    throw new Error('No preference data provided for update.');
+  }
+
+  const userId = req.user._id;
+  console.log("Extracted userId:", userId);
+  console.log("Data to update:", updateData);
 
   try {
-    await User.findByIdAndUpdate(userId, { allergies }, { new: true });
-    return res.status(200).json({ message: 'Allergies updated successfully'});
+      const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+
+      console.log("Updated user:", updatedUser);
+      if (!updatedUser) {
+          res.status(404);
+          throw new Error('User not found during preference update.');
+      }
+
+      res.status(200).json({ message: 'Preferences updated successfully' }); 
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Server error'});
+      console.error("Error in updateUserPreferences:", err);
+      res.status(500);
+      throw new Error('Server error updating preferences.'); 
   }
 };
 
@@ -209,23 +231,68 @@ export const updateUser = async (req, res) => {
   }
 };
 
+export const verifyCurrentUserPassword = asyncHandler(async (req, res) => {
+  console.log("verifyCurrentUserPassword called");
+  const { password } = req.body; 
+
+  if (!password) {
+      res.status(400);
+      throw new Error('Password is required for verification');
+  }
+
+  const user = await User.findById(req.user._id).select('+password');
+
+  if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+  }
+
+  console.log("Verifying entered password for user:", user.email);
+
+  const isMatch = await user.matchPassword(password);
+
+  if (!isMatch) {
+      console.log("Password verification failed.");
+      res.status(401); // Unauthorized - incorrect password
+      throw new Error('Incorrect password');
+  }
+
+  // Password matches! Send success response.
+  console.log("Password verified successfully.");
+  res.status(200).json({ message: 'Password verified successfully' });
+});
+
 
 //DELETE: Remove a User by ID
-export const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
+export const deleteUser = asyncHandler(async (req, res) => {
+  console.log("deleteUser controller called for user ID:", req.user?._id);
 
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found or already deleted' });
-    }
-
-    return res.json({ message: `User ${id} deleted successfully` });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+  if (!req.user || !req.user._id) {
+       res.status(401);
+       throw new Error('Not authorized, user ID missing');
   }
-};
+
+  const userId = req.user._id;
+  const user = await User.findById(userId);
+
+  if (!user) {
+      res.status(404);
+      throw new Error('User not found or already deleted');
+  }
+
+  const userEmail = user.email;
+
+  const deleteResult = await User.deleteOne({ _id: userId });
+
+  if (deleteResult.deletedCount === 0) {
+       console.log(`Deletion failed for user: ${userEmail} (${userId}) - Already deleted?`);
+       res.status(404);
+       throw new Error('User not found or already deleted');
+  }
+
+  console.log(`User ${userEmail} (${userId}) deleted successfully`);
+  res.status(200).json({ message: `Account deleted successfully` });
+});
 
 //LOGIN: log user in
 export const loginUser = async (req, res) => {
@@ -252,11 +319,11 @@ export const loginUser = async (req, res) => {
       
     } else {
       // Invalid email or password
-      return res.status(401).json({ message: 'Invalid email or password' }); // 401 Unauthorized
+      res.status(401).json({ message: 'Invalid email or password' }); // 401 Unauthorized
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -712,3 +779,144 @@ export const removeIngredientGrocery = async (req, res) => {
     return res.status(500).json({message: "Internal server error"});
   }
 };
+// REQUEST PASSWORD RESET (Generates Token, NO EMAIL SENT YET)
+export const forgotPasswordRequest = asyncHandler(async (req, res) => {
+  console.log("forgotPasswordRequest called for email:", req.body.email);
+  const { email } = req.body;
+
+  if (!email) {
+      res.status(400);
+      throw new Error('Please provide an email address');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+      console.log(`Password reset requested for non-existent email: ${email}`);
+      return res.status(200).json({ message: 'If an account with that email exists, password reset instructions have been sent (mock).' });
+  }
+
+  const resetToken = user.getPasswordResetToken(); 
+  await user.save({ validateBeforeSave: false });
+
+  console.log(`Generated reset token (unhashed - FOR TESTING ONLY): ${resetToken}`);
+  console.log(`Saved hashed token to user ${user.email}`);
+
+  // --- MOCK RESPONSE (FOR TESTING WITHOUT EMAIL) ---
+  res.status(200).json({
+      message: 'Password reset token generated (mock - normally emailed). Use this token to reset.',
+      resetToken: resetToken 
+  });
+  // --- END MOCK RESPONSE ---
+
+  /*
+  // --- REAL EMAIL SENDING LOGIC (For later) ---
+  try {
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`; // Link to your frontend reset page
+      const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a POST request to: \n\n ${resetUrl} \n\n If you did not request this, please ignore this email and your password will remain unchanged.\n This link is valid for 10 minutes.`;
+
+      await sendEmail({
+          email: user.email,
+          subject: 'ByteMe Password Reset Token',
+          message
+      });
+      res.status(200).json({ message: 'Password reset instructions sent to your email.' });
+  } catch(emailError) {
+      console.error("Error sending password reset email:", emailError);
+      user.passwordResetToken = undefined; // Clear fields on email failure
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      throw new Error('Email could not be sent'); // Let asyncHandler handle response
+  }
+  */
+});
+
+// RESET PASSWORD (Uses Token)
+export const resetPassword = asyncHandler(async (req, res) => {
+  console.log("resetPassword called");
+  const { email, token, newPassword } = req.body;
+
+  if (!email || !token || !newPassword) {
+      res.status(400);
+      throw new Error('Please provide email, reset token, and new password');
+  }
+
+  // Hash the token received from the request body
+  const hashedToken = crypto
+      .createHash('sha256')
+      .update(token) // Hash the UNHASHED token from the request
+      .digest('hex');
+
+  console.log("Searching for user with email:", email);
+  console.log("Searching with hashed token:", hashedToken);
+
+  // Find user by email, HASHED token, and expiry date
+  const user = await User.findOne({
+      email: email,
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }, // Check if token is still valid
+  });
+
+  // Check if user found and token is valid
+  if (!user) {
+    console.log("User not found or token invalid/expired");
+    res.status(400);
+    throw new Error('Invalid or expired password reset token');
+  }
+
+  // // Basic password length validation
+  // if (newPassword.length < 6) {
+  //   res.status(400);
+  //   throw new Error('Password must be at least 6 characters long');
+  // }
+
+  // Set the new password (pre-save hook will hash it)
+  user.password = newPassword;
+  user.passwordResetToken = undefined; // Clear the reset token fields
+  user.passwordResetExpires = undefined;
+  await user.save(); // Save the user with the new password and cleared token
+
+  console.log(`Password successfully reset for user: ${user.email}`);
+
+  // Generate a new LOGIN JWT token immediately? Or force user to log in again?
+  // For simplicity now, just send success message.
+  res.status(200).json({ message: 'Password reset successful!' });
+});
+
+export const updateUserPassword = asyncHandler(async(req, res) => {
+  console.log("updateUserPassword called");
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    res.status(400);
+    throw new Error('Please provide current and new passwords');
+  }
+
+  // if (newPassword.length < 6) {
+  //   res.status(400);
+  //   throw new Error('New password must be at least 6 characters long');
+  // }
+
+  const user = await User.findById(req.user._id).select('+password');
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+  
+  console.log("Verifying current password for user:", user.email);
+
+  const isMatch = await user.matchPassword(currentPassword);
+
+  if (!isMatch) {
+    console.log("Current password does nat match");
+    res.status(401);
+    throw new Error('Incorrect current password');
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  console.log(`Password updated successfully for user: ${user.email}`);
+  res.status(200).json({ message: 'Password updated successfully' });
+});
