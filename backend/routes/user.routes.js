@@ -16,6 +16,7 @@ import {
   resetPassword,
   updateUserPassword,
   verifyCurrentUserPassword,
+  verifyUserEmail,
   
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
@@ -33,6 +34,9 @@ router.post('/forgot-password', forgotPasswordRequest);
 
 // RESET PASSWORD: user
 router.post('/reset-password', resetPassword);
+
+// VERIFY EMAIL: user
+router.get('/verify/:token', verifyUserEmail);
 
 // READ: Get current user's profile by JWT
 router.get('/profile/:token', authenticateJWT, getUserProfile);

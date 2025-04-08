@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 import axios from 'axios'
 import crypto from 'crypto'; 
+import sendEmail from '../utils/sendEmail.js';
 
 dotenv.config();
 const JWT_SECRET = `${process.env.JWT_SECRET}` 
@@ -16,53 +17,142 @@ const generateToken = (userId, time) => {
 
 
 //CREATE: Register a new User
-export const createUser = async (req, res) => {
-  console.log("Recieved registration request:", req.body);
-  
-  try {
-    const { name, email, password, allergies, portion, profile, avatar } = req.body;
+export const createUser = asyncHandler(async (req, res) => {
+  console.log("Received registration request:", req.body);
 
-    // Check if user already exists by email
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
+  const { name, email, password, allergies = [], portion = 1, dislikes = [], cuisines = [], profile = {}, avatar } = req.body;
 
-    // Create new user document
-    const user = await User.create({
-      name,
-      email,
-      avatar,
-      password,
-      allergies,
-      portion,
-      profile
-    });
-
-    // Create a JSON web token
-    const token = generateToken(user._id, '1h') // The token expires in 1 hour
-    user.token = token;
-    await user.save();
-
-    // Return the created user
-    return res.status(201).json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        allergies: user.allergies,
-        portion: user.portion,
-        profile: user.profile,
-        recipes: user.recipes,
-      },
-      token,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+  // Basic input validation
+  if (!name || !email || !password) {
+      res.status(400);
+      throw new Error('Please provide name, email, and password');
   }
-};
+
+  // Check if user already exists by email
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+      res.status(400);
+      throw new Error('User already exists with that email');
+  }
+
+  // Create new user document
+  const user = await User.create({
+    name,
+    email,
+    avatar,
+    password,
+    allergies,
+    portion,
+    dislikes,
+    cuisines,
+    profile,
+    isVerified: false
+  });
+
+  if (!user) {
+       res.status(400);
+       throw new Error('Invalid user data, user creation failed');
+  }
+
+  console.log("User.create called")
+
+  // Email Verification Logic 
+  let emailSentSuccessfully = false;
+  let verificationToken = '';
+  try {
+    verificationToken = user.getEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    const verifyEmailUrl = `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/verify/${verificationToken}`;
+
+    const message = `
+      Thank you for registering for ByteMe!
+
+      Please verify your email address by clicking the link below, or by pasting it into your browser:
+      \n\n
+      ${verifyEmailUrl}
+      \n\n
+      If you did not create this account, please ignore this email.
+      This link will expire in 15 minutes.`;
+
+    await sendEmail({
+        email: user.email,
+        subject: 'ByteMe Account Email Verification',
+        message,
+    });
+    emailSentSuccessfully = true;
+    console.log("Verification email initiated successfully for:", user.email);
+
+  } catch (emailError) {
+    console.error('Email sending/token saving failed:', emailError);
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    try { await user.save({ validateBeforeSave: false }); } catch (saveError) { console.error("Failed to clear verification token after email error:", saveError); }
+
+  }
+
+  const loginToken = generateToken(user._id, '1h'); // Generate login token
+
+  res.status(201).json({
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      allergies: user.allergies,
+      portion: user.portion,
+      dislikes: user.dislikes,
+      cuisines: user.cuisines,
+      profile: user.profile,
+      isVerified: user.isVerified, 
+      savedRecipes: user.savedRecipes
+    },
+      token: loginToken, // Send login token
+      message: emailSentSuccessfully
+        ? 'Registration successful! Please check your email to verify your account.'
+        : 'Registration successful! Could not send verification email, please try verifying later.'
+  });
+});
+
+export const verifyUserEmail = asyncHandler(async (req, res) => {
+  console.log("verifyUserEmail called with token:", req.params.token);
+
+  // Get the unhashed token from the URL parameter
+  const verificationToken = req.params.token;
+
+  // Hash the token received from the URL
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  console.log("Searching for user with hashed verification token:", hashedToken);
+
+  // Find the user by the HASHED token and check expiry
+  const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() }, // Token hasn't expired
+  });
+
+  // Check if user found and token is valid
+  if (!user) {
+    console.log("Verification token is invalid or has expired.");
+    res.status(400);
+    throw new Error('Verification token is invalid or has expired');
+  }
+
+  // Verification successful: Update user
+  user.isVerified = true;
+  user.emailVerificationToken = undefined; // Clear the token
+  user.emailVerificationExpires = undefined; // Clear the expiry
+  await user.save({ validateBeforeSave: false });
+
+  console.log("User email verified successfully:", user.email);
+
+  // Respond to the user
+  // Send JSON success message
+  res.status(200).json({ message: "Email verified successfully! You can now log in." });
+});
 
 //READ: Get All Users. for admin or debugging
 export const getAllUsers = async (req, res) => {

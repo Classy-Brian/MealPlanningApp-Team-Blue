@@ -90,16 +90,20 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
     }
 };
 
+// ADD/VERIFY Method to Generate Email Verification Token
 userSchema.methods.getEmailVerificationToken = function() {
     const verificationToken = crypto.randomBytes(20).toString('hex');
 
+    // Hash the token before saving it to the database
     this.emailVerificationToken = crypto
         .createHash('sha256')
         .update(verificationToken)
         .digest('hex');
 
-    this.emailVerificationToken = DataTransfer.now() + 15 * 60 * 1000 // Set token expiration time, 15 minutes
+    // Set token expiration time (e.g., 15 minutes)
+    this.emailVerificationExpires = Date.now() + 15 * 60 * 1000;
 
+    // Return the UNHASHED token (this goes in the email link)
     return verificationToken;
 };
 
