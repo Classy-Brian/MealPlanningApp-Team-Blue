@@ -1,5 +1,16 @@
-// updated RecipeSearch component with full implementation and filter modal UI
-import { Image, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Modal, ActivityIndicator, ScrollView } from 'react-native';
+// RecipeSearch.jsx
+import {
+  Image,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  Modal,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
@@ -9,15 +20,24 @@ import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 import { fonts } from '@/components/Fonts';
 import Back_butt from "@/assets/images/backbutton.png";
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 const RecipeSearch = () => {
+  const [recipes, setRecipes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', dietLabel: '', healthLabel: '', caution: ''
+  });
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const navigation = useNavigation();
+
   const fetchRecipes = async (query) => {
     const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
     const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
     setLoading(true);
     setError(null);
-
     try {
       const response = await axios.get(
         `https://api.edamam.com/api/recipes/v2?type=public&q=${query}&app_id=${API_ID}&app_key=${API_KEY}`
@@ -30,16 +50,6 @@ const RecipeSearch = () => {
       setLoading(false);
     }
   };
-
-  const [recipes, setRecipes] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', dietLabel: '', healthLabel: '', caution: ''
-  });
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const navigation = useNavigation();
 
   const categories = ['All', ...new Set(recipes.flatMap(r => r.recipe.mealType || []))];
   const cuisines = ['All', ...new Set(recipes.flatMap(r => r.recipe.cuisineType || []).map(c => c.charAt(0).toUpperCase() + c.slice(1)))];
@@ -117,6 +127,15 @@ const RecipeSearch = () => {
         ListFooterComponent={loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
       />
 
+      {/* Floating Chatbot Icon */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('AIScreen')}
+        style={styles.chatbotButton}
+      >
+        <Ionicons name="chatbubble-ellipses-outline" size={28} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Filter Modal */}
       <Modal visible={filterModalVisible} animationType="slide" transparent>
         <View style={{ flex: 1, backgroundColor: '#00000088', justifyContent: 'center', alignItems: 'center' }}>
           <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 10, width: '90%' }}>
@@ -184,6 +203,19 @@ const RecipeSearch = () => {
 };
 
 const styles = StyleSheet.create({
+  // ... (rest of styles from your file)
+  chatbotButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    backgroundColor: '#133E7C',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

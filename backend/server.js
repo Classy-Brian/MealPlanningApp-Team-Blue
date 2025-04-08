@@ -7,7 +7,7 @@ import cors from 'cors';
 import { connectDB } from './config/db.js';
 import recipeRoutes from './routes/recipe.route.js';
 import userRoutes from './routes/user.routes.js';
-
+import aiRoutes from './routes/AI.route.js'
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,6 +18,8 @@ app.use(cors());
 // Mount routes
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/ai', aiRoutes);
+
 
 app.listen(PORT, () => {
     connectDB(); // Connect to DB after starting server

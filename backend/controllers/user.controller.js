@@ -82,7 +82,7 @@ export const getUserById = async (req, res) => {
     // .populate('recipes')
     const user = await User.findById(id)
     .select('-password')
-    .populate('recipes')
+    // .populate('recipes')
     ;
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
