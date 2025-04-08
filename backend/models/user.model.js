@@ -108,17 +108,17 @@ userSchema.methods.getEmailVerificationToken = function() {
 };
 
 userSchema.methods.getPasswordResetToken = function() {
-    const resetToken = crypto.randomBytes(20).toString('hex');
+    const resetCode = Math.floor(10000 + Math.random() * 90000).toString();
 
     // Hashes the token before saving
     this.passwordResetToken = crypto
         .createHash('sha256')
-        .update(resetToken)
+        .update(resetCode)
         .digest('hex');
 
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
-    return resetToken;
+    return resetCode;
 }
 
 const User = mongoose.model('User', userSchema);
