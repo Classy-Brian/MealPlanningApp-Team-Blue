@@ -7,6 +7,7 @@ import cors from 'cors';
 import { connectDB } from './config/db.js';
 import recipeRoutes from './routes/recipe.route.js';
 import userRoutes from './routes/user.routes.js';
+import aiRoutes from './routes/AI.route.js'
 import ingredientRoutes from './routes/ingredient.routes.js';
 
 
@@ -19,6 +20,7 @@ app.use(cors());
 // Mount routes
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/ai', aiRoutes);
 app.use('/api/ingredients', ingredientRoutes);
 
 app.listen(PORT, () => {
