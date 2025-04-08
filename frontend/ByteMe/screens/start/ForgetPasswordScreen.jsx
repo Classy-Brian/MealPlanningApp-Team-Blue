@@ -47,14 +47,6 @@ const ForgotPasswordScreen = ({ navigation }) => {
       console.log("Forgot password response:", response.data)
 
       const resetToken = response.data.resetToken;
-      
-      if (!resetToken) {
-        console.warn("Backend did not return a reset token, but returned 200 OK.");
-        Alert.alert("Check your email", `If an account exist for ${email}, password reset instructions have been sent.`);
-        setIsLoading(false);
-        navigation.navigate('login');
-        return;
-      }
 
       navigation.navigate('verifycode', {
          email: email,

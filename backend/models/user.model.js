@@ -101,31 +101,35 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
     }
 };
 
+// ADD/VERIFY Method to Generate Email Verification Token
 userSchema.methods.getEmailVerificationToken = function() {
     const verificationToken = crypto.randomBytes(20).toString('hex');
 
+    // Hash the token before saving it to the database
     this.emailVerificationToken = crypto
         .createHash('sha256')
         .update(verificationToken)
         .digest('hex');
 
-    this.emailVerificationToken = DataTransfer.now() + 15 * 60 * 1000 // Set token expiration time, 15 minutes
+    // Set token expiration time (e.g., 15 minutes)
+    this.emailVerificationExpires = Date.now() + 15 * 60 * 1000;
 
+    // Return the UNHASHED token (this goes in the email link)
     return verificationToken;
 };
 
 userSchema.methods.getPasswordResetToken = function() {
-    const resetToken = crypto.randomBytes(20).toString('hex');
+    const resetCode = Math.floor(10000 + Math.random() * 90000).toString();
 
     // Hashes the token before saving
     this.passwordResetToken = crypto
         .createHash('sha256')
-        .update(resetToken)
+        .update(resetCode)
         .digest('hex');
 
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
-    return resetToken;
+    return resetCode;
 }
 
 const User = mongoose.model('User', userSchema);

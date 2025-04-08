@@ -22,10 +22,10 @@ import { fonts } from '../../components/Fonts'
 const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 
 const VerifyCodeScreen = ({ navigation, route }) => {
-    const { email = "your email", resetToken = "" } = route.params || {};
+    const { email = "your email" } = route.params || {};
     const [code, setCode] = useState(['', '', '', '', '']);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [isResending, setIsResending] = useState(false);
 
     const inputRefs = useRef([]); // Refs for input fields to manage focus automatically
 
@@ -63,61 +63,32 @@ const VerifyCodeScreen = ({ navigation, route }) => {
             return;
         }
 
-        setIsLoading(true);
-        console.log("Mock: Pretending to verify code:", enteredCode, "for email:", email);
-        console.log("Mock: Using reset token:", resetToken);
+        console.log("Proceeding to set new password for:", email);
+        console.log("Passing code:", enteredCode);
 
-        setTimeout(() => {
-            setIsLoading(false);
-            // Navigate to the New Password screen, passing the email and the resetToken
-            navigation.navigate('newpassword', {
-                email: email,
-                resetToken: resetToken
-            });
-        }, 1000);
+        // Navigate to NewPasswordScreen, passing email and the entered code
+        navigation.navigate('newpassword', {
+            email: email,
+            code: enteredCode
+        });
     };
 
-    const submitVerifyRequest = async () => {
-        setIsLoading(true);
-        setError(null);
+    const handleResendCode = async () => {
+        setIsResending(true);
+        console.log("Resending code for:", email);
         try {
-            // const response = await axiosInstance.post('/api/users/verify-reset-code', { email, code: enteredCode });
-            // console.log("Verify code response:", response.data);
-            // const resetToken = response.data.resetToken; // Backend should return a new token
+             const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+             const response = await axios.post(`${backendUrl}/api/users/forgot-password`, { email });
 
-            // MOCK Success:
-            console.log("Mock: Pretending to verify code:", enteredCode, "for email:", email);
-            navigation.navigate('newpassword', { email: email, resetToken: 'mockResetToken' + enteredCode }); // Pass email and maybe a mock reset token
+            Alert.alert("Code Resent", response.data?.message || `If an account exists for ${email}, a new code has been sent.`);
 
         } catch (error) {
-            console.error("Verify Code Error:", error);
-            const message = error.response?.data?.message || "Could not verify code. Please try again.";
-            Alert.alert("Error", message);
-            setError(message);
+            console.error("Resend Code Error:", error);
+            const message = error.response?.data?.message || "Could not resend code. Please try again.";
+            Alert.alert("Error Resending Code", message);
         } finally {
-            setIsLoading(false);
+             setIsResending(false);
         }
-    };
-    // submitVerifyRequest();
-
-    const handleResendCode = () => {
-        console.log("Mock: Pretending to resend code for:", email);
-        Alert.alert("Code Resent", `A new verification code has been sent to ${email} (mock).`);
-
-        // --- REAL ACTION (Keep commented out for later) ---
-        const resendRequest = async () => {
-            try {
-                // const response = await axiosInstance.post('/api/users/resend-verify-code', { email });
-                // Alert.alert("Code Resent", `A new verification code has been sent to ${email}.`);
-                console.log("Mock: Pretending to resend code for:", email);
-                Alert.alert("Code Resent", `A new verification code has been sent to ${email} (mock).`);
-
-            } catch (error) {
-                console.error("Resend Code Error:", error);
-                Alert.alert("Error", "Could not resend code. Please try again.");
-            }
-        };
-        // resendRequest();
     };
 
   return (

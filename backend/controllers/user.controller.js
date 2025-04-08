@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 import axios from 'axios'
 import crypto from 'crypto'; 
+import sendEmail from '../utils/sendEmail.js';
 
 dotenv.config();
 const JWT_SECRET = `${process.env.JWT_SECRET}` 
@@ -16,53 +17,142 @@ const generateToken = (userId, time) => {
 
 
 //CREATE: Register a new User
-export const createUser = async (req, res) => {
-  console.log("Recieved registration request:", req.body);
-  
-  try {
-    const { name, email, password, allergies, portion, profile, avatar } = req.body;
+export const createUser = asyncHandler(async (req, res) => {
+  console.log("Received registration request:", req.body);
 
-    // Check if user already exists by email
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
+  const { name, email, password, allergies = [], portion = 1, dislikes = [], cuisines = [], profile = {}, avatar } = req.body;
 
-    // Create new user document
-    const user = await User.create({
-      name,
-      email,
-      avatar,
-      password,
-      allergies,
-      portion,
-      profile
-    });
-
-    // Create a JSON web token
-    const token = generateToken(user._id, '1h') // The token expires in 1 hour
-    user.token = token;
-    await user.save();
-
-    // Return the created user
-    return res.status(201).json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        allergies: user.allergies,
-        portion: user.portion,
-        profile: user.profile,
-        recipes: user.recipes,
-      },
-      token,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+  // Basic input validation
+  if (!name || !email || !password) {
+      res.status(400);
+      throw new Error('Please provide name, email, and password');
   }
-};
+
+  // Check if user already exists by email
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+      res.status(400);
+      throw new Error('User already exists with that email');
+  }
+
+  // Create new user document
+  const user = await User.create({
+    name,
+    email,
+    avatar,
+    password,
+    allergies,
+    portion,
+    dislikes,
+    cuisines,
+    profile,
+    isVerified: false
+  });
+
+  if (!user) {
+       res.status(400);
+       throw new Error('Invalid user data, user creation failed');
+  }
+
+  console.log("User.create called")
+
+  // Email Verification Logic 
+  let emailSentSuccessfully = false;
+  let verificationToken = '';
+  try {
+    verificationToken = user.getEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    const verifyEmailUrl = `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/verify/${verificationToken}`;
+
+    const message = `
+      Thank you for registering for ByteMe!
+
+      Please verify your email address by clicking the link below, or by pasting it into your browser:
+      \n\n
+      ${verifyEmailUrl}
+      \n\n
+      If you did not create this account, please ignore this email.
+      This link will expire in 15 minutes.`;
+
+    await sendEmail({
+        email: user.email,
+        subject: 'ByteMe Account Email Verification',
+        message,
+    });
+    emailSentSuccessfully = true;
+    console.log("Verification email initiated successfully for:", user.email);
+
+  } catch (emailError) {
+    console.error('Email sending/token saving failed:', emailError);
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    try { await user.save({ validateBeforeSave: false }); } catch (saveError) { console.error("Failed to clear verification token after email error:", saveError); }
+
+  }
+
+  const loginToken = generateToken(user._id, '1h'); // Generate login token
+
+  res.status(201).json({
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      allergies: user.allergies,
+      portion: user.portion,
+      dislikes: user.dislikes,
+      cuisines: user.cuisines,
+      profile: user.profile,
+      isVerified: user.isVerified, 
+      savedRecipes: user.savedRecipes
+    },
+      token: loginToken, // Send login token
+      message: emailSentSuccessfully
+        ? 'Registration successful! Please check your email to verify your account.'
+        : 'Registration successful! Could not send verification email, please try verifying later.'
+  });
+});
+
+export const verifyUserEmail = asyncHandler(async (req, res) => {
+  console.log("verifyUserEmail called with token:", req.params.token);
+
+  // Get the unhashed token from the URL parameter
+  const verificationToken = req.params.token;
+
+  // Hash the token received from the URL
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  console.log("Searching for user with hashed verification token:", hashedToken);
+
+  // Find the user by the HASHED token and check expiry
+  const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() }, // Token hasn't expired
+  });
+
+  // Check if user found and token is valid
+  if (!user) {
+    console.log("Verification token is invalid or has expired.");
+    res.status(400);
+    throw new Error('Verification token is invalid or has expired');
+  }
+
+  // Verification successful: Update user
+  user.isVerified = true;
+  user.emailVerificationToken = undefined; // Clear the token
+  user.emailVerificationExpires = undefined; // Clear the expiry
+  await user.save({ validateBeforeSave: false });
+
+  console.log("User email verified successfully:", user.email);
+
+  // Respond to the user
+  // Send JSON success message
+  res.status(200).json({ message: "Email verified successfully! You can now log in." });
+});
 
 //READ: Get All Users. for admin or debugging
 export const getAllUsers = async (req, res) => {
@@ -791,96 +881,96 @@ export const forgotPasswordRequest = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  if (!user) {
-      console.log(`Password reset requested for non-existent email: ${email}`);
-      return res.status(200).json({ message: 'If an account with that email exists, password reset instructions have been sent (mock).' });
-  }
+  if (user) {
+    const resetToken = user.getPasswordResetToken(); // Get UNHASHED numeric code
+    try {
+      await user.save({ validateBeforeSave: false }); // Save HASHED code + expiry
+      console.log(`Generated reset code (unhashed - FOR EMAIL): ${resetToken}`);
+      console.log(`Saved hashed code to user ${user.email}`);
 
-  const resetToken = user.getPasswordResetToken(); 
-  await user.save({ validateBeforeSave: false });
+      const message = `
+        You requested a password reset for your ByteMe account.
 
-  console.log(`Generated reset token (unhashed - FOR TESTING ONLY): ${resetToken}`);
-  console.log(`Saved hashed token to user ${user.email}`);
+        Your password reset code is: ${resetToken}
 
-  // --- MOCK RESPONSE (FOR TESTING WITHOUT EMAIL) ---
-  res.status(200).json({
-      message: 'Password reset token generated (mock - normally emailed). Use this token to reset.',
-      resetToken: resetToken 
-  });
-  // --- END MOCK RESPONSE ---
+        Enter this code in the app to reset your password.
 
-  /*
-  // --- REAL EMAIL SENDING LOGIC (For later) ---
-  try {
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`; // Link to your frontend reset page
-      const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a POST request to: \n\n ${resetUrl} \n\n If you did not request this, please ignore this email and your password will remain unchanged.\n This link is valid for 10 minutes.`;
+        If you did not request this, please ignore this email.
+        This code is valid for 10 minutes.`;
 
       await sendEmail({
           email: user.email,
-          subject: 'ByteMe Password Reset Token',
+          subject: 'ByteMe Password Reset Code',
           message
       });
-      res.status(200).json({ message: 'Password reset instructions sent to your email.' });
-  } catch(emailError) {
-      console.error("Error sending password reset email:", emailError);
-      user.passwordResetToken = undefined; // Clear fields on email failure
+
+      console.log("Password reset CODE email initiated for:", user.email);
+
+    } catch(error) {
+      console.error("Error saving user token or sending email:", error);
+      user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
-      await user.save({ validateBeforeSave: false });
-      throw new Error('Email could not be sent'); // Let asyncHandler handle response
+      try { await user.save({ validateBeforeSave: false }); } catch (saveError) { console.error("Failed to clear reset token after error:", saveError); }
+    }
+  } else {
+     console.log(`Password reset requested for non-existent email: ${email}`);
   }
-  */
+
+  res.status(200).json({ message: 'If an account with that email exists, a password reset code has been sent.' });
 });
 
 // RESET PASSWORD (Uses Token)
 export const resetPassword = asyncHandler(async (req, res) => {
-  console.log("resetPassword called");
-  const { email, token, newPassword } = req.body;
+  console.log("resetPassword called with body:", req.body); // Log incoming data
+    // Expect email, code (numeric string), and newPassword
+    const { email, code, newPassword } = req.body;
 
-  if (!email || !token || !newPassword) {
-      res.status(400);
-      throw new Error('Please provide email, reset token, and new password');
-  }
+    if (!email || !code || !newPassword) {
+        res.status(400);
+        throw new Error('Please provide email, reset code, and new password');
+    }
+    if (typeof code !== 'string' || code.length < 4 || code.length > 6 || !/^\d+$/.test(code)) { // Basic validation for a 4-6 digit code
+        res.status(400);
+        throw new Error('Invalid code format');
+    }
+    //  if (newPassword.length < 6) {
+    //     res.status(400);
+    //     throw new Error('Password must be at least 6 characters long');
+    // }
 
-  // Hash the token received from the request body
-  const hashedToken = crypto
-      .createHash('sha256')
-      .update(token) // Hash the UNHASHED token from the request
-      .digest('hex');
+    // Hash the numeric code received from the request body
+    const hashedCode = crypto
+        .createHash('sha256')
+        .update(code) // Hash the numeric code from the request
+        .digest('hex');
 
-  console.log("Searching for user with email:", email);
-  console.log("Searching with hashed token:", hashedToken);
+    console.log("Searching for user with email:", email);
+    console.log("Searching with hashed code:", hashedCode);
 
-  // Find user by email, HASHED token, and expiry date
-  const user = await User.findOne({
-      email: email,
-      passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: Date.now() }, // Check if token is still valid
-  });
+    // Find user by email, HASHED code, and expiry date
+    const user = await User.findOne({
+        email: email,
+        passwordResetToken: hashedCode, // Compare HASHED codes
+        passwordResetExpires: { $gt: Date.now() }, // Check if token hasn't expired
+    });
 
-  // Check if user found and token is valid
-  if (!user) {
-    console.log("User not found or token invalid/expired");
-    res.status(400);
-    throw new Error('Invalid or expired password reset token');
-  }
+    // Check if user found and code is valid/not expired
+    if (!user) {
+        console.log("User not found or code invalid/expired for email:", email);
+        res.status(400); // Bad Request
+        throw new Error('Invalid or expired password reset code');
+    }
 
-  // // Basic password length validation
-  // if (newPassword.length < 6) {
-  //   res.status(400);
-  //   throw new Error('Password must be at least 6 characters long');
-  // }
+    // Code is valid. Set the new password (pre-save hook will hash it)
+    user.password = newPassword;
+    user.passwordResetToken = undefined; // Clear the reset code fields
+    user.passwordResetExpires = undefined;
+    await user.save(); // Save the user with the new password and cleared token
 
-  // Set the new password (pre-save hook will hash it)
-  user.password = newPassword;
-  user.passwordResetToken = undefined; // Clear the reset token fields
-  user.passwordResetExpires = undefined;
-  await user.save(); // Save the user with the new password and cleared token
+    console.log(`Password successfully reset for user: ${user.email}`);
 
-  console.log(`Password successfully reset for user: ${user.email}`);
-
-  // Generate a new LOGIN JWT token immediately? Or force user to log in again?
-  // For simplicity now, just send success message.
-  res.status(200).json({ message: 'Password reset successful!' });
+    // Send Success Response
+    res.status(200).json({ message: 'Password reset successful! You can now log in.' });
 });
 
 export const updateUserPassword = asyncHandler(async(req, res) => {

@@ -21,7 +21,8 @@ import { fonts } from '../../components/Fonts'
 // import { styles } from '@/components/Sheet'
 
 const NewPasswordScreen = ({ navigation, route }) => {
-    const { email = '', resetToken = '' } = route.params || {}; 
+    // const { email = '', resetToken = '' } = route.params || {}; 
+    const { email = '', code = '' } = route.params || {}; // Receive 'code'
 
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -52,22 +53,20 @@ const NewPasswordScreen = ({ navigation, route }) => {
 
         try {
             console.log("Attempting to reset password for:", email);
-            console.log("Using reset token:", resetToken);
+            console.log("Code:", code);
     
-            const response = await axios.post(process.env.EXPO_PUBLIC_BACKEND_URL + '/api/users/reset-password', {
+            const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+            const response = await axios.post(`${backendUrl}/api/users/reset-password`, {
                 email: email,
-                token: resetToken,
+                code: code, // Send the numeric code under the key 'code'
                 newPassword: newPassword
             });
     
             console.log("Reset password response:", response.data);
     
             setIsLoading(false);
-            Alert.alert("Success", response.data.message || "Password has been reset successfully!");
-            navigation.reset({
-                index: 0,
-                routes: [{ name: 'login' }],
-            });
+            Alert.alert("Success", response.data?.message || "Password has been reset successfully!");
+            navigation.reset({ index: 0, routes: [{ name: 'login' }] });
     
         } catch (error) {
             console.error("Set New Password Error:", error); 
