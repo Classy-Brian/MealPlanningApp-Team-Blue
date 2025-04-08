@@ -87,16 +87,17 @@ const CalendarScreen = () => {
         return (
           <React.Fragment key={index}>
             <View style={styles.card}>
-              {/* 🖊️ Edit icon */}
+              {/*Edit icon */}
               <TouchableOpacity
                 style={styles.editIconWrapper}
-                onPress={() => navigation.navigate('AddDayScreen')}
+                onPress={() => navigation.navigate('editsaveday',{date: day.date, meals: day.meals,})
+                }
               >
                 <Image source={EditIcon} style={styles.editIcon} />
               </TouchableOpacity>
 
               <View style={styles.cardRow}>
-                {/* 📅 Date Box */}
+                {/*Date Box */}
                 <View style={styles.dateBox}>
                   <Text style={styles.dateDay}>{dayOfWeek}</Text>
                   <Text style={styles.dateNumber}>{monthDay}</Text>
@@ -105,14 +106,14 @@ const CalendarScreen = () => {
                 {/* Vertical Line */}
                 <View style={styles.verticalDivider} />
 
-                {/* 🍽️ Meals */}
+                {/*Meals */}
                 <View style={styles.cardContent}>
                   {mealList}
                 </View>
               </View>
             </View>
 
-            {/* 🔢 Total Calories Below Card */}
+            {/*Total Calories Below Card */}
             <View style={styles.footerBox}>
               <Text style={styles.footerText}>
                 Total Calories: {totalCalories.toLocaleString()}
