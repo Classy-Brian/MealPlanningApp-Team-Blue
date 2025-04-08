@@ -13,6 +13,7 @@ import {
     Image
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import axios from 'axios';
 
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
