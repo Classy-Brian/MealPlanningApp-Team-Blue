@@ -46,21 +46,32 @@ const EditSaveDayScreen = () => {
     fetchData();
   }, []);
 
+  const getUsedRecipeIds = () =>
+    Object.values(hourlyMeals)
+      .map((m) => m.recipeId)
+      .filter(Boolean);
+
+  // 🛠 Update selected recipe
   const updateRecipeForHour = (hour, recipeId) => {
     const match = recipes.find(r => r.value === recipeId);
     setHourlyMeals(prev => ({
       ...prev,
       [hour]: {
-        recipeId: recipeId,
+        recipeId,
         recipeLabel: match?.label || recipeId,
         time: hour,
+        meal: "extra", // ✅ required for schema
       }
     }));
     setEditingHour(null);
   };
 
   const handleSaveDay = async () => {
-    const updatedMeals = Object.values(hourlyMeals);
+    const updatedMeals = Object.values(hourlyMeals).map(m => ({
+      ...m,
+      meal: m.meal || "extra",
+    }));
+
     try {
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
         date,
