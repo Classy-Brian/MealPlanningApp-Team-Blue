@@ -9,7 +9,6 @@ import recipeRoutes from './routes/recipe.route.js';
 import userRoutes from './routes/user.routes.js';
 import ingredientRoutes from './routes/ingredient.routes.js';
 
-import aiRoutes from './routes/AI.route.js'
 
 const app = express();
 const PORT = process.env.PORT;
@@ -21,7 +20,6 @@ app.use(cors());
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/ingredients', ingredientRoutes);
-app.use('/api/ai', aiRoutes);
 
 app.listen(PORT, () => {
     connectDB(); // Connect to DB after starting server
