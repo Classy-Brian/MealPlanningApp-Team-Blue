@@ -79,7 +79,7 @@ const RecipeSearch = () => {
   return (
     <View style={styles.container}>
       <View style={styles.searchSection}>
-        <TouchableOpacity onPress={() => navigation.navigate('(tabs)', { screen: 'savedrecipes' })} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.navigate('savedrecipes')} style={styles.backButton}>
           <Image source={Back_butt} style={styles.backIcon} />
           <Text style={styles.backText}>Recipes</Text>
         </TouchableOpacity>
@@ -109,7 +109,7 @@ const RecipeSearch = () => {
         contentContainerStyle={{ paddingBottom: 80 }}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => navigation.navigate('recipedetails', {
+            onPress={() => navigation.navigate('recipe_details', {
               recipeId: item.recipe.uri,
               title: item.recipe.label,
               ingredients: item.recipe.ingredientLines,

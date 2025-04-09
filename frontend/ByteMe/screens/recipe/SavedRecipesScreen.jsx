@@ -19,9 +19,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
+import { useNavigation } from '@react-navigation/native';
+
 
 export default function Recipes() {
   const router = useRouter();
+  const navigation = useNavigation();
   const [query, setQuery] = useState('');
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -141,20 +144,17 @@ export default function Recipes() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.recipeContainer}
-            onPress={() =>
-              router.push({
-                pathname: "../favoriterecipes",
-                params: {
-                  recipeId: item.uri,
-                  title: item.label,
-                  imageUri: item.image,
-                  ingredients: item.ingredients || [],
-                  directions: item.directions || "No directions available.",
-                  allergies: item.allergies || [],
-                  nutrition: JSON.stringify(item.nutrition),
-                },
-              })
-            }
+            onPress={() => {
+              navigation.navigate("favorite_recipe", {
+                recipeId: item.uri,
+                title: item.label,
+                imageUri: item.image,
+                ingredients: item.ingredients || [],
+                directions: item.directions || "No directions available.",
+                allergies: item.allergies || [],
+                nutrition: JSON.stringify(item.nutrition),
+              });
+            }}
           >
             <View style={styles.rectangleView}>
               <Image source={{ uri: item.image }} style={styles.recipeImage} />
@@ -227,7 +227,7 @@ export default function Recipes() {
       {loading && <ActivityIndicator size="large" color={colors.primary} />}
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
+      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('explore_recipe')}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
     </View>
