@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {View,Text,StyleSheet,TouchableOpacity,FlatList,Image,Alert} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
@@ -39,6 +39,7 @@ const EditSaveDayScreen = () => {
       const formatted = res.data.savedRecipes.map((r, i) => ({
         label: r.label,
         value: r.uri || r.id || `recipe-${i}`,
+        calories: r.calories || 0
       }));
       setRecipes(formatted);
     };
@@ -46,26 +47,48 @@ const EditSaveDayScreen = () => {
     fetchData();
   }, []);
 
+  const getMealTypeByTime = (time) => {
+    const hour = parseInt(time.split(':')[0]);
+    const isAM = time.includes('AM');
+
+    if (isAM && hour >= 5 && hour <= 12) return 'morning';
+    if (!isAM && hour >= 1 && hour <= 8) return 'afternoon';
+    if (!isAM && hour >= 9) return 'dinner';
+    if (isAM && hour <= 4) return 'dinner';
+
+    return 'extra';
+  };
+
   const updateRecipeForHour = (hour, recipeId) => {
     const match = recipes.find(r => r.value === recipeId);
+    const existingMealType = hourlyMeals[hour]?.meal;
+    const fallbackMeal = getMealTypeByTime(hour);
+
     setHourlyMeals(prev => ({
       ...prev,
       [hour]: {
-        recipeId: recipeId,
+        recipeId,
         recipeLabel: match?.label || recipeId,
+        calories: match?.calories || 0,
         time: hour,
+        meal: existingMealType || fallbackMeal
       }
     }));
+
     setEditingHour(null);
   };
 
   const handleSaveDay = async () => {
-    const updatedMeals = Object.values(hourlyMeals);
+    const updatedMeals = Object.values(hourlyMeals).map(m => ({
+      ...m,
+      meal: m.meal || getMealTypeByTime(m.time)
+    }));
+
     try {
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
         date,
         meals: updatedMeals,
-        totalCalories: 0
+        totalCalories: updatedMeals.reduce((sum, m) => sum + (m.calories || 0), 0)
       });
 
       Alert.alert("Success", "Day updated successfully!");
@@ -82,11 +105,10 @@ const EditSaveDayScreen = () => {
         Meal Plan for {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
       </Text>
 
-      {/* Table Header */}
       <View style={styles.headerRow}>
         <Text style={[styles.time, styles.headerText]}>Time</Text>
         <Text style={[styles.recipeHeader, styles.headerText]}>Recipes</Text>
-        <Text style={[styles.editHeader, styles.headerText]}></Text>
+        <Text style={styles.editHeader}></Text>
       </View>
 
       <FlatList
