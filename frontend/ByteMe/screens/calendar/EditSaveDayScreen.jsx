@@ -5,6 +5,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import EditIcon from '@/assets/images/edit.png';
+import Back_butt from "@/assets/images/backbutton.png";
 
 const EditSaveDayScreen = () => {
   const route = useRoute();
@@ -55,14 +56,12 @@ const EditSaveDayScreen = () => {
     if (!isAM && hour >= 1 && hour <= 8) return 'afternoon';
     if (!isAM && hour >= 9) return 'dinner';
     if (isAM && hour <= 4) return 'dinner';
-
     return 'extra';
   };
 
   const updateRecipeForHour = (hour, recipeId) => {
     const match = recipes.find(r => r.value === recipeId);
-    const existingMealType = hourlyMeals[hour]?.meal;
-    const fallbackMeal = getMealTypeByTime(hour);
+    const mealType = getMealTypeByTime(hour);
 
     setHourlyMeals(prev => ({
       ...prev,
@@ -71,7 +70,7 @@ const EditSaveDayScreen = () => {
         recipeLabel: match?.label || recipeId,
         calories: match?.calories || 0,
         time: hour,
-        meal: existingMealType || fallbackMeal
+        meal: mealType,
       }
     }));
 
@@ -101,6 +100,12 @@ const EditSaveDayScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Image source={Back_butt} style={styles.backIcon} />
+        <Text style={styles.backText}>Calendar</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>
         Meal Plan for {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
       </Text>
@@ -158,6 +163,24 @@ const EditSaveDayScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#D7E2F1",
+    borderRadius: 10,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+  },
+  backIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 5,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#000',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
