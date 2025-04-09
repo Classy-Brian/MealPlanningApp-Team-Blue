@@ -25,6 +25,9 @@ import {
   verifyCurrentUserPassword,
   verifyUserEmail,
   
+  getUserSavedDays,
+  unsaveRecipe,
+  saveCalendarDayForUser,
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -95,5 +98,11 @@ router.get("/:id/get-saved-grocery", getSavedGrocery);
 router.delete('/:userId/batch-remove-grocery', batchRemoveIngredientGrocery);
 
 router.delete('/:userId/remove-grocery', removeIngredientGrocery)
+//Save calendar day for a user
+router.post('/:userId/save-day', saveCalendarDayForUser);
+
+// GET saved-days
+router.get('/:userId/saved-days', getUserSavedDays);
+
 
 export default router;
