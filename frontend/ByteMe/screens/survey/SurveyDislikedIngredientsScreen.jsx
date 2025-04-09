@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     searchResultsList: {
-        maxHeight: 200,
+        // maxHeight: 200,
         marginBottom: 20,
         backgroundColor: colors.white,
         borderWidth: 1,

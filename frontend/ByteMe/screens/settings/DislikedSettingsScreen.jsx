@@ -403,7 +403,7 @@ const styles_dislike = StyleSheet.create({
         fontFamily: fonts.regular 
     },
     searchResultsContainer: { 
-        maxHeight: 200, 
+        // maxHeight: 200, 
         marginBottom: 20, 
         backgroundColor: colors.white, 
         borderWidth: 1, 
