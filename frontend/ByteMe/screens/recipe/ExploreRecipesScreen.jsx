@@ -21,6 +21,22 @@ import { textcolors } from '@/components/TextColors';
 import { fonts } from '@/components/Fonts';
 import Back_butt from "@/assets/images/backbutton.png";
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { styles } from '@/components/Sheet';
+import backarrow from "@/assets/images/back_arrow_navigate.png";
+
+function BackButton() {
+  const navigation = useNavigation();
+  return (
+    <View style={{ flexDirection: 'row' }}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <View style={styles.greybutton}>
+          <Image style={{ marginRight: 10 }} source={backarrow} />
+          <Text style={styles.regularText}>Saved Recipes</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 const RecipeSearch = () => {
   const [recipes, setRecipes] = useState([]);
@@ -77,27 +93,24 @@ const RecipeSearch = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchSection}>
-        <TouchableOpacity onPress={() => navigation.navigate('savedrecipes')} style={styles.backButton}>
-          <Image source={Back_butt} style={styles.backIcon} />
-          <Text style={styles.backText}>Recipes</Text>
-        </TouchableOpacity>
+    <View style={det.container}>
+      <View style={det.searchSection}>
+        <BackButton />
         <Text style={styles.title}>Search Recipes</Text>
-        <View style={styles.searchContainer}>
-          <Image source={maglass} style={styles.magnifyingGlassIcon} />
+        <View style={det.searchContainer}>
+          <Image source={maglass} style={det.magnifyingGlassIcon} />
           <TextInput
             placeholder="Search Recipes"
             placeholderTextColor={textcolors.lightgrey}
-            style={styles.inputText}
+            style={det.inputText}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onSubmitEditing={() => fetchRecipes(searchQuery)}
           />
         </View>
-        <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
+        <TouchableOpacity style={det.filterButton} onPress={() => setFilterModalVisible(true)}>
           <MaterialIcons name="filter-list" size={24} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.filterButtonText}>Filter</Text>
+          <Text style={det.filterButtonText}>Filter</Text>
         </TouchableOpacity>
       </View>
 
@@ -130,7 +143,7 @@ const RecipeSearch = () => {
       {/* Floating Chatbot Icon */}
       <TouchableOpacity
         onPress={() => navigation.navigate('AIScreen')}
-        style={styles.chatbotButton}
+        style={det.chatbotButton}
       >
         <Ionicons name="chatbubble-ellipses-outline" size={28} color="#fff" />
       </TouchableOpacity>
@@ -140,7 +153,7 @@ const RecipeSearch = () => {
         <View style={{ flex: 1, backgroundColor: '#00000088', justifyContent: 'center', alignItems: 'center' }}>
           <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 10, width: '90%' }}>
             <ScrollView>
-              <Text style={styles.modalTitle}>Filter Options</Text>
+              <Text style={det.modalTitle}>Filter Options</Text>
               {[
                 ['Category', 'category', categories],
                 ['Cuisine', 'cuisine', cuisines],
@@ -149,7 +162,7 @@ const RecipeSearch = () => {
                 ['Caution', 'caution', cautions]
               ].map(([label, key, list]) => (
                 <View key={key} style={{ marginBottom: 10 }}>
-                  <Text style={styles.modalLabel}>{label}</Text>
+                  <Text style={det.modalLabel}>{label}</Text>
                   <ScrollView horizontal>
                     {list.map((item) => (
                       <TouchableOpacity
@@ -171,26 +184,26 @@ const RecipeSearch = () => {
                   </ScrollView>
                 </View>
               ))}
-              <Text style={styles.modalLabel}>Ingredient</Text>
+              <Text style={det.modalLabel}>Ingredient</Text>
               <TextInput
                 placeholder="e.g. chicken"
                 value={filters.ingredient}
                 onChangeText={(val) => setFilters({ ...filters, ingredient: val })}
-                style={styles.modalInput}
+                style={det.modalInput}
               />
-              <Text style={styles.modalLabel}>Max Calories</Text>
+              <Text style={det.modalLabel}>Max Calories</Text>
               <TextInput
                 placeholder="e.g. 500"
                 keyboardType="numeric"
                 value={filters.maxCalories}
                 onChangeText={(val) => setFilters({ ...filters, maxCalories: val })}
-                style={styles.modalInput}
+                style={det.modalInput}
               />
-              <View style={styles.modalActions}>
-                <TouchableOpacity onPress={resetFilters} style={styles.resetButton}>
+              <View style={det.modalActions}>
+                <TouchableOpacity onPress={resetFilters} style={det.resetButton}>
                   <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Reset</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={styles.applyButton}>
+                <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={det.applyButton}>
                   <Text style={{ color: '#fff' }}>Apply</Text>
                 </TouchableOpacity>
               </View>
@@ -202,7 +215,7 @@ const RecipeSearch = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   // ... (rest of styles from your file)
   chatbotButton: {
     position: 'absolute',
