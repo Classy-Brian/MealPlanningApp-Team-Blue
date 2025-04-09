@@ -19,8 +19,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 
 import Homepage from './home';
-import CalendarScreen from '../(calendar)/_layout';
-import GroceryScreen from '../(grocery)/_layout';
+import CalendarLayout from '../(calendar)/_layout';
+import GroceryLayout from '../(grocery)/_layout';
 import PantryLayout from '../(pantry)/_layout';
 import RecipeLayout from '../(recipe)/_layout';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -107,7 +107,7 @@ export default function TabLayout() {
         options={{ title: 'Home', headerShown: false }} />
       <Tab.Screen 
         name="calendar" 
-        component={CalendarScreen} 
+        component={CalendarLayout} 
         options={{ title: 'Calendar', headerShown: false }} />
       <Tab.Screen 
         name="recipe" 
@@ -115,7 +115,7 @@ export default function TabLayout() {
         options={{ title: 'Recipe', headerShown: false }} />
       <Tab.Screen 
         name="grocery" 
-        component={GroceryScreen} 
+        component={GroceryLayout} 
         options={{ title: 'Grocery', headerShown: false }} />
       <Tab.Screen 
         name="pantry" 

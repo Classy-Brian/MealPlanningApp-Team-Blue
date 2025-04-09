@@ -6,7 +6,7 @@ import EditSaveDayScreen from './editsaveday';
 
 const Stack = createStackNavigator();
 
-export default function GroceryLayout() {
+export default function CalendarLayout() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="calendar" component={CalendarScreen} />

@@ -21,7 +21,7 @@ function BackButton() {
     const navigation = useNavigation();
     return (
         <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.navigate('account_settings')}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
                 <View style={[styles.greybutton, ]}>
                     <Image style={{marginRight:10}} source={backarrow}/>
                     <Text style={styles.regularText}>Account Settings</Text>

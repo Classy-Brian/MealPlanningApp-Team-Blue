@@ -17,6 +17,24 @@ import { fonts } from '@/components/Fonts';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import backarrow from "@/assets/images/back_arrow_navigate.png";
+import { styles } from '@/components/Sheet';
+
+
+function BackButton() {
+  const navigation = useNavigation();
+  return (
+    <View style={{ flexDirection: 'row' }}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <View style={styles.greybutton}>
+          <Image style={{ marginRight: 10 }} source={backarrow} />
+          <Text style={styles.regularText}>Grocery</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 
 const AddGroceryIngredientScreen = () => {
   const navigation = useNavigation();
@@ -116,12 +134,7 @@ const AddGroceryIngredientScreen = () => {
 
   return (
     <View style={stylesContainer.container}>
-      <View style={stylesContainer.header}>
-        <TouchableOpacity style={stylesContainer.backButton} onPress={handleGoBack}>
-          <Ionicons name="arrow-back" size={26} color={colors.primary} />
-        </TouchableOpacity>
-        <Text style={stylesContainer.title}>Add Grocery Ingredient</Text>
-      </View>
+      <BackButton />
 
       <TextInput
         style={stylesContainer.searchInput}
