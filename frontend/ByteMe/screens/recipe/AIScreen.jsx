@@ -1,7 +1,24 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import backarrow from "@/assets/images/back_arrow_navigate.png";
+import { styles } from '@/components/Sheet';
+import { useNavigation } from 'expo-router';
+
+function BackButton() {
+  const navigation = useNavigation();
+  return (
+    <View style={{ flexDirection: 'row' }}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <View style={styles.greybutton}>
+          <Image style={{ marginRight: 10 }} source={backarrow} />
+          <Text style={styles.regularText}>Search Recipes</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([
@@ -52,28 +69,29 @@ export default function ChatBot() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={det.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={80}
     >
-      <ScrollView style={styles.chatBox}>
+      <BackButton />
+      <ScrollView style={det.chatBox}>
         {messages.map((msg, index) => (
-          <Text key={index} style={msg.role === 'user' ? styles.userMsg : styles.assistantMsg}>
+          <Text key={index} style={msg.role === 'user' ? det.userMsg : det.assistantMsg}>
             {msg.content}
           </Text>
         ))}
       </ScrollView>
 
-      <View style={styles.inputRow}>
+      <View style={det.inputRow}>
         <TextInput
           value={input}
           onChangeText={setInput}
           placeholder="Type something..."
-          style={styles.input}
+          style={det.input}
           onSubmitEditing={handleSend}     // 🎯 Pressing Enter sends message
           blurOnSubmit={false}            // 👌 Keeps keyboard open
         />
-        <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+        <TouchableOpacity onPress={handleSend} style={det.sendButton}>
           <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
         </TouchableOpacity>
       </View>
@@ -81,7 +99,7 @@ export default function ChatBot() {
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   chatBox: { flex: 1 },
   inputRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },

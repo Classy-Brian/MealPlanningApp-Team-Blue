@@ -142,7 +142,7 @@ const RecipeSearch = () => {
 
       {/* Floating Chatbot Icon */}
       <TouchableOpacity
-        onPress={() => navigation.navigate('AIScreen')}
+        onPress={() => navigation.navigate('chat_bot')}
         style={det.chatbotButton}
       >
         <Ionicons name="chatbubble-ellipses-outline" size={28} color="#fff" />
