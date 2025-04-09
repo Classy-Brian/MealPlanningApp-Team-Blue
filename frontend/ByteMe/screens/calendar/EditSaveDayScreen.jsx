@@ -54,14 +54,15 @@ const EditSaveDayScreen = () => {
     if (isAM && hour >= 5 && hour <= 12) return 'morning';
     if (!isAM && hour >= 1 && hour <= 8) return 'afternoon';
     if (!isAM && hour >= 9) return 'dinner';
-    if (isAM && hour >= 12 && hour <= 4) return 'dinner';
+    if (isAM && hour <= 4) return 'dinner';
 
     return 'extra';
   };
 
   const updateRecipeForHour = (hour, recipeId) => {
     const match = recipes.find(r => r.value === recipeId);
-    const mealType = getMealTypeByTime(hour);
+    const existingMealType = hourlyMeals[hour]?.meal;
+    const fallbackMeal = getMealTypeByTime(hour);
 
     setHourlyMeals(prev => ({
       ...prev,
@@ -70,7 +71,7 @@ const EditSaveDayScreen = () => {
         recipeLabel: match?.label || recipeId,
         calories: match?.calories || 0,
         time: hour,
-        meal: mealType
+        meal: existingMealType || fallbackMeal
       }
     }));
 
@@ -78,7 +79,10 @@ const EditSaveDayScreen = () => {
   };
 
   const handleSaveDay = async () => {
-    const updatedMeals = Object.values(hourlyMeals);
+    const updatedMeals = Object.values(hourlyMeals).map(m => ({
+      ...m,
+      meal: m.meal || getMealTypeByTime(m.time)
+    }));
 
     try {
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
@@ -104,7 +108,7 @@ const EditSaveDayScreen = () => {
       <View style={styles.headerRow}>
         <Text style={[styles.time, styles.headerText]}>Time</Text>
         <Text style={[styles.recipeHeader, styles.headerText]}>Recipes</Text>
-        <Text style={[styles.editHeader, styles.headerText]}></Text>
+        <Text style={styles.editHeader}></Text>
       </View>
 
       <FlatList
