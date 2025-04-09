@@ -9,21 +9,6 @@ import { textcolors } from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 import { useNavigation } from '@react-navigation/native';
-import backarrow from "@/assets/images/back_arrow_navigate.png"
-
-function BackButton() {
-    const navigation = useNavigation();
-    return (
-        <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-                <View style={[styles.greybutton, ]}>
-                    <Image style={{marginRight:10}} source={backarrow}/>
-                    <Text style={styles.regularText}>Profile</Text>
-                </View>
-            </TouchableOpacity>
-        </View>
-    )
-}
 
 const SettingsScreen = () => {
     const router = useRouter();
@@ -45,7 +30,17 @@ const SettingsScreen = () => {
             <ScrollView style={styles_settings.scrollView}>
                 <View style={styles_settings.container}>
                     {/* Header Section */}
-                    <BackButton />
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                        <Link href="/profile" asChild>
+                            <TouchableOpacity>
+                                <View style={[ styles_settings.greybutton ]}>
+                                    <Image style={{marginRight:10}}
+                                        source={require('../../assets/images/back_arrow_navigate.png')}/>
+                                    <Text style={styles.regularText}>Profile</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </Link>
+                    </View>
 
                     <Text style={[styles.title, {marginTop: 10}]}>Settings </Text>
 

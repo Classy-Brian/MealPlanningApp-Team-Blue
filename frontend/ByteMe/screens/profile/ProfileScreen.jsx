@@ -165,11 +165,11 @@ export default function ProfileScreen() {
       <View style={det.header}>
           <TouchableOpacity
               style={det.homeButton}
-              onPress={() => navigation.goBack()} 
+              onPress={() => navigation.navigate('home')} 
           >
               <Image style={{marginRight:10}}
                   source={backArrowImage}/>
-              <Text style={det.homeText}>Back</Text>
+              <Text style={det.homeText}>Home</Text>
           </TouchableOpacity>
       </View>
 

@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, KeyboardAvoidingView, Platform } from 'react-native'
+import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
@@ -70,10 +70,7 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'android' ? 'padding' : 'height'}
-      style={{flex: 1}} >
-          <View style={styles.whiteBackground}>
+    <View style={styles.whiteBackground}>
       <View style={[styles.screenContainer, {marginTop: 20}]}>          
         <View >
           <Text style={[styles.title, {fontSize: 36}]}>Sign in</Text>
@@ -135,11 +132,8 @@ const Login = ({ navigation }) => {
         </View>   
       </View>
 
-      <View style={[logo.bluebar]}/>
+      <View style={[logo.bluebar, {width: window.width}]}/>
     </View> 
-
-    </KeyboardAvoidingView>
-    
   )
 }
 
@@ -169,8 +163,6 @@ const logo = StyleSheet.create({
     backgroundColor: colors.header,
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
   },
   circle: {
     borderRadius: 250,

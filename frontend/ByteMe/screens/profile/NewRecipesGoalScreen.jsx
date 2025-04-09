@@ -18,7 +18,7 @@ function BackButton(userId) {
     const navigation = useNavigation();
     return (
         <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.goBack({userId: userId})}>
+            <TouchableOpacity onPress={() => navigation.navigate('add_goals', {userId: userId})}>
                 <View style={[styles.greybutton, ]}>
                     <Image style={{marginRight:10}} source={backarrow}/>
                     <Text style={styles.regularText}>Add Goals</Text>

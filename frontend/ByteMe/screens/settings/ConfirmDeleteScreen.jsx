@@ -17,7 +17,7 @@ function BackButton() {
     const navigation = useNavigation();
     return (
         <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={() => navigation.navigate('account_settings')}>
                 <View style={[styles.greybutton, ]}>
                     <Image style={{marginRight:10}} source={backarrow}/>
                     <Text style={styles.regularText}>Account Settings</Text>
@@ -111,7 +111,7 @@ const ConfirmDeleteScreen = () => {
 
                     <TouchableOpacity
                         style={[styles_confirmDel.button, styles_confirmDel.cancelButton]}
-                        onPress={() => navigation.goBack()}
+                        onPress={() => navigation.navigate('account_settings')}
                         disabled={isLoading}
                     >
                         <Text style={[styles_confirmDel.buttonText, styles_confirmDel.cancelButtonText]}>Cancel</Text>
