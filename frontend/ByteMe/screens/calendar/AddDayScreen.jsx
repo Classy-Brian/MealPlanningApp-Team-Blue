@@ -386,7 +386,7 @@ const AddDayScreen = () => {
                 open={meal.openRecipe ?? false}
                 setOpen={(open) => updateExtraMeal(index, 'openRecipe', open)}
                 value={meal.recipeId ?? null}
-                setValue={(val) => updateExtraMeal(index, 'recipeId', val)}
+                setValue={(valFn) => updateExtraMeal(index, 'recipeId', valFn())}
                 placeholder="Pick a recipe"
                 style={styles.dropdown}
                 dropDownContainerStyle={styles.dropDownContainer}
@@ -406,7 +406,7 @@ const AddDayScreen = () => {
                 open={meal.openTime ?? false}
                 setOpen={(open) => updateExtraMeal(index, 'openTime', open)}
                 value={meal.time ?? null}
-                setValue={(val) => updateExtraMeal(index, 'time', val)}
+                setValue={(valFn) => updateExtraMeal(index, 'time', valFn())}
                 placeholder="Pick a time"
                 style={styles.dropdown}
                 dropDownContainerStyle={styles.dropDownContainer}
