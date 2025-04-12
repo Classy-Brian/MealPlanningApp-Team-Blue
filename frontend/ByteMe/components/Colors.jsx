@@ -7,5 +7,5 @@ export const colors = {
     grey: '#D9D9D9',        // plain grey
     othergrey: '#D7E2F1',   // filter, back buttons
     red: '#C0776E',         // for remove buttons
-
+    lightergrey: '#f4f6fa',
 }

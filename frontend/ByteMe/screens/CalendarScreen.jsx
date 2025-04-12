@@ -51,88 +51,91 @@ const CalendarScreen = () => {
     : savedDays;
 
   return (
-    <View style={det.container}>
-      <Text style={styles.title}>Calendar</Text>
+    <View style={styles.whiteBackground}>
+        <ScrollView contentContainerStyle={styles.screenContainer}>
+          <Text style={styles.title}>Calendar</Text>
 
-      <Calendar
-        onDayPress={(day) => setSelectedDate(day.dateString)}
-        markedDates={markedDates}
-        theme={{
-          calendarBackground: "#fff",
-          textSectionTitleColor: "#133E7C",
-          selectedDayBackgroundColor: "#133E7C",
-          selectedDayTextColor: "#fff",
-          todayTextColor: "#133E7C",
-          dayTextColor: "#000",
-          textDisabledColor: "#d9e1e8",
-          arrowColor: "#133E7C",
-          monthTextColor: "#133E7C",
-        }}
-      />
+          <Calendar
+            onDayPress={(day) => setSelectedDate(day.dateString)}
+            markedDates={markedDates}
+            theme={{
+              calendarBackground: "#fff",
+              textSectionTitleColor: "#133E7C",
+              selectedDayBackgroundColor: "#133E7C",
+              selectedDayTextColor: "#fff",
+              todayTextColor: "#133E7C",
+              dayTextColor: "#000",
+              textDisabledColor: "#d9e1e8",
+              arrowColor: "#133E7C",
+              monthTextColor: "#133E7C",
+            }}
+          />
 
-      <ScrollView style={det.cardsContainer}>
-      {displayedDays.map((day, index) => {
-        const formatted = new Date(day.date);
-        const dayOfWeek = formatted.toLocaleDateString('en-US', { weekday: 'long' });
-        const monthDay = formatted.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+          <ScrollView style={det.cardsContainer}>
+          {displayedDays.map((day, index) => {
+            const formatted = new Date(day.date);
+            const dayOfWeek = formatted.toLocaleDateString('en-US', { weekday: 'long' });
+            const monthDay = formatted.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
 
-        const mealList = day.meals.map((m, i) => (
-          <View key={i} style={[det.mealRow, i < day.meals.length - 1 && det.mealRowBorder]}>
-            <View style={det.mealBox}>
-              <Text style={det.mealText}>{m.recipeLabel || m.recipeId}</Text>
-            </View>
-          </View>
-        ));
-
-        const totalCalories = day.totalCalories ?? day.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
-
-        return (
-          <React.Fragment key={index}>
-            <View style={det.card}>
-              {/*Edit icon */}
-              <TouchableOpacity
-                style={det.editIconWrapper}
-                onPress={() => navigation.navigate('editsaveday',{date: day.date, meals: day.meals,})
-                }
-              >
-                <Image source={EditIcon} style={det.editIcon} />
-              </TouchableOpacity>
-
-              <View style={det.cardRow}>
-                {/*Date Box */}
-                <View style={det.dateBox}>
-                  <Text style={det.dateDay}>{dayOfWeek}</Text>
-                  <Text style={det.dateNumber}>{monthDay}</Text>
-                </View>
-
-                {/* Vertical Line */}
-                <View style={det.verticalDivider} />
-
-                {/*Meals */}
-                <View style={det.cardContent}>
-                  {mealList}
+            const mealList = day.meals.map((m, i) => (
+              <View key={i} style={[det.mealRow, i < day.meals.length - 1 && det.mealRowBorder]}>
+                <View style={det.mealBox}>
+                  <Text style={det.mealText}>{m.recipeLabel || m.recipeId}</Text>
                 </View>
               </View>
-            </View>
+            ));
 
-            {/*Total Calories Below Card */}
-            <View style={det.footerBox}>
-              <Text style={det.footerText}>
-                Total Calories: {totalCalories.toLocaleString()}
-              </Text>
-            </View>
-          </React.Fragment>
-        );
-      })}
+            const totalCalories = day.totalCalories ?? day.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+
+            return (
+              <React.Fragment key={index}>
+                <View style={det.card}>
+                  {/*Edit icon */}
+                  <TouchableOpacity
+                    style={det.editIconWrapper}
+                    onPress={() => navigation.navigate('editsaveday',{date: day.date, meals: day.meals,})
+                    }
+                  >
+                    <Image source={EditIcon} style={det.editIcon} />
+                  </TouchableOpacity>
+
+                  <View style={det.cardRow}>
+                    {/*Date Box */}
+                    <View style={det.dateBox}>
+                      <Text style={det.dateDay}>{dayOfWeek}</Text>
+                      <Text style={det.dateNumber}>{monthDay}</Text>
+                    </View>
+
+                    {/* Vertical Line */}
+                    <View style={det.verticalDivider} />
+
+                    {/*Meals */}
+                    <View style={det.cardContent}>
+                      {mealList}
+                    </View>
+                  </View>
+                </View>
+
+                {/*Total Calories Below Card */}
+                <View style={det.footerBox}>
+                  <Text style={det.footerText}>
+                    Total Calories: {totalCalories.toLocaleString()}
+                  </Text>
+                </View>
+              </React.Fragment>
+            );
+          })}
+          </ScrollView>
+          <View style={det.space} />
+          
       </ScrollView>
-
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('addday')}
-      >
+        onPress={() => navigation.navigate('addday')} >
         <Ionicons name="add" size={60} color='#d9d9d9' />
         </TouchableOpacity>
     </View>
+    
   );
 };
 
@@ -244,9 +247,8 @@ const det = StyleSheet.create({
     alignItems: 'center',
     elevation: 5,
   },
-  addButtonText: {
-    fontSize: 30,
-    color: '#fff',
+  space: {
+    marginTop: 90,
   },
 });
 

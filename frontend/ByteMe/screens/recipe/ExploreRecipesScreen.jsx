@@ -23,6 +23,7 @@ import Back_butt from "@/assets/images/backbutton.png";
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { styles } from '@/components/Sheet';
 import backarrow from "@/assets/images/back_arrow_navigate.png";
+import { Divider } from 'react-native-paper';
 
 function BackButton() {
   const navigation = useNavigation();
@@ -97,21 +98,28 @@ const RecipeSearch = () => {
       <View style={det.searchSection}>
         <BackButton />
         <Text style={styles.title}>Search Recipes</Text>
-        <View style={det.searchContainer}>
-          <Image source={maglass} style={det.magnifyingGlassIcon} />
+        {/* Search Box */}
+        <View style={{marginBottom: 10}}>
+          <View style={[styles.searchInput]}>
+          <Image 
+            style={det.magnifyingGlassIcon} 
+            source={maglass} />          
           <TextInput
-            placeholder="Search Recipes"
-            placeholderTextColor={textcolors.lightgrey}
-            style={det.inputText}
+            placeholder='Search for recipes'
+            placeholderTextColor={textcolors.darkgrey}
+            onChangeText={(text) => setSearchQuery(text)}
             value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={() => fetchRecipes(searchQuery)}
-          />
-        </View>
-        <TouchableOpacity style={det.filterButton} onPress={() => setFilterModalVisible(true)}>
-          <MaterialIcons name="filter-list" size={24} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={det.filterButtonText}>Filter</Text>
-        </TouchableOpacity>
+            style={styles.regularText}
+            onSubmitEditing={() => fetchRecipes(searchQuery)} />
+          </View>
+        
+          <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
+            <MaterialIcons name="filter-list" size={24} color={textcolors.darkgrey} style={{ marginRight: 8 }} />
+            <Text style={styles.regularText}>Filter</Text>
+          </TouchableOpacity>
+          </View>
+        
+        <Divider />
       </View>
 
       <FlatList
@@ -337,7 +345,12 @@ const det = StyleSheet.create({
     backgroundColor: colors.primary,
     flex: 1,
     alignItems: 'center'
-  }
+  },
+  magnifyingGlassIcon: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 15, // Space between the icon and input
+  },
 });
 
 export default RecipeSearch;

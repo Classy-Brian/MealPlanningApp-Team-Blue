@@ -205,7 +205,7 @@ const Pantry = () => {
 
   const handleSuggest = () => {
     if (addPress == true) {
-      navigation.navigate('pantry_suggest')
+      navigation.navigate('pantry_suggest', {ingrLabels})
     } else {
       return
     }

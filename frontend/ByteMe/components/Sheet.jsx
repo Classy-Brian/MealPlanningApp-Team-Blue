@@ -63,7 +63,8 @@ export const styles = StyleSheet.create({
     },
     buttonText: {
       fontFamily: fonts.bold,
-      marginBottom: 20,
+      fontSize: 20,
+      marginBottom: 0,
     },
     inputContainer: {
       flexDirection: 'row',
@@ -112,8 +113,9 @@ export const styles = StyleSheet.create({
       borderRadius: 20,
       borderWidth: 1,
       borderColor: textcolors.darkgrey,
-      backgroundColor: colors.grey,
+      backgroundColor: colors.lightergrey,
       marginBottom: 10,
+      elevation: 1,
     },
     addButton: {
       position: 'absolute',
@@ -148,5 +150,17 @@ export const styles = StyleSheet.create({
       marginVertical: 10,
       elevation: 2,
       shadowColor: colors.black,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    backgroundColor: colors.othergrey,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 30,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: textcolors.lightgrey,
+    elevation: 1,
   },
   })
