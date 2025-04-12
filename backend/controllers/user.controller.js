@@ -482,6 +482,12 @@ export const getSavedRecipes = async (req, res) => {
         ingredients: recipe.ingredientLines,
         allergies: recipe.healthLabels,
         nutrition: recipe.totalNutrients,
+        mealType: recipe.mealType,
+        cuisineType: recipe.cuisineType,
+        calories: recipe.calories,
+        dietLabels: recipe.dietLabels || [],
+        healthLabels: recipe.healthLabels || [],
+        cautions: recipe.cautions || [],
     };
   })
   .filter(Boolean); // Remove null values
@@ -492,6 +498,7 @@ export const getSavedRecipes = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 export const saveRecipe = async (req, res) => {
   try {
@@ -565,6 +572,309 @@ export const getRecieById = async (req, res) => {
   }
 };
 
+export const getSavedPantry = async (req, res) => {
+  try {
+    // Find the user by ID and populate saved pantry ingredients
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!Array.isArray(user.savedPantry) || user.savedPantry.length === 0) {
+      return res.json({ message: "No saved pantry ingredients found", savedPantry: [] });
+    }
+
+    const API_ID = process.env.EXPO_PUBLIC_FOODDB_ID;
+    const API_KEY = process.env.EXPO_PUBLIC_FOODDB_KEY;
+
+    if (!API_ID || !API_KEY) {
+      console.error("Missing API credentials");
+      return res.status(500).json({message: "Server error: Missing API credentials"});
+    }
+
+    const pantryDetailsPromises = user.savedPantry.map(async ({ foodId, quantity }) => {
+      try {                
+        if (!foodId || typeof foodId !== "string") {
+          console.error("Invalid foodId", foodId);
+          return null;
+        }
+
+        const response = await axios.get(
+          `https://api.edamam.com/api/food-database/v2/parser`,
+          {
+            params: {
+              app_id: API_ID,
+              app_key: API_KEY,
+              ingr: foodId,
+            },
+            timeout: 10000,
+          }
+        );
+
+        const foodData = response.data.hints[0]?.food;
+
+        if (!foodData) {
+          console.error("Food data not found for the given foodId");
+          return null;
+        }
+
+        const label = foodData.label || "Unknown";
+        const category = foodData.category || "Other";
+        const nutrients = foodData.nutrients || {};
+        const image = foodData.image || 'https://via.placeholder.com/150';
+
+        console.log('Food details:', {foodId, label, category, nutrients, image, quantity});
+
+        return {
+          foodId, label, category, nutrients, image, quantity
+        };
+      } catch (err) {
+        console.error(`Error fetching ingredient details for foodId ${foodId}:`, err.message);
+        return null;
+      }
+    });
+
+    const detailedPantry = (await Promise.all(pantryDetailsPromises)).filter(Boolean);
+
+    return res.json({ 
+      message: "Saved pantry ingredients fetched successfully",
+      savedPantry: detailedPantry 
+    });
+
+  } catch (error) {
+    console.error("Error fetching user's pantry ingredients recipes:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const addIngredientToPantry = async (req, res) => {
+    try {
+      const { userId } = req.params;
+        const { foodId, quantity } = req.body;
+
+        if (!foodId || quantity === undefined ) {
+          return res.status(400).json({message: "Food id and quantity are missing"});
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+          return res.status(404).json({message: "User not found."});
+        }
+      
+      const ingredientIdex = user.savedPantry.findIndex(item => item.foodId === foodId);
+
+      if (ingredientIdex !== -1) {
+        user.savedPantry[ingredientIdex].quantity = quantity;
+        await user.save();
+        console.log("Ingredient added or updated successfully");
+        return res.status(200).json({message: "Pantry updated successfully!"});
+      } else {
+        user.savedPantry.push({ foodId, quantity});
+        await user.save();
+        console.log("Ingredient added or updated successfully");
+        return res.status(200).json({message: "Pantry updated successfully!"});
+      }
+    } catch (err) {
+      console.error("Error updating pantry:", err);
+      return res.status(500).json({message: "Internal server error"});
+    }
+};
+
+export const removeIngredientPantry = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { foodId } = req.body;
+
+    if (!foodId) {
+      return res.status(400).json({message: "Food ID is missing"});
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({message: "User not found."});
+    }
+
+    const ingredientIdex = user.savedPantry.findIndex(item => item.foodId === foodId);
+    if (ingredientIdex === -1) {
+      return res.status(404).json({message: "Ingredient not found."});
+    }
+
+    user.savedPantry.splice(ingredientIdex, 1);
+    await user.save();
+    return res.status(200).json({message: "Ingredient successfully removed."});
+
+  } catch (err) {
+    console.error("Error deleting pantry ingredient: ", err);
+    return res.status(500).json({message: "Internal server error"});
+  }
+};
+
+export const addIngredientToGrocery = async (req, res) => {
+  try {
+    const { userId } = req.params;
+      const { foodId, quantity } = req.body;
+
+      if (!foodId || quantity === undefined ) {
+        return res.status(400).json({message: "Food id and quantity are missing"});
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({message: "User not found."});
+      }
+    
+    const ingredientIdex = user.savedGrocery.findIndex(item => item.foodId === foodId);
+
+    if (ingredientIdex !== -1) {
+      user.savedGrocery[ingredientIdex].quantity = quantity;
+      await user.save();
+      console.log("Ingredient added or updated successfully");
+      return res.status(200).json({message: "Grocery updated successfully!"});
+    } else {
+      user.savedGrocery.push({ foodId, quantity});
+      await user.save();
+      console.log("Ingredient added or updated successfully");
+      return res.status(200).json({message: "Grocery updated successfully!"});
+    }
+  } catch (err) {
+    console.error("Error updating pantry:", err);
+    return res.status(500).json({message: "Internal server error"});
+  }
+};
+
+export const getSavedGrocery = async (req, res) => {
+  try {
+    // Find the user by ID and populate saved pantry ingredients
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!Array.isArray(user.savedGrocery) || user.savedGrocery.length === 0) {
+      return res.json({ message: "No saved pantry ingredients found", savedGrocery: [] });
+    }
+
+    const API_ID = process.env.EXPO_PUBLIC_FOODDB_ID;
+    const API_KEY = process.env.EXPO_PUBLIC_FOODDB_KEY;
+
+    if (!API_ID || !API_KEY) {
+      console.error("Missing API credentials");
+      return res.status(500).json({message: "Server error: Missing API credentials"});
+    }
+
+    const groceryDetailsPromises = user.savedGrocery.map(async ({ foodId, quantity }) => {
+      try {                
+        if (!foodId || typeof foodId !== "string") {
+          console.error("Invalid foodId", foodId);
+          return null;
+        }
+
+        const response = await axios.get(
+          `https://api.edamam.com/api/food-database/v2/parser`,
+          {
+            params: {
+              app_id: API_ID,
+              app_key: API_KEY,
+              ingr: foodId,
+            },
+            timeout: 10000,
+          }
+        );
+
+        const foodData = response.data.hints[0]?.food;
+
+        if (!foodData) {
+          console.error("Food data not found for the given foodId");
+          return null;
+        }
+
+        const label = foodData.label || "Unknown";
+        const category = foodData.category || "Other";
+        const nutrients = foodData.nutrients || {};
+        const image = foodData.image || 'https://via.placeholder.com/150';
+
+        console.log('Food details:', {foodId, label, category, nutrients, image, quantity});
+
+        return {
+          foodId, label, category, nutrients, image, quantity
+        };
+      } catch (err) {
+        console.error(`Error fetching ingredient details for foodId ${foodId}:`, err.message);
+        return null;
+      }
+    });
+
+    const detailedGrocery = (await Promise.all(groceryDetailsPromises)).filter(Boolean);
+
+    return res.json({ 
+      message: "Saved pantry ingredients fetched successfully",
+      savedGrocery: detailedGrocery 
+    });
+
+  } catch (error) {
+    console.error("Error fetching user's pantry ingredients recipes:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const batchRemoveIngredientGrocery = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { foodIds } = req.body;
+
+    if (!foodIds || !Array.isArray(foodIds)) {
+      return res.status(400).json({message: "Invalid request format. Expected array of foodIds"});
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({message: "User not found."});
+    }
+
+    const result = await User.updateOne(
+      {_id: userId},
+      { $pull: { savedGrocery: { foodId: { $in: foodIds } } } }
+    )
+
+    if (result.nModified === 0) {
+      return res.status(404).json({message: "No ingredient found to remove"})
+    } 
+    return res.status(200).json({message: "Ingredient successfully removed."});
+
+  } catch (err) {
+    console.error("Error deleting pantry ingredient: ", err);
+    return res.status(500).json({message: "Internal server error"});
+  }
+}
+
+export const removeIngredientGrocery = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { foodId } = req.body;
+
+    if (!foodId) {
+      return res.status(400).json({message: "Food ID is missing"});
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({message: "User not found."});
+    }
+
+    const ingredientIdex = user.savedGrocery.findIndex(item => item.foodId === foodId);
+    if (ingredientIdex === -1) {
+      return res.status(404).json({message: "Ingredient not found."});
+    }
+
+    user.savedGrocery.splice(ingredientIdex, 1);
+    await user.save();
+    return res.status(200).json({message: "Ingredient successfully removed."});
+
+  } catch (err) {
+    console.error("Error deleting pantry ingredient: ", err);
+    return res.status(500).json({message: "Internal server error"});
+  }
+};
 // REQUEST PASSWORD RESET (Generates Token, NO EMAIL SENT YET)
 export const forgotPasswordRequest = asyncHandler(async (req, res) => {
   console.log("forgotPasswordRequest called for email:", req.body.email);
@@ -706,3 +1016,49 @@ export const updateUserPassword = asyncHandler(async(req, res) => {
   console.log(`Password updated successfully for user: ${user.email}`);
   res.status(200).json({ message: 'Password updated successfully' });
 });
+
+export const saveCalendarDayForUser = async (req, res) => {
+  const { userId } = req.params;
+  const { date, meals, totalCalories } = req.body;
+
+  if (!date || !Array.isArray(meals)) {
+    return res.status(400).json({ message: "Date and meals are required." });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const existingDayIndex = user.savedDays.findIndex(day => day.date === date);
+
+    const newDay = { date, meals, totalCalories };
+
+    if (existingDayIndex !== -1) {
+      user.savedDays[existingDayIndex] = newDay;
+    } else {
+      user.savedDays.push(newDay);
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Calendar day saved successfully!",
+      savedDays: user.savedDays
+    });
+
+  } catch (error) {
+    console.error("Save day error:", error);
+    return res.status(500).json({ message: "Server error saving calendar day" });
+  }
+};
+
+export const getUserSavedDays = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user || !user.savedDays) return res.json({ savedDays: [] });
+
+    res.json({ savedDays: user.savedDays });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load saved days" });
+  }
+};

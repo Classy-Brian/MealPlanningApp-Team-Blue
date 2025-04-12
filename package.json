@@ -28,7 +28,8 @@
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "mongoose": "^8.11.0",
-    "nodemailer": "^6.10.0"
+    "nodemailer": "^6.10.0",
+    "openai": "^4.92.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

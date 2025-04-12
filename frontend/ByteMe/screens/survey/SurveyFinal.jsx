@@ -6,6 +6,7 @@ import { fonts } from '../../components/Fonts'
 import { Link, useRouter } from "expo-router"
 import { styles } from '@/components/Sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import backarrow from '@/assets/images/back_arrow_navigate.png'
 import axios from 'axios'
 
 const SurveyFinal = ( { navigation, route } ) => {
@@ -95,7 +96,7 @@ const SurveyFinal = ( { navigation, route } ) => {
           <TouchableOpacity onPress={prevPage}>
             <View style={[button.greybutton, ]}>
               <Image style={{marginRight:10}}
-                      source={require('../../assets/images/back_arrow_navigate.png')}/>
+                      source={backarrow}/>
               <Text style={styles.regularText}>Back</Text>
             </View>
           </TouchableOpacity>      

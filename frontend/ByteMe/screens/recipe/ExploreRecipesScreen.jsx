@@ -1,5 +1,17 @@
-import { Image, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native';
-import React, { useState, useEffect } from 'react';
+// RecipeSearch.jsx
+import {
+  Image,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  Modal,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import HomeB from "@/assets/images/active.png";
@@ -8,35 +20,45 @@ import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 import { fonts } from '@/components/Fonts';
 import Back_butt from "@/assets/images/backbutton.png";
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { styles } from '@/components/Sheet';
+import backarrow from "@/assets/images/back_arrow_navigate.png";
 
-const RecipeCard = ({ imageUri, title, onPress }) => (
-  <TouchableOpacity style={styles.recipeContainer} onPress={onPress} activeOpacity={0.7}>
-    <View style={styles.recipeWrapper}>
-      <Image style={styles.recipePhoto} resizeMode="cover" source={imageUri ? { uri: imageUri } : HomeB} />
-      <View style={styles.overlay} />
-      <Text style={styles.recipeTitle}>{title}</Text>
+function BackButton() {
+  const navigation = useNavigation();
+  return (
+    <View style={{ flexDirection: 'row' }}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <View style={styles.greybutton}>
+          <Image style={{ marginRight: 10 }} source={backarrow} />
+          <Text style={styles.regularText}>Saved Recipes</Text>
+        </View>
+      </TouchableOpacity>
     </View>
-  </TouchableOpacity>
-);
+  );
+}
 
 const RecipeSearch = () => {
   const [recipes, setRecipes] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', dietLabel: '', healthLabel: '', caution: ''
+  });
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
   const navigation = useNavigation();
 
   const fetchRecipes = async (query) => {
-    const API_ID =process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
-    const API_KEY =process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
-
+    const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
+    const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
     setLoading(true);
     setError(null);
-    try {  
+    try {
       const response = await axios.get(
-        `https://api.edamam.com/api/recipes/v2?type=public&q=${query}&app_id=${API_ID}&app_key=${API_KEY}`,
+        `https://api.edamam.com/api/recipes/v2?type=public&q=${query}&app_id=${API_ID}&app_key=${API_KEY}`
       );
-      setRecipes(response.data.hits.length > 0 ? response.data.hits : []);
+      setRecipes(response.data.hits || []);
     } catch (err) {
       console.error('Error fetching recipes:', err);
       setError('Failed to fetch recipes. Please try again later.');
@@ -45,179 +67,277 @@ const RecipeSearch = () => {
     }
   };
 
-  const goToRecipeDetails = (recipe) => {
-    navigation.navigate('recipedetails', {
-      recipeId: recipe.recipe.uri,
-      title: recipe.recipe.label,
-      ingredients: recipe.recipe.ingredientLines,
-      directions: recipe.recipe.url,
-      imageUri: recipe.recipe.image,
-      allergies: recipe.recipe.healthLabels,
-      nutrition: recipe.recipe.totalNutrients
-    });
+  const categories = ['All', ...new Set(recipes.flatMap(r => r.recipe.mealType || []))];
+  const cuisines = ['All', ...new Set(recipes.flatMap(r => r.recipe.cuisineType || []).map(c => c.charAt(0).toUpperCase() + c.slice(1)))];
+  const dietLabels = [...new Set(recipes.flatMap(r => r.recipe.dietLabels || []))];
+  const healthLabels = [...new Set(recipes.flatMap(r => r.recipe.healthLabels || []))];
+  const cautions = [...new Set(recipes.flatMap(r => r.recipe.cautions || []))];
+
+  const filteredRecipes = recipes.filter(({ recipe }) => {
+    const matchesCategory = filters.category === 'All' || recipe.mealType?.some(type => type.toLowerCase().includes(filters.category.toLowerCase()));
+    const matchesCuisine = filters.cuisine === 'All' || recipe.cuisineType?.some(type => type.toLowerCase().includes(filters.cuisine.toLowerCase()));
+    const matchesIngredient = filters.ingredient.trim() === '' || recipe.ingredientLines?.some(line => line.toLowerCase().includes(filters.ingredient.toLowerCase()));
+    const matchesCalories = filters.maxCalories.trim() === '' || (!isNaN(parseFloat(filters.maxCalories)) && recipe.calories <= parseFloat(filters.maxCalories));
+    const matchesDiet = filters.dietLabel === '' || recipe.dietLabels?.includes(filters.dietLabel);
+    const matchesHealth = filters.healthLabel === '' || recipe.healthLabels?.includes(filters.healthLabel);
+    const matchesCaution = filters.caution === '' || recipe.cautions?.includes(filters.caution);
+    return matchesCategory && matchesCuisine && matchesIngredient && matchesCalories && matchesDiet && matchesHealth && matchesCaution;
+  });
+
+  const resetFilters = () => {
+    setFilters({ category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', dietLabel: '', healthLabel: '', caution: '' });
   };
 
-  const handleSearchSubmit = () => {
-    fetchRecipes(searchQuery); // Fetch recipes when "Enter" is pressed
+  const toggleFilter = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: prev[key] === value ? (key === 'category' || key === 'cuisine' ? 'All' : '') : value }));
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
+      <View style={det.searchSection}>
+        <BackButton />
+        <Text style={styles.title}>Search Recipes</Text>
+        <View style={det.searchContainer}>
+          <Image source={maglass} style={det.magnifyingGlassIcon} />
+          <TextInput
+            placeholder="Search Recipes"
+            placeholderTextColor={textcolors.lightgrey}
+            style={det.inputText}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={() => fetchRecipes(searchQuery)}
+          />
+        </View>
+        <TouchableOpacity style={det.filterButton} onPress={() => setFilterModalVisible(true)}>
+          <MaterialIcons name="filter-list" size={24} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={det.filterButtonText}>Filter</Text>
+        </TouchableOpacity>
+      </View>
+
       <FlatList
-        data={recipes}
+        data={filteredRecipes}
         keyExtractor={(item, index) => index.toString()}
         numColumns={2}
-        columnWrapperStyle={styles.row}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}
-            >
-              <Image source={Back_butt} style={styles.backIcon} />
-              <Text style={styles.backText}>Recipes</Text>
-            </TouchableOpacity>
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Search Recipes</Text>
-            </View>
-            <View style={styles.searchContainer}>
-              <Image source={maglass} style={styles.magnifyingGlassIcon} />
-              <TextInput
-                placeholder="Search Recipes"
-                placeholderTextColor={textcolors.lightgrey}
-                style={styles.inputText}
-                value={searchQuery}
-                onChangeText={(text) => setSearchQuery(text)} // Update the state without fetching
-                onSubmitEditing={handleSearchSubmit} // Fetch when user presses "Enter"
-                returnKeyType="search"
-              />
-            </View>
-          </View>
-        }
+        columnWrapperStyle={{ justifyContent: 'space-between' }}
+        contentContainerStyle={{ paddingBottom: 80 }}
         renderItem={({ item }) => (
-          <RecipeCard
-            title={item.recipe.label}
-            imageUri={item.recipe.image}
-            onPress={() => goToRecipeDetails(item)}
-          />
+          <TouchableOpacity
+            onPress={() => navigation.navigate('recipe_details', {
+              recipeId: item.recipe.uri,
+              title: item.recipe.label,
+              ingredients: item.recipe.ingredientLines,
+              directions: item.recipe.url,
+              imageUri: item.recipe.image,
+              allergies: item.recipe.healthLabels,
+              nutrition: item.recipe.totalNutrients
+            })}
+            style={{ width: '48%', marginBottom: 16 }}
+          >
+            <Image source={{ uri: item.recipe.image }} style={{ width: '100%', height: 120, borderRadius: 10 }} resizeMode="cover" />
+            <Text style={{ marginTop: 8, fontWeight: 'bold' }}>{item.recipe.label}</Text>
+          </TouchableOpacity>
         )}
-        ListFooterComponent={loading && <Text>Loading...</Text>}
-        contentContainerStyle={{ paddingTop: 60 }}
+        ListFooterComponent={loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
       />
+
+      {/* Floating Chatbot Icon */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('chat_bot')}
+        style={det.chatbotButton}
+      >
+        <Ionicons name="chatbubble-ellipses-outline" size={28} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Filter Modal */}
+      <Modal visible={filterModalVisible} animationType="slide" transparent>
+        <View style={{ flex: 1, backgroundColor: '#00000088', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 10, width: '90%' }}>
+            <ScrollView>
+              <Text style={det.modalTitle}>Filter Options</Text>
+              {[
+                ['Category', 'category', categories],
+                ['Cuisine', 'cuisine', cuisines],
+                ['Diet', 'dietLabel', dietLabels],
+                ['Health', 'healthLabel', healthLabels],
+                ['Caution', 'caution', cautions]
+              ].map(([label, key, list]) => (
+                <View key={key} style={{ marginBottom: 10 }}>
+                  <Text style={det.modalLabel}>{label}</Text>
+                  <ScrollView horizontal>
+                    {list.map((item) => (
+                      <TouchableOpacity
+                        key={item}
+                        onPress={() => toggleFilter(key, item)}
+                        style={{
+                          paddingVertical: 6,
+                          paddingHorizontal: 12,
+                          marginRight: 8,
+                          borderRadius: 20,
+                          borderWidth: 1,
+                          borderColor: textcolors.lightgrey,
+                          backgroundColor: filters[key] === item ? colors.primary : 'transparent'
+                        }}
+                      >
+                        <Text style={{ color: filters[key] === item ? '#fff' : textcolors.darkgrey }}>{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              ))}
+              <Text style={det.modalLabel}>Ingredient</Text>
+              <TextInput
+                placeholder="e.g. chicken"
+                value={filters.ingredient}
+                onChangeText={(val) => setFilters({ ...filters, ingredient: val })}
+                style={det.modalInput}
+              />
+              <Text style={det.modalLabel}>Max Calories</Text>
+              <TextInput
+                placeholder="e.g. 500"
+                keyboardType="numeric"
+                value={filters.maxCalories}
+                onChangeText={(val) => setFilters({ ...filters, maxCalories: val })}
+                style={det.modalInput}
+              />
+              <View style={det.modalActions}>
+                <TouchableOpacity onPress={resetFilters} style={det.resetButton}>
+                  <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Reset</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={det.applyButton}>
+                  <Text style={{ color: '#fff' }}>Apply</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
+  // ... (rest of styles from your file)
+  chatbotButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    backgroundColor: '#133E7C',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
+  },
+  searchSection: {
+    paddingVertical: 10
   },
   backButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 30, // Adjusted for a compact button
-    backgroundColor: "#D7E2F1",
+    paddingHorizontal: 30,
+    backgroundColor: '#D7E2F1',
     borderRadius: 10,
     marginBottom: 10,
-    alignSelf: 'flex-start', // Keeps it aligned to the left
+    alignSelf: 'flex-start'
   },
   backIcon: {
     width: 24,
     height: 24,
-    marginRight: 10,
+    marginRight: 10
   },
   backText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
-  },
-  header: {
-    paddingBottom: 20,
+    color: '#000'
   },
   title: {
-    fontSize: 36,
-    fontFamily: fonts.bold,
-    textAlign: "center",
-    marginVertical: 10,
-    flex: 1,
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+    color: colors.primary
   },
   searchContainer: {
-    flexDirection: 'row', // Align the image and input text horizontally
-    alignItems: 'center', // Center items vertically
+    flexDirection: 'row',
+    alignItems: 'center',
     height: 50,
     borderRadius: 20,
-    borderWidth: 2, // Black border width
-    borderColor: 'black', // Set border color to black
-    backgroundColor: "#D3D3D3", // The background color can stay as it is or be changed
+    borderWidth: 2,
+    borderColor: 'black',
+    backgroundColor: '#D3D3D3',
     paddingHorizontal: 10,
-    marginBottom: 10,
-    flex: 1,
+    marginBottom: 10
   },
-  
   magnifyingGlassIcon: {
     width: 30,
     height: 30,
-    marginRight: 15, // Space between the icon and input
+    marginRight: 15
   },
-  
   inputText: {
     fontSize: 20,
     paddingVertical: 10,
-    flex: 1, // Take up the remaining space
+    flex: 1
   },
-  searchButton: {
-    backgroundColor: colors.primary, // Choose any color for the button
+  filterButton: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary,
     paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 10,
-    alignItems: 'center',
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    marginTop: 12,
+    alignItems: 'center'
   },
-  searchButtonText: {
+  filterButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: 18
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10
+  },
+  modalLabel: {
     fontWeight: '600',
+    marginTop: 10,
+    marginBottom: 5
   },
-  row: {
-    justifyContent: "space-between",
-    marginBottom: 20,
+  modalInput: {
+    borderWidth: 1,
+    borderColor: textcolors.lightgrey,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10
   },
-  recipeContainer: {
-    width: "48%",
-    aspectRatio: 1,
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20
   },
-  recipeWrapper: {
-    width: "100%",
-    height: "100%",
-    borderWidth: 3,
-    borderColor: "#000",
-    borderRadius: 15,
-    overflow: "hidden",
+  resetButton: {
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center'
   },
-  recipePhoto: {
-    width: "100%",
-    height: "100%",
-  },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    backgroundColor: "rgba(31, 80, 143, 0.8)",
-    width: "100%",
-    height: 40,
-    opacity: 0.8,
-  },
-  recipeTitle: {
-    position: "absolute",
-    top: 10,
-    width: "100%",
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#fff",
-    textAlign: "center",
-    opacity: 0.8,
-  },
+  applyButton: {
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    flex: 1,
+    alignItems: 'center'
+  }
 });
 
 export default RecipeSearch;

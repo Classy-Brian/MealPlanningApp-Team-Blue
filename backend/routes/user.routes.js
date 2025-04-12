@@ -11,13 +11,22 @@ import {
   getUserProfile,
   getSavedRecipes, 
   saveRecipe,
-  unsaveRecipe,
+  getSavedPantry,
+  addIngredientToPantry,
+  removeIngredientPantry,
+  addIngredientToGrocery,
+  getSavedGrocery,
+  batchRemoveIngredientGrocery,
+  removeIngredientGrocery,
   forgotPasswordRequest,
   resetPassword,
   updateUserPassword,
   verifyCurrentUserPassword,
   verifyUserEmail,
   
+  getUserSavedDays,
+  unsaveRecipe,
+  saveCalendarDayForUser,
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -74,6 +83,25 @@ router.post("/save-recipe", saveRecipe);
 
 //removing saved recipe 
 router.delete("/remove/remove-recipe", unsaveRecipe);
+
+router.get("/:id/get-saved-pantry", getSavedPantry);
+
+router.put('/:userId/update-pantry', addIngredientToPantry);
+
+router.delete('/:userId/remove-pantry', removeIngredientPantry);
+
+router.put('/:userId/update-grocery', addIngredientToGrocery);
+
+router.get("/:id/get-saved-grocery", getSavedGrocery);
+
+router.delete('/:userId/batch-remove-grocery', batchRemoveIngredientGrocery);
+
+router.delete('/:userId/remove-grocery', removeIngredientGrocery)
+//Save calendar day for a user
+router.post('/:userId/save-day', saveCalendarDayForUser);
+
+// GET saved-days
+router.get('/:userId/saved-days', getUserSavedDays);
 
 
 export default router;

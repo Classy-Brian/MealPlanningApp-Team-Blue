@@ -10,10 +10,25 @@ import { textcolors } from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 
-const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation } from "@react-navigation/native";
 
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Account Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 const ConfirmDeleteScreen = () => {
     const router = useRouter();
+    const navigation = useNavigation();
     const [isLoading, setIsLoading] = useState(false);
     const [token, setToken] = useState(null); 
     const [axiosInstance, setAxiosInstance] = useState(null);
@@ -74,15 +89,7 @@ const ConfirmDeleteScreen = () => {
         <SafeAreaView style={styles_confirmDel.safeArea}>
             <View style={styles_confirmDel.container}>
                  {/* Back Button */}
-                <View style={styles_confirmDel.header}>
-                    <TouchableOpacity
-                        style={styles_confirmDel.settingsButton}
-                        onPress={() => router.back()} 
-                    >
-                        <Image style={{marginRight:10}} source={backArrowImage}/>
-                        <Text style={styles_confirmDel.settingsText}>Account Settings</Text>
-                    </TouchableOpacity>
-                </View>
+                {/* <BackButton /> */}
 
                 <Text style={styles_confirmDel.title}>Are you sure?</Text>
                 <Text style={styles_confirmDel.subtitle}>
@@ -104,7 +111,7 @@ const ConfirmDeleteScreen = () => {
 
                     <TouchableOpacity
                         style={[styles_confirmDel.button, styles_confirmDel.cancelButton]}
-                        onPress={() => router.back()}
+                        onPress={() => navigation.goBack()}
                         disabled={isLoading}
                     >
                         <Text style={[styles_confirmDel.buttonText, styles_confirmDel.cancelButtonText]}>Cancel</Text>

@@ -5,13 +5,35 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { styles } from '@/components/Sheet';
+
+
+function BackButton(userId) {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack({userId: userId})}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Add Goals</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 export default function CalorieGoalScreen() {
-  const { userId } = useLocalSearchParams();
-  const router = useRouter();
+
+  const route = useRoute();
+  const { userId } = route.params;
+  // const router = useRouter();
+  const navigation = useNavigation();
 
   const [minCalories, setMinCalories] = useState('12000');
   const [maxCalories, setMaxCalories] = useState('15000');
@@ -36,7 +58,7 @@ export default function CalorieGoalScreen() {
       });
 
       Alert.alert('Success', 'Calorie Intake Goal added!');
-      router.back(); // Go back to profile or addgoals screen
+      navigation.navigate('add_goals', {userId: userId}); // Go back to profile or addgoals screen
     } catch (error) {
       console.error('Error setting calorie goal:', error);
       Alert.alert('Error', 'Could not set calorie goal.');
@@ -44,48 +66,49 @@ export default function CalorieGoalScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
+      <BackButton userId={userId}/>
       <Text style={styles.title}>Calorie Intake Goal</Text>
 
       {/* Visual bar */}
-      <View style={styles.calorieBar}>
-        <View style={styles.calorieLow} />
-        <View style={styles.calorieMid} />
-        <View style={styles.calorieHigh} />
+      <View style={det.calorieBar}>
+        <View style={det.calorieLow} />
+        <View style={det.calorieMid} />
+        <View style={det.calorieHigh} />
       </View>
-      <View style={styles.calorieLabels}>
+      <View style={det.calorieLabels}>
         <Text>{minCalories}</Text>
         <Text>{maxCalories}</Text>
       </View>
 
-      <Text style={styles.question}>
+      <Text style={det.question}>
         What is the lowest number of calories you’d like to eat in a week?
       </Text>
       <TextInput
-        style={styles.input}
+        style={det.input}
         keyboardType="numeric"
         value={minCalories}
         onChangeText={setMinCalories}
       />
 
-      <Text style={styles.question}>
+      <Text style={det.question}>
         What is the highest number of calories you’d like to eat in a week?
       </Text>
       <TextInput
-        style={styles.input}
+        style={det.input}
         keyboardType="numeric"
         value={maxCalories}
         onChangeText={setMaxCalories}
       />
 
-      <TouchableOpacity style={styles.addButton} onPress={handleAddGoal}>
-        <Text style={styles.addButtonText}>Add Goal</Text>
+      <TouchableOpacity style={det.addButton} onPress={handleAddGoal}>
+        <Text style={det.addButtonText}>Add Goal</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',

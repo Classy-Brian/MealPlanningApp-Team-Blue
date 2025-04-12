@@ -23,13 +23,16 @@ const _layout = () => {
             options={{headerShown: false}} />
           <Stack.Screen 
             name="forgotpassword" 
-            component={ForgotPasswordScreen} />
+            component={ForgotPasswordScreen}
+            options={{headerShown: false}} />
           <Stack.Screen 
             name="verifycode" 
-            component={VerifyCodeScreen} />
+            component={VerifyCodeScreen}
+            options={{headerShown: false}} />
           <Stack.Screen 
             name="newpassword" 
-            component={NewPasswordScreen} />
+            component={NewPasswordScreen}
+            options={{headerShown: false}} />
       </Stack.Navigator>
   )
 }

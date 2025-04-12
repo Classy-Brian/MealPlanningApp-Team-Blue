@@ -45,8 +45,34 @@ const userSchema = new mongoose.Schema({
       }
     },
 
+    savedDays: [
+        {
+          date: { type: String, required: true },
+          totalCalories: { type: Number, default: 0 }, 
+          meals: [
+            {
+              meal: { type: String, required: true },
+              recipeId: { type: String, required: true },
+              recipeLabel: { type: String },             
+              calories: { type: Number, default: 0 },   
+              time: { type: String, required: true }
+            }
+          ]
+        }
+      ],
+
     savedRecipes: [{
-        type: String 
+      type: String, // Reference to Recipe model
+    }],
+
+    savedGrocery: [{
+        foodId: { type: String, required: true },
+        quantity: {type: Number, default: 1, min: 0 }
+    }],
+
+    savedPantry: [{
+        foodId: { type: String, required: true },
+        quantity: {type: Number, default: 1, min: 0 }
     }],
 
     isVerified: {

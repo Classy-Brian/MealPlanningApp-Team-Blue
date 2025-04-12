@@ -13,7 +13,22 @@ import { textcolors} from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 
-const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation } from "@react-navigation/native";
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Preference Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const DislikedSettingsScreen = () => {
     const [dislikedIngredients, setDislikedIngredients] = useState([]);
@@ -203,17 +218,9 @@ const DislikedSettingsScreen = () => {
             >
                 <View style={styles_dislike.screenContainer}>
                     {/* Header */}
-                    <View style={styles_dislike.header}>
-                        <TouchableOpacity
-                            style={styles_dislike.settingsButton}
-                            onPress={() => router.back()} 
-                        >
-                            <Image style={{marginRight:10}} source={backArrowImage}/>
-                            <Text style={styles_dislike.settingsText}>Preference</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <BackButton />
 
-                    <Text style={[styles.title, {marginTop: 10}]}>{from}</Text>
+                    <Text style={[styles.title, {marginTop: 10}]}>Disliked Ingredients</Text>
                     <Text style={styles_dislike.normalText}>Search for and add ingredients you want to avoid.</Text>
 
                     {/* Search Input and Button */}
@@ -396,7 +403,7 @@ const styles_dislike = StyleSheet.create({
         fontFamily: fonts.regular 
     },
     searchResultsContainer: { 
-        maxHeight: 200, 
+        // maxHeight: 200, 
         marginBottom: 20, 
         backgroundColor: colors.white, 
         borderWidth: 1, 

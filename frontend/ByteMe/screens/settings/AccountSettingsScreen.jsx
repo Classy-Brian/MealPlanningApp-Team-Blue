@@ -8,62 +8,69 @@ import { styles } from '@/components/Sheet'
 
 import { MaterialIcons, Ionicons } from '@expo/vector-icons'; 
 
-const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation } from '@react-navigation/native';
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const AccountSettingsScreen = () => {
-    const router = useRouter();
+    // const router = useRouter();
+    const navigation = useNavigation();
 
     return (
         <SafeAreaView style={styles_account.safeArea}>
             <ScrollView style={styles_account.scrollView}>
                 <View style={styles_account.container}>
                     {/* Header Section */}
-                    <View style={styles_account.header}>
-                        <TouchableOpacity
-                            style={styles_account.settingsButton}
-                            onPress={() => router.back()} 
-                        >
-                            <Image style={{marginRight:10}}
-                                source={backArrowImage}/>
-                            <Text style={styles_account.settingsText}>Settings</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <BackButton />
 
                     <Text style={[styles.title]}>Account Information</Text>
                     <Text style={[styles.regularText, {paddingBottom: 20}]}>See and edit your account information.</Text>
 
                     {/* Account edit List */}
-                    <Link href={{ pathname: "/(settings)/updatepassword", params: { from: 'Reset Password' } }} asChild>
-                        <TouchableOpacity style={styles_account.settingItem}>
-                            <MaterialIcons name="tune" size={40} color="#000000" />
-                            <View style={styles_account.textContainer}>
-                                <Text style={[styles_account.settingTitleText, {fontWeight: 'bold'}]}>
-                                    Reset Password
-                                </Text>
-                                <Text style={styles_account.settingDescriptionText}>
-                                    See how you can reset your {"\n"}
-                                    password.
-                                </Text>
-                            </View>
-                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                        </TouchableOpacity>
-                    </Link>
+                    <TouchableOpacity 
+                        style={styles_account.settingItem}
+                        onPress={() => navigation.navigate('update_pass')}>
+                        <MaterialIcons name="tune" size={40} color="#000000" />
+                        <View style={styles_account.textContainer}>
+                            <Text style={[styles_account.settingTitleText, {fontWeight: 'bold'}]}>
+                                Reset Password
+                            </Text>
+                            <Text style={styles_account.settingDescriptionText}>
+                                See how you can reset your {"\n"}
+                                password.
+                            </Text>
+                        </View>
+                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                    </TouchableOpacity>
 
-                    <Link href={{ pathname: "/(settings)/verifypassdelete", params: { from: 'Delete Account' } }} asChild>
-                        <TouchableOpacity style={styles_account.settingItem}>
-                            <MaterialIcons name="tune" size={40} color="#000000" />
-                            <View style={styles_account.textContainer}>
-                                <Text style={[styles_account.settingTitleText, {fontWeight: 'bold'}]}>
-                                    Delete Account
-                                </Text>
-                                <Text style={styles_account.settingDescriptionText}>
-                                    See how you can delete your {"\n"}
-                                    account.
-                                </Text>
-                            </View>
-                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                        </TouchableOpacity>
-                    </Link>
+                    <TouchableOpacity 
+                        style={styles_account.settingItem}
+                        onPress={() => navigation.navigate('verify_pass')}>
+                        <MaterialIcons name="tune" size={40} color="#000000" />
+                        <View style={styles_account.textContainer}>
+                            <Text style={[styles_account.settingTitleText, {fontWeight: 'bold'}]}>
+                                Delete Account
+                            </Text>
+                            <Text style={styles_account.settingDescriptionText}>
+                                See how you can delete your {"\n"}
+                                account.
+                            </Text>
+                        </View>
+                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                    </TouchableOpacity>
 
                 </View>
             </ScrollView>

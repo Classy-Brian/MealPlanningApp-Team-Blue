@@ -9,10 +9,25 @@ import { styles } from '@/components/Sheet'
 import { RadioButton } from 'react-native-paper'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 
-const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 const feeds1Icon = require('../../assets/images/feeds1_icon.png')
 const feeds2Icon = require('../../assets/images/feeds2_icon.png')
 const feeds4Icon = require('../../assets/images/feeds4_icon.png')
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useNavigation } from "@react-navigation/native";
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Preference Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const PORTION_OPTIONS = [
     { value: 1, label: 'Feeds 1', description: 'Individual', icon: feeds1Icon },
@@ -112,18 +127,9 @@ const PortionSettingsScreen = () => {
             <View style={styles_portion.container}>
 
                 {/* Header */}
-                <View style={styles_portion.header}>
-                    <TouchableOpacity
-                        style={styles_portion.settingsButton}
-                        onPress={() => router.back()} 
-                    >
-                        <Image style={{marginRight:10}}
-                            source={backArrowImage}/>
-                        <Text style={styles_portion.settingsText}>Preference</Text>
-                    </TouchableOpacity>
-                </View>
+                <BackButton />
 
-                <Text style={[styles.title, {marginTop: 10}]}>{from}</Text>
+                <Text style={[styles.title, {marginTop: 10}]}>Portion Size</Text>
                 <Text style={styles_portion.normalText}>Select your preferred portion size.</Text>
 
                 {/* Radio Button Options */}
