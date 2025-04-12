@@ -17,12 +17,12 @@ export const filterModal = StyleSheet.create({
         width: '90%'
     },
     modalTitle: {
-        fontSize: 20, 
-        fontWeight: 'bold', 
-        marginBottom: 10
+        fontSize: 28, 
+        fontFamily: fonts.bold, 
     },
     modalLabel: {
-        fontWeight: '600', 
+        fontSize: 20,
+        fontFamily: fonts.medium, 
         marginTop: 10
     },
     modalInput: {
@@ -31,6 +31,8 @@ export const filterModal = StyleSheet.create({
         borderRadius: 8,
         padding: 10,
         marginTop: 5,
+        fontFamily: fonts.regular,
+        fontSize: 16
     },
     modalActions: {
         flexDirection: 'row', 
@@ -65,10 +67,12 @@ export const filterModal = StyleSheet.create({
         borderColor: colors.primary
     },
     filterOptionTextSelected: {
-        color: textcolors.darkgrey
+        fontFamily: fonts.regular,
+        fontSize: 16
     },    
     filterOptionText: {
-        color: textcolors.black
+        fontFamily: fonts.regular,
+        fontSize: 16
     },
     filterRow: {
         flexDirection: 'row', 

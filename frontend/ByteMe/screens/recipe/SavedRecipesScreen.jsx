@@ -127,7 +127,7 @@ export default function Recipes() {
       <View style={styles.screenContainer}>
           <Text style={styles.title}>Saved Recipes</Text>
 
-        <View style={det.searchContainer}>
+        <View style={{marginBottom: 10}}>
           {/* Search Box */}
           <View style={[styles.searchInput]}>
             <Image 
@@ -225,10 +225,10 @@ export default function Recipes() {
 
                 <View style={filterModal.modalActions}>
                   <TouchableOpacity onPress={resetFilters} style={filterModal.cancelButton}>
-                    <Text style={{ color: 'black' }}>Reset</Text>
+                    <Text style={styles.regularText}>Reset</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={filterModal.applyButton}>
-                    <Text style={{ color: 'white' }}>Apply Filters</Text>
+                    <Text style={styles.regularText}>Apply Filters</Text>
                   </TouchableOpacity>
                 </View>
               </ScrollView>
@@ -249,21 +249,20 @@ export default function Recipes() {
 }
 
 const det = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 20 },
-  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: colors.primary },
-  searchContainer: { marginBottom: 10 },
-  inputContainer: {
-    height: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: textcolors.lightgrey,
-    backgroundColor: colors.white,
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff', 
+    padding: 20 
   },
-  inputText: { flex: 1, fontSize: 16, paddingVertical: 8 },
-  recipeContainer: { alignItems: 'center', paddingVertical: 10 },
+  inputText: { 
+    flex: 1, 
+    fontSize: 16, 
+    paddingVertical: 8 
+  },
+  recipeContainer: { 
+    alignItems: 'center', 
+    paddingVertical: 10 
+  },
   rectangleView: {
     height: 150,
     borderRadius: 10,
@@ -276,14 +275,24 @@ const det = StyleSheet.create({
     marginBottom: 10,
     overflow: 'hidden',
   },
-  recipeImage: { width: '100%', height: 100, resizeMode: 'cover' },
-  recipeTitle: { fontSize: 18, fontWeight: 'bold', color: '#133E7C', marginTop: 5 },
+  recipeImage: { 
+    width: '100%', 
+    height: 100, 
+    resizeMode: 'cover' 
+  },
+  recipeTitle: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    color: '#133E7C', 
+    marginTop: 5 
+  },
   noRecipesText: { 
     fontSize: 24,
     textAlign: 'center',
     marginTop: 20,
     color: textcolors.lightgrey,
-    fontFamily: fonts.semiBold,},
+    fontFamily: fonts.semiBold,
+  },
   addButton: {
     position: 'absolute',
     bottom: 20,
@@ -296,8 +305,15 @@ const det = StyleSheet.create({
     alignItems: 'center',
     elevation: 5,
   },
-  addButtonText: { fontSize: 30, color: '#fff' },
-  error: { color: 'red', textAlign: 'center', marginBottom: 10 },  
+  addButtonText: { 
+    fontSize: 30, 
+    color: '#fff' 
+  },
+  error: { 
+    color: 'red', 
+    textAlign: 'center', 
+    marginBottom: 10 
+  },  
   magnifyingGlassIcon: {
     width: 30,
     height: 30,
