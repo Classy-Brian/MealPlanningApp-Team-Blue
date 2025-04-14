@@ -91,6 +91,7 @@ const RecipeSearch = () => {
   const toggleFilter = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: prev[key] === value ? (key === 'category' || key === 'cuisine' ? 'All' : '') : value }));
   };
+  
 
   return (
     <View style={det.container}>

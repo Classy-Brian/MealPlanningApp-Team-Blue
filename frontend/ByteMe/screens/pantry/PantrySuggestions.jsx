@@ -1,5 +1,16 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, Modal } from 'react-native'
-import React, { useState } from 'react'
+import {
+  Image,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  Modal,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
+import React, { useEffect, useState } from 'react'
 import { styles } from '@/components/Sheet'
 import { useRouter } from 'expo-router'
 import { colors } from '@/components/Colors'
@@ -7,8 +18,11 @@ import { textcolors } from '@/components/TextColors'
 import { Divider } from 'react-native-paper'
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { useNavigation } from '@react-navigation/native'
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios'
+import { filterModal } from '@/components/Filter'
+import { fonts } from '@/components/Fonts';
+import getUserIdFromToken from '@/components/getUserIdFromToken';
 
 function RecipeCard() {
   return(
@@ -31,9 +45,13 @@ function BackButton() {
 }
 
 const PantrySuggestions = ( { route } ) => {
+  const [recipes, setRecipes] = useState([]);
   const { ingrLabels } = route.params
   const [loading, setLoading] = useState(false) 
+  const [error, setError] = useState(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false)
+  const navigation = useNavigation();
+  
   const [filters, setFilters] = useState({
       category: 'All',
       ingredient: '',
@@ -53,7 +71,50 @@ const PantrySuggestions = ( { route } ) => {
   };
 
   
-  
+  const fetchRecipes = async () => {
+    const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
+    const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
+    setLoading(true);
+    setError(null);
+    try {
+      const userId = getUserIdFromToken()
+      
+      const response = await axios.get(
+        `https://api.edamam.com/api/recipes/v2?type=public&q=${query}&app_id=${API_ID}&app_key=${API_KEY}`
+      );
+      setRecipes(response.data.hits || []);
+    } catch (err) {
+      console.error('Error fetching recipes:', err);
+      setError('Failed to fetch recipes. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (ingrLabels && ingrLabels.length > 0) {
+      fetchRecipes();
+    }
+  }, [ingrLabels])
+
+  const categories = ['All', ...new Set(recipes.flatMap(r => r.recipe.mealType || []))];
+  const cuisines = ['All', ...new Set(recipes.flatMap(r => r.recipe.cuisineType || []).map(c => c.charAt(0).toUpperCase() + c.slice(1)))];
+  const dietLabels = [...new Set(recipes.flatMap(r => r.recipe.dietLabels || []))];
+  const healthLabels = [...new Set(recipes.flatMap(r => r.recipe.healthLabels || []))];
+  const cautions = [...new Set(recipes.flatMap(r => r.recipe.cautions || []))];
+
+  const filteredRecipes = recipes.filter(({ recipe }) => {
+    const matchesCategory = filters.category === 'All' || recipe.mealType?.some(type => type.toLowerCase().includes(filters.category.toLowerCase()));
+    const matchesCuisine = filters.cuisine === 'All' || recipe.cuisineType?.some(type => type.toLowerCase().includes(filters.cuisine.toLowerCase()));
+    const matchesIngredient = filters.ingredient.trim() === '' || recipe.ingredientLines?.some(line => line.toLowerCase().includes(filters.ingredient.toLowerCase()));
+    const matchesCalories = filters.maxCalories.trim() === '' || (!isNaN(parseFloat(filters.maxCalories)) && recipe.calories <= parseFloat(filters.maxCalories));
+    const matchesDiet = filters.dietLabel === '' || recipe.dietLabels?.includes(filters.dietLabel);
+    const matchesHealth = filters.healthLabel === '' || recipe.healthLabels?.includes(filters.healthLabel);
+    const matchesCaution = filters.caution === '' || recipe.cautions?.includes(filters.caution);
+    return matchesCategory && matchesCuisine && matchesIngredient && matchesCalories && matchesDiet && matchesHealth && matchesCaution;
+  });
+
+  console.log(ingrLabels.join(', '))
 
   return (
     <View style={styles.whiteBackground}>
@@ -70,12 +131,89 @@ const PantrySuggestions = ( { route } ) => {
           
 
           <Divider />
-          <View style={det.recipeList}>
-            <RecipeCard />
-            <RecipeCard />
-          </View>
+          <FlatList
+              data={filteredRecipes}
+              keyExtractor={(item, index) => index.toString()}
+              numColumns={2}
+              columnWrapperStyle={{ justifyContent: 'space-between' }}
+              contentContainerStyle={{ paddingBottom: 80 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('pantry_recipe_details', {
+                    recipeId: item.recipe.uri,
+                    title: item.recipe.label,
+                    ingredients: item.recipe.ingredientLines,
+                    directions: item.recipe.url,
+                    imageUri: item.recipe.image,
+                    allergies: item.recipe.healthLabels,
+                    nutrition: item.recipe.totalNutrients
+                  })}
+                  style={{ width: '48%', marginBottom: 16 }}
+                >
+                  <Image source={{ uri: item.recipe.image }} style={{ width: '100%', height: 120, borderRadius: 10 }} resizeMode="cover" />
+                  <Text style={{ marginTop: 8, fontWeight: 'bold' }}>{item.recipe.label}</Text>
+                </TouchableOpacity>
+              )}
+              ListFooterComponent={loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
+              ListEmptyComponent={
+                !loading && <Text style={det.noRecipesText}>No recipes could be found. Try adding more ingredients to your pantry!</Text>
+              }
+            />
           
-
+          <Modal visible={filterModalVisible} animationType="slide" transparent>
+            <View style={filterModal.modalBackground}>
+              <View style={filterModal.modalContainer}>
+                <ScrollView>
+                  <Text style={filterModal.modalTitle}>Filter Options</Text>
+                  {[
+                    ['Category', 'category', categories],
+                    ['Cuisine', 'cuisine', cuisines],
+                    ['Diet', 'dietLabel', dietLabels],
+                    ['Health', 'healthLabel', healthLabels],
+                    ['Caution', 'caution', cautions]
+                  ].map(([label, key, list]) => (
+                    <View key={key} style={{ marginBottom: 10 }}>
+                      <Text style={filterModal.modalLabel}>{label}</Text>
+                      <ScrollView horizontal style={filterModal.filterRow}>
+                        {list.map((item) => (
+                          <TouchableOpacity
+                            key={item}
+                            onPress={() => toggleFilter(key, item)}
+                            style={[filterModal.filterOption, filters[key] === item && filterModal.filterOptionSelected]}
+                          >
+                            <Text style={filters[key] === item ? filterModal.filterOptionTextSelected : filterModal.filterOptionText }>{item}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  ))}
+                  <Text style={filterModal.modalLabel}>Ingredient</Text>
+                  <TextInput
+                    placeholder="e.g. chicken"
+                    value={filters.ingredient}
+                    onChangeText={(val) => setFilters({ ...filters, ingredient: val })}
+                    style={filterModal.modalInput}
+                  />
+                  <Text style={filterModal.modalLabel}>Max Calories</Text>
+                  <TextInput
+                    placeholder="e.g. 500"
+                    keyboardType="numeric"
+                    value={filters.maxCalories}
+                    onChangeText={(val) => setFilters({ ...filters, maxCalories: val })}
+                    style={filterModal.modalInput}
+                  />
+                  <View style={filterModal.modalActions}>
+                    <TouchableOpacity onPress={resetFilters} style={filterModal.cancelButton}>
+                      <Text style={styles.regularText}>Reset</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={filterModal.applyButton}>
+                      <Text style={styles.regularText}>Apply</Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              </View>
+            </View>
+          </Modal>
 
         
         </View>
@@ -122,5 +260,12 @@ const det = StyleSheet.create({
     borderRadius: 30,
     marginTop: 12,
     alignItems: 'center',
+  },
+  noRecipesText: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginTop: 20,
+    color: textcolors.lightgrey,
+    fontFamily: fonts.semiBold,
   },
 })

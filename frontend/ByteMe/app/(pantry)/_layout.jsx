@@ -5,6 +5,7 @@ import EditPantryIngredient from './pantryedit'
 import PantrySuggestions from './pantrysuggest'
 import PantryScreen from './pantry'
 import AddingGroceryToPantry from './addingfromgrocery'
+import PantryRecipeDetailsScreen from './pantryrecipedetails'
 import { createStackNavigator } from '@react-navigation/stack'
 import { styles } from '@/components/Sheet'
 
@@ -26,6 +27,9 @@ const PantryLayout = () => {
           <Stack.Screen 
           name="add_from_grocery" 
           component={AddingGroceryToPantry} />
+          <Stack.Screen 
+          name="pantry_recipe_details" 
+          component={PantryRecipeDetailsScreen} />
       </Stack.Navigator>
   )
 }
