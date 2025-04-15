@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { styles } from '@/components/Sheet'
 import { useRouter } from 'expo-router'
 import { colors } from '@/components/Colors'
@@ -23,19 +23,15 @@ import axios from 'axios'
 import { filterModal } from '@/components/Filter'
 import { fonts } from '@/components/Fonts';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function RecipeCard() {
-  return(
-    <View style={det.recipeSuggestionBox}/>
-  )
-}
 
 function BackButton() {
     const navigation = useNavigation();
     return (
         <View style={{flexDirection: 'row'}}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-                <View style={[det.greybutton, ]}>
+                <View style={[styles.greybutton, ]}>
                     <Image style={{marginRight:10}} source={backarrow}/>
                     <Text style={styles.regularText}>Pantry</Text>
                 </View>
@@ -51,23 +47,18 @@ const PantrySuggestions = ( { route } ) => {
   const [error, setError] = useState(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false)
   const navigation = useNavigation();
+
   
   const [filters, setFilters] = useState({
-      category: 'All',
-      ingredient: '',
-      maxCalories: '',
-      cuisine: 'All',
-      diet: '',
-      health: '',
-      caution: '',
-    })
+      category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', dietLabel: '', healthLabel: '', caution: ''
+    });
 
   const toggleFilter = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: prev[key] === value ? 'All' : value }));
   };
 
   const resetFilters = () => {
-    setFilters({ category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', diet: '', health: '', caution: '' });
+    setFilters({ category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', dietLabel: '', healthLabel: '', caution: '' });
   };
 
   
@@ -77,12 +68,36 @@ const PantrySuggestions = ( { route } ) => {
     setLoading(true);
     setError(null);
     try {
-      const userId = getUserIdFromToken()
-      
-      const response = await axios.get(
-        `https://api.edamam.com/api/recipes/v2?type=public&q=${query}&app_id=${API_ID}&app_key=${API_KEY}`
+      const userId = await getUserIdFromToken();
+      if (!userId) {
+        console.warn("User ID not found");
+        setLoading(false);
+        return;
+      }
+      console.log("sending user id: ", userId);
+
+      const res = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai/${userId}/generate-pantry-suggestions/`,
+        {ingrLabels: ingrLabels}
       );
-      setRecipes(response.data.hits || []);
+
+      const ideas = res.data.choices[0].message.content.split('\n').map(line => line.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
+      console.log("returned ideas:", ideas)
+
+      const recipePromises = ideas.map(async (idea) => {
+        const encoded = encodeURIComponent(idea)
+        console.log("idea being sent: ", idea)
+        const response = await axios.get(
+          `https://api.edamam.com/api/recipes/v2?type=public&q=${encoded}&app_id=${API_ID}&app_key=${API_KEY}`
+        );
+        return response.data.hits.slice(0, 3);
+      });
+
+      const results = await Promise.all(recipePromises)
+      const flattenedResults = results.flat()
+      
+      
+      setRecipes(flattenedResults || []);
+      await AsyncStorage.setItem('lastRecipes', JSON.stringify(flattenedResults || []))
     } catch (err) {
       console.error('Error fetching recipes:', err);
       setError('Failed to fetch recipes. Please try again later.');
@@ -91,10 +106,32 @@ const PantrySuggestions = ( { route } ) => {
     }
   };
 
-  useEffect(() => {
-    if (ingrLabels && ingrLabels.length > 0) {
-      fetchRecipes();
+  useEffect( () => {
+    const checkAndFetchRecipes = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('lastPantry')
+        const storedRecipesRaw = await AsyncStorage.getItem('lastRecipes')
+        const storedPantry = stored ? JSON.parse(stored) : null
+        const storedRecipes = storedRecipesRaw ? JSON.parse(storedRecipesRaw) : []
+        const pantryChanged = JSON.stringify(ingrLabels) !== JSON.stringify(storedPantry)
+
+        if (ingrLabels && ingrLabels.length > 0 && pantryChanged) {
+        console.log("Pantry has updated, fetching new recipes");
+        await AsyncStorage.setItem('lastPantry', JSON.stringify(ingrLabels))
+        fetchRecipes()
+        } else {
+          console.log("Pantry unchanges, skipping fetch")
+          setRecipes(storedRecipes)
+        }
+      } catch (err) {
+        console.error("Error with AsyncStorage or pantry comparison:", err)
+      }
+      
     }
+    
+    
+    checkAndFetchRecipes()
+    
   }, [ingrLabels])
 
   const categories = ['All', ...new Set(recipes.flatMap(r => r.recipe.mealType || []))];
@@ -114,7 +151,9 @@ const PantrySuggestions = ( { route } ) => {
     return matchesCategory && matchesCuisine && matchesIngredient && matchesCalories && matchesDiet && matchesHealth && matchesCaution;
   });
 
-  console.log(ingrLabels.join(', '))
+  // console.log(`Recipe array length of ${recipes.length} and example`, recipes[0])
+  // console.log('Filtered recipe count: ', filteredRecipes.length)
+  // console.log('First filtered recipe:', filteredRecipes[0])
 
   return (
     <View style={styles.whiteBackground}>
@@ -130,7 +169,7 @@ const PantrySuggestions = ( { route } ) => {
           </View>
           
 
-          <Divider />
+          <Divider style={{marginBottom: 10}}/>
           <FlatList
               data={filteredRecipes}
               keyExtractor={(item, index) => index.toString()}
@@ -154,7 +193,7 @@ const PantrySuggestions = ( { route } ) => {
                   <Text style={{ marginTop: 8, fontWeight: 'bold' }}>{item.recipe.label}</Text>
                 </TouchableOpacity>
               )}
-              ListFooterComponent={loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
+              ListFooterComponent={loading ? <ActivityIndicator size="large" color={colors.primary} /> : <View style={det.space } />}
               ListEmptyComponent={
                 !loading && <Text style={det.noRecipesText}>No recipes could be found. Try adding more ingredients to your pantry!</Text>
               }
@@ -217,7 +256,6 @@ const PantrySuggestions = ( { route } ) => {
 
         
         </View>
-        
     </View>
   )
 }
@@ -225,18 +263,6 @@ const PantrySuggestions = ( { route } ) => {
 export default PantrySuggestions
 
 const det = StyleSheet.create({
-  greybutton: {
-      flexDirection: 'row',
-      borderRadius: 15,
-      paddingHorizontal: 15,
-      paddingVertical: 5,
-      backgroundColor: colors.othergrey,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginVertical: 10,
-      elevation: 2,
-      shadowColor: colors.black,
-  },
   recipeList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -268,4 +294,7 @@ const det = StyleSheet.create({
     color: textcolors.lightgrey,
     fontFamily: fonts.semiBold,
   },
+  space: {
+    marginBottom: 100
+  }
 })

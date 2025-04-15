@@ -106,6 +106,7 @@ Day 2
 export const getPantrySuggestions = async (req, res) => {
   try {    
     const {userId} = req.params;
+    console.log("user retrieved: ", userId);
     const { ingrLabels } = req.body;
     if (!ingrLabels ) {
       return res.status(400).json({message: "No pantry ingredients are currently saved."});
@@ -120,13 +121,14 @@ export const getPantrySuggestions = async (req, res) => {
 
     const allergies = Array.isArray(user.allergies) ? user.allergies.join(', ') : 'none';
     const dislikedIngredients = Array.isArray(user.dislikes) ? user.dislikes.join(', ') : 'none';
-    const calorieTarget = user.profile?.calories?.max || 2000;
+    // const calorieTarget = user.profile?.calories?.max || 2000;
 
     const prompt = `Given the following pantry list of ingredients from a user's pantry: ${ingrLabels.join(', ')}
-          Suggest 3 recipe ideas that could use at least some of these ingredeints. Please list the recipe names in a short format, like:
-          1. Truffle Potato Gratin
+          Suggest 3 recipe ideas that could use at least some of these ingredeints. Please keep the ideas short like the following examples:
+          1. Truffle Potato
           2. Teriyaki Chicken
-          3. Chocolate Chip Cookies
+          3. Chocolate Chip
+          4. Spinach Pizza
 
           Please take into account the following information:
 
@@ -134,7 +136,7 @@ export const getPantrySuggestions = async (req, res) => {
 
           The user's disliked ingredients that may be replaced with substitute ingredients: ${dislikedIngredients}
 
-          Make sure the recipe names are realistic and actually use 2-3 ingredients from the user's pantry list.
+          Make sure the recipe names are realistic and actually use 2 ingredients from the user's pantry list.
     `;
 
     const completion = await openai.chat.completions.create({
@@ -144,9 +146,15 @@ export const getPantrySuggestions = async (req, res) => {
       max_tokens: 1000,
       temperature: 0.7,
     });
-
-    const plan = completion.choices[0]?.message?.content || 'No plan generated.';
-    return res.status(200).json({ plan });
+    return res.status(200).json({
+      choices: [
+        {
+          message: {
+            content: completion.choices[0]?.message?.content || 'No plan generated.'
+          }
+        }
+      ]
+    });
 
   } catch (error) {
     console.error('AI generation error:', error);

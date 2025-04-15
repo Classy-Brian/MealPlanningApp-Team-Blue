@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.post('/generate-plan/', getMealPlanFromAI);
 
-router.post('/:userId/generate-pantry-suggestions', getPantrySuggestions);
+router.post('/:userId/generate-pantry-suggestions/', getPantrySuggestions);
 
 export default router;
