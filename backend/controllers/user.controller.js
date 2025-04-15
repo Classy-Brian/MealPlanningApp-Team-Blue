@@ -240,6 +240,25 @@ export const updateUserPreferences = async (req, res) => {
   if (req.body.dislikes !== undefined) {
     updateData.dislikes = req.body.dislikes;
   }
+  if (req.body.calories !== undefined) {
+    const calorieData = req.body.calories;
+
+    // Check if calorieData is a valid object and has the needed properties
+    if (calorieData && typeof calorieData === 'object' && calorieData !== null) {
+      if (typeof calorieData.min === 'number') {
+        updateData['profile.calories.min'] = calorieData.min;
+      } else {
+        console.warn("req.body.calories.min is missing or not a number:", calorieData.min);
+      }
+      if (typeof calorieData.max === 'number') {
+        updateData['profile.calories.max'] = calorieData.max;
+      } else {
+        console.warn("req.body.calories.max is missing or not a number:", calorieData.max);
+      }
+    } else {
+      console.warn("Received calories data is not a valid object:", calorieData);
+    }
+  }
 
   if (Object.keys(updateData).length === 0) {
     res.status(400);

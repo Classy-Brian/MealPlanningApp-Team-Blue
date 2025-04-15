@@ -52,7 +52,7 @@ const SurveyDislikedIngredientsScreen = ({ navigation }) => {
 
     const nextPage = async () => {
         await AsyncStorage.setItem('dislikes', JSON.stringify(dislikedIngredients));
-        navigation.navigate('surveyfinal', { dislikedIngredients });
+        navigation.navigate('survey6', { dislikedIngredients });
     };
 
     const prevPage = async () => {

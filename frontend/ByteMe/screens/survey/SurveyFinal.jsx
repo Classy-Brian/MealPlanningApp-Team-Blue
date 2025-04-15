@@ -46,15 +46,17 @@ const SurveyFinal = ( { navigation, route } ) => {
       const savedPortionSize = await AsyncStorage.getItem('portion');
       const savedCuisines = await AsyncStorage.getItem('cuisines');
       const SavedDislikedIngredients = await AsyncStorage.getItem('dislikes');
+      const savedCalories = await AsyncStorage.getItem('surveyCalories');
 
       const allergies = savedAllergies ? JSON.parse(savedAllergies) : [];
       const portion = savedPortionSize ? JSON.parse(savedPortionSize) : "1";
       const cuisines = savedCuisines ? JSON.parse(savedCuisines) : [];
       const dislikes = SavedDislikedIngredients ? JSON.parse(SavedDislikedIngredients) : [];
+      const calories = savedCalories ? JSON.parse(savedCalories) : [{min: 0, max: 0}];
 
-      console.log(allergies, portion, cuisines, dislikes)
+      console.log(allergies, portion, cuisines, dislikes, calories)
 
-      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines, dislikes },
+      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines, dislikes, calories },
         { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
@@ -64,6 +66,7 @@ const SurveyFinal = ( { navigation, route } ) => {
         await AsyncStorage.removeItem('portion')
         await AsyncStorage.removeItem('cuisines')
         await AsyncStorage.removeItem('dislikes')
+        await AsyncStorage.removeItem('surveyCalories')
         router.replace('../../(start)/login');
       }
     } catch (err) {
@@ -85,7 +88,7 @@ const SurveyFinal = ( { navigation, route } ) => {
   }
 
   const prevPage = () => {
-    navigation.navigate('survey5', { allergies, portion, cuisines });
+    navigation.navigate('survey6', { allergies, portion, cuisines });
   }
 
   return (
