@@ -74,14 +74,14 @@ const PantrySuggestions = ( { route } ) => {
         setLoading(false);
         return;
       }
-      console.log("sending user id: ", userId);
+      // console.log("sending user id: ", userId);
 
       const res = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai/${userId}/generate-pantry-suggestions/`,
         {ingrLabels: ingrLabels}
       );
 
       const ideas = res.data.choices[0].message.content.split('\n').map(line => line.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
-      console.log("returned ideas:", ideas)
+      // console.log("returned ideas:", ideas)
 
       const recipePromises = ideas.map(async (idea) => {
         const encoded = encodeURIComponent(idea)
