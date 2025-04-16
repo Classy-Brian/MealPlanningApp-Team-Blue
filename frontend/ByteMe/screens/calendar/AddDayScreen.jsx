@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Alert, Platform
+  StyleSheet, ScrollView, Alert, Platform, Image
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import axios from 'axios';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Back_butt from '@/assets/images/backbutton.png';
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -90,6 +91,12 @@ const AddDayScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
+      {/* 🔙 Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('calendar')}>
+        <Image source={Back_butt} style={styles.backIcon} />
+        <Text style={styles.backText}>Calendar</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>Add Recipes to Calendar</Text>
 
       <Text style={styles.label}>Pick Date</Text>
@@ -154,6 +161,24 @@ const AddDayScreen = () => {
 
 const styles = StyleSheet.create({
   container: { padding: 20 },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#D7E2F1",
+    borderRadius: 10,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+  },
+  backIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 5,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#000',
+  },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   label: { fontSize: 16, fontWeight: 'bold', marginTop: 20 },
   input: {
