@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Alert
+  StyleSheet, ScrollView, Alert, Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import axios from 'axios';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -17,7 +18,8 @@ const AddDayScreen = () => {
   const [search, setSearch] = useState('');
   const [filteredRecipes, setFilteredRecipes] = useState([]);
   const [selectedMeals, setSelectedMeals] = useState([]);
-  const [time, setTime] = useState('');
+  const [selectedTime, setSelectedTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -46,16 +48,19 @@ const AddDayScreen = () => {
   }, []);
 
   const handleAddMeal = (recipe) => {
-    if (!time) {
-      Alert.alert('Please enter a time first');
+    if (!selectedTime) {
+      Alert.alert('Please select a time first');
       return;
     }
+
+    const formattedTime = selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
     setSelectedMeals(prev => [...prev, {
       ...recipe,
-      time,
+      time: formattedTime,
       meal: 'extra'
     }]);
-    setTime('');
+
     setSearch('');
     setFilteredRecipes(recipes);
   };
@@ -98,13 +103,23 @@ const AddDayScreen = () => {
         </TouchableOpacity>
       ))}
 
-      <Text style={styles.label}>Enter Time</Text>
-      <TextInput
-        value={time}
-        onChangeText={setTime}
-        placeholder="e.g. 07:00 AM"
-        style={styles.input}
-      />
+      <Text style={styles.label}>Select Time</Text>
+      <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.timePickerButton}>
+        <Text style={styles.timeText}>
+          {selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+        </Text>
+      </TouchableOpacity>
+      {showTimePicker && (
+        <DateTimePicker
+          mode="time"
+          value={selectedTime}
+          onChange={(e, time) => {
+            setShowTimePicker(false);
+            if (time) setSelectedTime(time);
+          }}
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+        />
+      )}
 
       <Text style={styles.label}>Search Recipe</Text>
       <TextInput
@@ -152,6 +167,20 @@ const styles = StyleSheet.create({
   },
   recipeItem: {
     padding: 10, borderBottomWidth: 1, borderColor: '#eee'
+  },
+  timePickerButton: {
+    padding: 12,
+    backgroundColor: '#f1f3f8',
+    borderRadius: 8,
+    marginTop: 5,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc'
+  },
+  timeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1F508F'
   },
   saveButton: {
     backgroundColor: '#1F508F',
