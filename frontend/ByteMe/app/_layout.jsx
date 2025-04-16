@@ -21,7 +21,7 @@ function ProfileIcon() {
   const router = useRouter();
 
   return (
-    <TouchableOpacity onPress={() => router.push('/profile')}>
+    <TouchableOpacity onPress={() => router.push('/(profile)/profile')}>
       <Image
         source={require('../assets/images/profile.png')}
         style={styles.profileImage}
@@ -58,109 +58,34 @@ const _layout = () => {
       <Stack.Screen name='index'
         options={{headerShown: false}}
       />
+      <Stack.Screen name='(profile)'
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name='(settings)'
+        options={{headerShown: false}}
+      />
+      <Stack.Screen name="(pantry)" 
+        options={{
+          headerShown: true,
+          headerLeft: () => null,
+          headerBackVisible: false,
+          headerTitle: () => <HeaderLogo />,
+          headerRight: () => <ProfileIcon />,
+          headerStyle: {
+            backgroundColor: colors.header,
+          },
+          headerTintColor: colors.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
        <Stack.Screen name='(calendar)'
         options={{headerShown: false}}
       />
       {/* Do not include SavedRecipesScreen directly in the Stack.Screen. 
           Just refer to the name and routing will handle the screen. */}
-      <Stack.Screen
-        name="(tabs)/savedrecipes"  // Make sure this matches the file structure
-        options={{
-          headerShown: true,
-          headerLeft: () => null,
-          headerBackVisible: false,
-          headerTitle: () => <HeaderLogo />,
-          headerRight: () => <ProfileIcon />,
-          headerStyle: {
-            backgroundColor: colors.header,
-          },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <Stack.Screen
-        name='explorerecipes'
-        options={{
-          headerShown: true,
-          headerLeft: () => null,
-          headerBackVisible: false,
-          headerTitle: () => <HeaderLogo />,
-          headerRight: () => <ProfileIcon />,
-          headerStyle: {
-            backgroundColor: colors.header,
-          },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <Stack.Screen
-        name='recipedetails'
-        options={{
-          headerShown: true,
-          headerLeft: () => null,
-          headerBackVisible: false,
-          headerTitle: () => <HeaderLogo />,
-          headerRight: () => <ProfileIcon />,
-          headerStyle: {
-            backgroundColor: colors.header,
-          },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <Stack.Screen
-        name='favoriterecipes'
-        options={{
-          headerShown: true,
-          headerLeft: () => null,
-          headerBackVisible: false,
-          headerTitle: () => <HeaderLogo />,
-          headerRight: () => <ProfileIcon />,
-          headerStyle: {
-            backgroundColor: colors.header,
-          },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-
-      <Stack.Screen name="add_recipe"
-        options={{
-          headerShown: true,
-          headerTitle: () => <HeaderLogo />,
-          headerRight: () => <ProfileIcon />,
-          headerStyle: {
-            backgroundColor: colors.header,
-          },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-
-      <Stack.Screen name="recipe_details"
-        options={{
-          headerShown: true,
-          headerTitle: () => <HeaderLogo />,
-          headerRight: () => <ProfileIcon />,
-          headerStyle: {
-            backgroundColor: colors.header,
-          },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
+      
 
     </Stack>
   );

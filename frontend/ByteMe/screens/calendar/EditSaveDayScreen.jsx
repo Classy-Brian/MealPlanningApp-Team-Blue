@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {View,Text,StyleSheet,TouchableOpacity,FlatList,Image,Alert} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import EditIcon from '@/assets/images/edit.png';
+import Back_butt from "@/assets/images/backbutton.png";
 
 const EditSaveDayScreen = () => {
   const route = useRoute();
@@ -39,6 +40,7 @@ const EditSaveDayScreen = () => {
       const formatted = res.data.savedRecipes.map((r, i) => ({
         label: r.label,
         value: r.uri || r.id || `recipe-${i}`,
+        calories: r.calories || 0
       }));
       setRecipes(formatted);
     };
@@ -46,26 +48,46 @@ const EditSaveDayScreen = () => {
     fetchData();
   }, []);
 
+  const getMealTypeByTime = (time) => {
+    const hour = parseInt(time.split(':')[0]);
+    const isAM = time.includes('AM');
+
+    if (isAM && hour >= 5 && hour <= 12) return 'morning';
+    if (!isAM && hour >= 1 && hour <= 8) return 'afternoon';
+    if (!isAM && hour >= 9) return 'dinner';
+    if (isAM && hour <= 4) return 'dinner';
+    return 'extra';
+  };
+
   const updateRecipeForHour = (hour, recipeId) => {
     const match = recipes.find(r => r.value === recipeId);
+    const mealType = getMealTypeByTime(hour);
+
     setHourlyMeals(prev => ({
       ...prev,
       [hour]: {
-        recipeId: recipeId,
+        recipeId,
         recipeLabel: match?.label || recipeId,
+        calories: match?.calories || 0,
         time: hour,
+        meal: mealType,
       }
     }));
+
     setEditingHour(null);
   };
 
   const handleSaveDay = async () => {
-    const updatedMeals = Object.values(hourlyMeals);
+    const updatedMeals = Object.values(hourlyMeals).map(m => ({
+      ...m,
+      meal: m.meal || getMealTypeByTime(m.time)
+    }));
+
     try {
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
         date,
         meals: updatedMeals,
-        totalCalories: 0
+        totalCalories: updatedMeals.reduce((sum, m) => sum + (m.calories || 0), 0)
       });
 
       Alert.alert("Success", "Day updated successfully!");
@@ -78,15 +100,20 @@ const EditSaveDayScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Image source={Back_butt} style={styles.backIcon} />
+        <Text style={styles.backText}>Calendar</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>
         Meal Plan for {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
       </Text>
 
-      {/* Table Header */}
       <View style={styles.headerRow}>
         <Text style={[styles.time, styles.headerText]}>Time</Text>
         <Text style={[styles.recipeHeader, styles.headerText]}>Recipes</Text>
-        <Text style={[styles.editHeader, styles.headerText]}></Text>
+        <Text style={styles.editHeader}></Text>
       </View>
 
       <FlatList
@@ -136,6 +163,24 @@ const EditSaveDayScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#D7E2F1",
+    borderRadius: 10,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+  },
+  backIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 5,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#000',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',

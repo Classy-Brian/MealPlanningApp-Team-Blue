@@ -1,0 +1,2 @@
+import SurveyDislikedIngredientsScreen from "@/screens/survey/SurveyDislikedIngredientsScreen";
+export default SurveyDislikedIngredientsScreen

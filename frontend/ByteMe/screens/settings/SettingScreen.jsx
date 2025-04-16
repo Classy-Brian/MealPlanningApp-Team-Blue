@@ -8,9 +8,26 @@ import { colors } from '../../components/Colors'
 import { textcolors } from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
+import { useNavigation } from '@react-navigation/native';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Account Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const SettingsScreen = () => {
     const router = useRouter();
+    const navigation = useNavigation();
 
     const handleLogout = async () => {
         try {
@@ -28,17 +45,7 @@ const SettingsScreen = () => {
             <ScrollView style={styles_settings.scrollView}>
                 <View style={styles_settings.container}>
                     {/* Header Section */}
-                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                        <Link href="/profile" asChild>
-                            <TouchableOpacity>
-                                <View style={[ styles_settings.greybutton ]}>
-                                    <Image style={{marginRight:10}}
-                                            source={require('../../assets/images/back_arrow_navigate.png')}/>
-                                    <Text style={styles.regularText}>Profile</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </Link>
-                    </View>
+                    <BackButton />
 
                     <Text style={[styles.title, {marginTop: 10}]}>Settings </Text>
 
@@ -54,32 +61,46 @@ const SettingsScreen = () => {
                     </View>
 
                     {/* Settings List */}
-                    <Link href={{ pathname: "/(settings)/preferences", params: { from: 'Allergies' } }} asChild>
-                        <TouchableOpacity style={styles_settings.settingItem}>
-                            <MaterialIcons name="tune" size={40} color="#000000" />
-                            <Text style={[styles.regularText, {marginLeft: 20}]}>
-                                Preference Settings {"\n"}
-                                Edit your food preferences. 
+                    <TouchableOpacity 
+                        style={styles_settings.settingItem}
+                        onPress={() => navigation.navigate('preference_settings')}>
+                        <MaterialIcons name="tune" size={40} color="#000000" />
+                        <View style={styles_settings.textContainer}>
+                            <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
+                                Preference Settings
                             </Text>
-                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                        </TouchableOpacity>
-                    </Link>
+                            <Text style={styles_settings.settingDescriptionText}>
+                                Edit your food preferences.
+                            </Text>
+                        </View>
+                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                    </TouchableOpacity>
 
-                    <TouchableOpacity style={styles_settings.settingItem}>
+                    <TouchableOpacity 
+                        style={styles_settings.settingItem}
+                        onPress={() => navigation.navigate('account_settings')}>
                         <MaterialIcons name="account-circle" size={40} color="#000000" />
-                        <Text style={[styles.regularText, {marginLeft: 20}]}>
-                            Account Settings {"\n"}
-                            See your account information.
-                        </Text>
+                        <View style={styles_settings.textContainer}>
+                            <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
+                                Account Settings
+                            </Text>
+                            <Text style={styles_settings.settingDescriptionText}>
+                                See your account information.
+                            </Text>
+                        </View>
                         <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles_settings.settingItem}>
                         <MaterialIcons name="notifications" size={40} color="#000000" />
-                        <Text style={[styles.regularText, {marginLeft: 20}]}>
-                            Notification Settings {"\n"}
-                            Choose the notifications that you'd like to see.
-                        </Text>
+                        <View style={styles_settings.textContainer}>
+                            <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>
+                                Notification Settings
+                            </Text>
+                            <Text style={styles_settings.settingDescriptionText}>
+                                Choose the notifications that you'd like to see.
+                            </Text>
+                        </View>
                         <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                     </TouchableOpacity>
 
@@ -159,6 +180,21 @@ const styles_settings = StyleSheet.create({
         fontSize: 18,
         color: '#000000',
         marginLeft: 10,
+    },
+    textContainer: { 
+        flex: 1,             
+        marginLeft: 15,  
+    },
+    settingTitleText: {     
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 3,
+        fontFamily: fonts.semiBold
+    },
+    settingDescriptionText: { 
+        fontSize: 14,
+        color: '#666',
+        fontFamily: fonts.regular
     },
      logoutButtonContainer: {
         marginTop: 20,

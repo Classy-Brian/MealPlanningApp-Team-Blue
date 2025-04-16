@@ -4,8 +4,10 @@ import { useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
 import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
+import { styles } from '@/components/Sheet';
 
 import EditIcon from '@/assets/images/edit.png';
+import { Ionicons } from '@expo/vector-icons';
 
 const CalendarScreen = () => {
   const navigation = useNavigation();
@@ -49,7 +51,7 @@ const CalendarScreen = () => {
     : savedDays;
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
       <Text style={styles.title}>Calendar</Text>
 
       <Calendar
@@ -68,16 +70,16 @@ const CalendarScreen = () => {
         }}
       />
 
-      <ScrollView style={styles.cardsContainer}>
+      <ScrollView style={det.cardsContainer}>
       {displayedDays.map((day, index) => {
         const formatted = new Date(day.date);
         const dayOfWeek = formatted.toLocaleDateString('en-US', { weekday: 'long' });
         const monthDay = formatted.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
 
         const mealList = day.meals.map((m, i) => (
-          <View key={i} style={[styles.mealRow, i < day.meals.length - 1 && styles.mealRowBorder]}>
-            <View style={styles.mealBox}>
-              <Text style={styles.mealText}>{m.recipeLabel || m.recipeId}</Text>
+          <View key={i} style={[det.mealRow, i < day.meals.length - 1 && det.mealRowBorder]}>
+            <View style={det.mealBox}>
+              <Text style={det.mealText}>{m.recipeLabel || m.recipeId}</Text>
             </View>
           </View>
         ));
@@ -86,36 +88,36 @@ const CalendarScreen = () => {
 
         return (
           <React.Fragment key={index}>
-            <View style={styles.card}>
+            <View style={det.card}>
               {/*Edit icon */}
               <TouchableOpacity
-                style={styles.editIconWrapper}
+                style={det.editIconWrapper}
                 onPress={() => navigation.navigate('editsaveday',{date: day.date, meals: day.meals,})
                 }
               >
-                <Image source={EditIcon} style={styles.editIcon} />
+                <Image source={EditIcon} style={det.editIcon} />
               </TouchableOpacity>
 
-              <View style={styles.cardRow}>
+              <View style={det.cardRow}>
                 {/*Date Box */}
-                <View style={styles.dateBox}>
-                  <Text style={styles.dateDay}>{dayOfWeek}</Text>
-                  <Text style={styles.dateNumber}>{monthDay}</Text>
+                <View style={det.dateBox}>
+                  <Text style={det.dateDay}>{dayOfWeek}</Text>
+                  <Text style={det.dateNumber}>{monthDay}</Text>
                 </View>
 
                 {/* Vertical Line */}
-                <View style={styles.verticalDivider} />
+                <View style={det.verticalDivider} />
 
                 {/*Meals */}
-                <View style={styles.cardContent}>
+                <View style={det.cardContent}>
                   {mealList}
                 </View>
               </View>
             </View>
 
             {/*Total Calories Below Card */}
-            <View style={styles.footerBox}>
-              <Text style={styles.footerText}>
+            <View style={det.footerBox}>
+              <Text style={det.footerText}>
                 Total Calories: {totalCalories.toLocaleString()}
               </Text>
             </View>
@@ -128,13 +130,13 @@ const CalendarScreen = () => {
         style={styles.addButton}
         onPress={() => navigation.navigate('addday')}
       >
-        <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
+        <Ionicons name="add" size={60} color='#d9d9d9' />
+        </TouchableOpacity>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
   title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: '#000' },
   cardsContainer: { marginTop: 20 },

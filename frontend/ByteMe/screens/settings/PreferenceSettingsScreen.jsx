@@ -1,229 +1,136 @@
-// Import necessary modules from React and React Native.
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList, Button, Alert, SafeAreaView, TouchableOpacity } from 'react-native';
-import axios from 'axios';  // For making HTTP requests.
-import { useLocalSearchParams, useRouter, Link } from 'expo-router'; // Import useRouter
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Checkbox } from 'react-native-paper';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons'; // Import icons
-
+import React from 'react';
+import { Image, View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Button, TextInput } from 'react-native';
+import { Link, useRouter } from 'expo-router';
 import { colors } from '../../components/Colors'
 import { textcolors } from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 
-// Defines an array of allergy options.  Each option is an object with an 'id' and a 'label'.
-// (e.g., constants/allergies.js)
-const ALLERGY_OPTIONS = [
-    { id: 'milk', label: 'Milk' },
-    { id: 'egg', label: 'Egg' },
-    { id: 'fish', label: 'Fish' },
-    { id: 'shellfish', label: 'Shellfish' },
-    { id: 'treeNuts', label: 'Tree Nuts' },
-    { id: 'peanuts', label: 'Peanuts' },
-    { id: 'wheat', label: 'Wheat' },
-    { id: 'soybeans', label: 'Soybeans' },
-    { id: 'sesame', label: 'Sesame' },
-];
+import { MaterialIcons, Ionicons } from '@expo/vector-icons'; // Import icons
+import { useNavigation } from '@react-navigation/native';
 
-// Main functional component for the Preference Settings screen.
-const PreferenceSettingsScreen = () => {
-    // State variables using the useState hook:
-    const [selectedAllergies, setSelectedAllergies] = useState([]); // Stores the *IDs* of selected allergies.
-    const [loading, setLoading] = useState(true); // Indicates whether data is being loaded.
-    const [error, setError] = useState(null); // Stores any error messages.
+import backarrow from "@/assets/images/back_arrow_navigate.png"
 
-    // --- expo-router hooks ---
-    const params = useLocalSearchParams(); // Get parameters passed to this route
-    const router = useRouter(); // Access to the router object (not used here, but good to have)
-    const { from } = params; // Extract a specific parameter (title of page)
-
-    const fetchUserData = async () => {
-        try {
-            setLoading(true); // Show loading indicator.
-            console.log("Fetching user data")
-
-            const token = await AsyncStorage.getItem('authToken');
-            if (!token) {
-                // Handle the case where there's no token
-                setError("Not logged in.")
-                Alert.alert("Error", "Not logged in. Please log in first.");
-                setLoading(false);
-                return;
-            }
-
-            const axiosInstance = axios.create({
-                baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
-                headers: {
-                    Authorization: `Bearer ${token}`, 
-                },
-            });
-
-            const response = await axiosInstance.get(`/api/users/profile/${token}`);
-
-            // Extract allergy names from the response.
-            const allergyNames = response.data.allergies;
-
-            // Convert the allergy *names* (from the backend) to allergy *IDs* (for internal use).
-            const allergyIds = allergyNames.map(name => {
-                const found = ALLERGY_OPTIONS.find(option => option.label === name);
-                return found ? found.id : null; // Return null if not found (shouldn't happen with valid data).
-            }).filter(id => id !== null); // Remove any null values (handles cases where the name doesn't match).
-
-            setSelectedAllergies(allergyIds); // Update the state with the selected allergy IDs.
-            setError(null);  // Clear any previous errors.
-
-        } catch (err) {
-            console.error("Error fetching user data:", err);
-            // More specific error handling, checking for 404.
-            if (err.response && err.response.status === 404) {
-                setError("User not found.");
-                Alert.alert("Error", "User not found.");
-            } else {
-                setError(err.message || "Failed to fetch user data.");
-                Alert.alert("Error", "Could not load user data. Please check your connection and try again.");
-            }
-        } finally {
-            setLoading(false); // Hide loading indicator (always executed).
-        }
-    };
-
-    useEffect(() => {
-        fetchUserData(); // Fetch data when the component mounts
-    }, []); 
-
-    // Function to render a single allergy item in the FlatList.
-    const renderAllergyItem = ({ item }) => (
-        <View style={styles.allergyItem}>
-            <Checkbox.Android
-                status={selectedAllergies.includes(item.id) ? 'checked' : 'unchecked'}
-                onPress={() => toggleSelection(item.id)}
-                color="#284B63"
-            />
-            <Text style={styles.allergyText}>{item.label}</Text>
-        </View>
-    );
-    
-    const toggleSelection = (allergyLabel) => {
-        setSelectedAllergies(prevSelected =>
-            prevSelected.includes(allergyLabel)
-                ? prevSelected.filter(item => item !== allergyLabel)
-                : [...prevSelected, allergyLabel]
-        );
-    };
-
-    // Function to save the selected allergies to the backend.
-    const saveAllergies = async () => {
-        try {
-            setLoading(true); // Show loading indicator
-            setError(null);    // Clear any previous errors
-
-            // Convert the selected allergy *IDs* back to *names* for sending to the backend.
-            const allergiesToSend = selectedAllergies.map(id => {
-                const found = ALLERGY_OPTIONS.find(option => option.id === id);
-                return found ? found.label : null;
-            }).filter(name => name !== null);
-
-            console.log("allergiesToSend:", allergiesToSend); // Debugging log
-
-            const token = await AsyncStorage.getItem('authToken');
-            if (!token) {
-                // Handle the case where there's no token
-                setError("Not logged in.")
-                Alert.alert("Error", "Not logged in. Please log in first.");
-                setLoading(false);
-                return;
-            }
-
-            const axiosInstance = axios.create({
-                baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
-                headers: {
-                    Authorization: `Bearer ${token}`, 
-                },
-            });
-
-            await axiosInstance.put(`/api/users/preferences`, { allergies: allergiesToSend });
-
-            Alert.alert("Success", "Allergies updated successfully!"); // Provide user feedback
-            fetchUserData();
-
-        } catch (err) {
-            console.error("Error updating allergies:", err);
-            if (err.response && err.response.status === 404) {
-                setError("User not found.");
-                Alert.alert("Error", "User not found.");
-            } else {
-                setError(err.message || "Failed to update allergies.");
-                Alert.alert("Error", "Could not update allergies. Please try again.");
-            }
-        } finally {
-            setLoading(false);  // Hide loading indicator
-        }
-    };
-
-    // Conditional rendering: Show loading indicator while fetching data.
-    if (loading) {
-        return (
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.container}>
-                    <Text>Loading user data...</Text>
-                </View>
-            </SafeAreaView>
-        );
-    }
-
-    // Conditional rendering: Show error message if there was an error.
-    if (error) {
-        return (
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.container}>
-                    <Text>Error: {error}</Text>
-                </View>
-            </SafeAreaView>
-        );
-    }
-
-    // Main UI rendering:
+function BackButton() {
+    const navigation = useNavigation();
     return (
-        <SafeAreaView style={styles_allergies.safeArea}>
-            <View style={styles_allergies.container}>
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Settings</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
-                <View style={styles_allergies.header}>
-                    <Link href="/settings" asChild>
-                        <TouchableOpacity style={styles_allergies.settingsButton}>
-                                <Ionicons name="arrow-back" size={24} color="black" />
-                                <Text style={styles_allergies.settingsText}>Settings</Text>
+const PreferenceSettingsScreen = () => {
+    const router = useRouter();
+    const navigation = useNavigation();
+
+    return (
+        <SafeAreaView style={styles_preference.safeArea}>
+            <ScrollView style={styles_preference.scrollView}>
+                <View style={styles_preference.container}>
+                    {/* Header Section */}
+                    <BackButton />
+
+                    <Text style={[styles.title]}>Preference Settings</Text>
+                    <Text style={[styles.regularText, {paddingBottom: 20}]}>Manage your overall preferences.{'\n'}Including allergens, your portion sizes and more.</Text>
+
+                    {/* Preference List */}
+                    <TouchableOpacity 
+                        style={styles_preference.settingItem}
+                        onPress={() => navigation.navigate('portion_settings')}>
+                        <MaterialIcons name="tune" size={40} color="#000000" />
+                        <View style={styles_preference.textContainer}>
+                            <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                Portion Size
+                            </Text>
+                            <Text style={styles_preference.settingDescriptionText}>
+                                Select your preferred portion size.
+                            </Text>
+                        </View>
+                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                    </TouchableOpacity>
+
+                        <TouchableOpacity 
+                            style={styles_preference.settingItem}
+                            onPress={() => navigation.navigate('allergy_settings')}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_preference.textContainer}>
+                                <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Allergies
+                                </Text>
+                                <Text style={styles_preference.settingDescriptionText}>
+                                    Select ingredients that cause you {"\n"}
+                                    to have allergies..
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity 
+                            style={styles_preference.settingItem}
+                            onPress={() => navigation.navigate('disliked_settings')}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_preference.textContainer}>
+                                <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Disliked Ingredients
+                                </Text>
+                                <Text style={styles_preference.settingDescriptionText}>
+                                    Select your disliked ingredients.
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+
+                    <Link href={{ pathname: "/(settings)/cuisine", params: { from: 'Cuisines' } }} asChild>
+                        <TouchableOpacity 
+                            style={styles_preference.settingItem}
+                            onPress={() => navigation.navigate('cuisine_settings')}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_preference.textContainer}>
+                                <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Cuisines
+                                </Text>
+                                <Text style={styles_preference.settingDescriptionText}>
+                                    Select the type(s) of cuisines that {"\n"}
+                                    you'd like to see more recipes of.
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                         </TouchableOpacity>
                     </Link>
+
+                    <TouchableOpacity style={styles_preference.settingItem}>
+                        <MaterialIcons name="tune" size={40} color="#000000" />
+                        <View style={styles_preference.textContainer}>
+                            <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                Preset Meal Plans
+                            </Text>
+                            <Text style={styles_preference.settingDescriptionText}>
+                                Select the type(s) of meal plans {"\n"}
+                                you'd like to see more of.
+                            </Text>
+                        </View>
+                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                    </TouchableOpacity>
+
                 </View>
-
-                <Text style={styles_allergies.title}>{from}</Text>
-                <Text style={styles_allergies.normalText}>Select all allergies you have. These won't be included in your suggested recipes.</Text>
-
-            <FlatList
-                data={ALLERGY_OPTIONS}
-                renderItem={renderAllergyItem}
-                keyExtractor={(item) => item.id}
-                style={styles_allergies.list}
-            />
-
-                <TouchableOpacity
-                    style={styles_allergies.saveButton}
-                    onPress={saveAllergies}
-                >
-                    <Text style={styles_allergies.saveButtonText}>Save</Text>
-                </TouchableOpacity>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     );
-    
 };
 
-// Styles for the components.
-const styles_allergies = StyleSheet.create({
+const styles_preference = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#fff', 
+    },
+    scrollView: {
+        flex: 1,
     },
     container: {
         flex: 1,
@@ -234,29 +141,56 @@ const styles_allergies = StyleSheet.create({
         alignItems: 'center', 
         justifyContent: 'center', 
         position: 'relative',   
-        height: 40, 
-        marginBottom: 20, 
+        height: 60, 
+        marginBottom: 40, 
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
-    normalText: {
-        fontSize: 16,
-        marginBottom: 20,
-    },
-    list: {
-        marginBottom: 20,
-    },
-    allergyItem: {
+    greybutton: {
         flexDirection: 'row',
-        alignItems: 'center', 
-        marginBottom: 10, 
+        borderRadius: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 5,
+        backgroundColor: colors.othergrey,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 20,
+        elevation: 2,
+        shadowColor: colors.black,
     },
-    allergyText: {
-        fontSize: 16,
-        marginLeft: 10, 
+    profileText: {
+        fontSize: 20,
+        marginLeft: 5,
+    },
+    searchBarContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        marginBottom: 20,
+    },
+    searchIcon: {
+        marginRight: 10,
+    },
+    searchInput: {
+        flex: 1,
+        height: 40,
+        color: '#000',
+    },
+    settingItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+        backgroundColor: "#ECF1F9"
+    },
+    settingsText: {
+        flex: 1,
+        fontSize: 18,
+        color: '#000000',
+        marginLeft: 10,
     },
     settingsButton: {
         flexDirection: 'row',
@@ -264,10 +198,29 @@ const styles_allergies = StyleSheet.create({
         position: 'absolute', 
         left: 0,
         top: 0,
+        borderRadius: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 5,
+        backgroundColor: colors.othergrey,
+        justifyContent: 'center',
+        marginVertical: 20,
+        elevation: 2,
+        shadowColor: colors.black,
     },
-    settingsText: {
-        fontSize: 20,
-        marginLeft: 5,
+    textContainer: { 
+        flex: 1,             
+        marginLeft: 15,  
+    },
+    settingTitleText: {     
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 3,
+        fontFamily: fonts.semiBold
+    },
+    settingDescriptionText: { 
+        fontSize: 14,
+        color: '#666',
+        fontFamily: fonts.regular
     },
 });
 

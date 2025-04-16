@@ -10,12 +10,17 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { styles } from '@/components/Sheet';
+import { colors } from '../../components/Colors'
+
+const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [userData, setUserData] = useState(null);
+  const navigation = useNavigation();
 
   // Fetch the authenticated user from backend using the token
   const fetchUser = async () => {
@@ -82,7 +87,7 @@ export default function ProfileScreen() {
 
   if (!userData) {
     return (
-      <View style={styles.container}>
+      <View style={det.container}>
         <Text>Loading...</Text>
       </View>
     );
@@ -104,21 +109,21 @@ export default function ProfileScreen() {
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
     return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Calorie Intake</Text>
-        <View style={styles.calorieBar}>
-          <View style={[styles.calorieFill, { width: `${clampedProgress}%` }]} />
+      <View style={det.card}>
+        <Text style={det.cardTitle}>Calorie Intake</Text>
+        <View style={det.calorieBar}>
+          <View style={[det.calorieFill, { width: `${clampedProgress}%` }]} />
         </View>
-        <View style={styles.calorieLabels}>
+        <View style={det.calorieLabels}>
           <Text>{min}</Text>
           <Text>{max}</Text>
         </View>
-        <Text style={styles.currentText}>Current: {current}</Text>
+        <Text style={det.currentText}>Current: {current}</Text>
         <TouchableOpacity
-          style={styles.removeButton}
+          style={det.removeButton}
           onPress={() => removeGoal('calories')}
         >
-          <Text style={styles.removeButtonText}>Remove Goal</Text>
+          <Text style={det.removeButtonText}>Remove Goal</Text>
         </TouchableOpacity>
       </View>
     );
@@ -134,52 +139,65 @@ export default function ProfileScreen() {
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
     return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>New Recipes Tried</Text>
-        <View style={styles.recipeProgress}>
-          <View style={[styles.recipeFill, { width: `${clampedProgress}%` }]} />
+      <View style={det.card}>
+        <Text style={det.cardTitle}>New Recipes Tried</Text>
+        <View style={det.recipeProgress}>
+          <View style={[det.recipeFill, { width: `${clampedProgress}%` }]} />
         </View>
-        <View style={styles.recipeLabels}>
+        <View style={det.recipeLabels}>
           <Text>{tried}</Text>
           <Text>{wantToTry}</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.removeButton}
+          style={det.removeButton}
           onPress={() => removeGoal('recipes')}
         >
-          <Text style={styles.removeButtonText}>Remove Goal</Text>
+          <Text style={det.removeButtonText}>Remove Goal</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
+
+      <View style={det.header}>
+          <TouchableOpacity
+              style={det.homeButton}
+              onPress={() => navigation.goBack()} 
+          >
+              <Image style={{marginRight:10}}
+                  source={backArrowImage}/>
+              <Text style={det.homeText}>Back</Text>
+          </TouchableOpacity>
+      </View>
+
       {/* Settings Button in the top-right */}
       <TouchableOpacity
-        style={styles.settingsButton}
+        style={det.settingsButton}
         onPress={() => router.push('settings')}
       >
         <Ionicons name="settings-sharp" size={30} color="#333" />
       </TouchableOpacity>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={det.scrollContent}>
         {/* Profile Image */}
-        <Image source={avatarSource} style={styles.profileImage} />
+        <Image source={avatarSource} style={det.profileImage} />
 
         {/* User Name */}
-        <Text style={styles.username}>{userData.name}</Text>
+        <Text style={det.username}>{userData.name}</Text>
 
         {/* Edit Profile Button */}
         <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => router.push(`editprofile?userId=${userData._id}`)}
+          style={det.editButton}
+          onPress={() => navigation.navigate('edit_profile', {userId: userData._id})}
+          // onPress={() => router.push(`editprofile?userId=${userData._id}`)}
         >
-          <Text style={styles.editButtonText}>Edit Profile</Text>
+          <Text style={det.editButtonText}>Edit Profile</Text>
         </TouchableOpacity>
 
-        <Text style={styles.sectionTitle}>Goals For the Week</Text>
+        <Text style={det.sectionTitle}>Goals For the Week</Text>
         {userData.profile && (
           <>
             {renderCalorieGoalCard()}
@@ -191,15 +209,45 @@ export default function ProfileScreen() {
       {/* Floating Add Button -> navigates to AddGoals screen */}
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => router.push(`addgoals?userId=${userData._id}`)}
+        onPress={() => navigation.navigate('add_goals', {userId: userData._id})}
+        // onPress={() => router.push(`addgoals?userId=${userData._id}`)}
       >
-        <Text style={styles.addButtonText}>+</Text>
+        <Ionicons name="add" size={60} color='#d9d9d9' />
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    position: 'relative',   
+    height: 60, 
+    marginBottom: 40, 
+  },
+  homeText: {
+    flex: 1,
+    fontSize: 18,
+    color: '#000000',
+    marginLeft: 10,
+  },
+  homeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute', 
+    left: 0,
+    top: 0,
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    backgroundColor: colors.othergrey,
+    justifyContent: 'center',
+    marginVertical: 20,
+    elevation: 2,
+    shadowColor: colors.black,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

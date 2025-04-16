@@ -178,12 +178,9 @@ const AddDayScreen = () => {
       });
 
       Alert.alert("Success", "Day saved successfully!");
-      navigation.push('(tabs)', {
-        screen: 'calendar',
-        params: {
+      navigation.navigate('calendar', {
           savedDate: selectedDate,
           savedMeals: meals,
-        }
       });
     } catch (err) {
       console.error("Error saving day:", err);
@@ -213,7 +210,7 @@ const AddDayScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.push('(tabs)', { screen: 'calendar' })}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Image source={Back_butt} style={styles.backIcon} />
         <Text style={styles.backText}>Calendar</Text>
       </TouchableOpacity>
