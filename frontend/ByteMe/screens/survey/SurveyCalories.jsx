@@ -82,7 +82,7 @@ const SurveyCalories = ({ navigation }) => {
 
         try {
             await AsyncStorage.setItem('surveyCalories', JSON.stringify(validatedCalories));
-            navigation.navigate('surveyfinal', { validatedCalories });
+            navigation.navigate('survey7', { validatedCalories });
         } catch (e) {
             console.error("Failed to save calories", e);
             Alert.alert("Error", "Could not save your selections.");
@@ -107,7 +107,7 @@ const SurveyCalories = ({ navigation }) => {
         setIsSaving(true);
         try {
             await AsyncStorage.removeItem('surveyCalories');
-            navigation.navigate('surveyfinal');
+            navigation.navigate('survey7');
         } catch (e) {
             console.error("Failed to handle skip calories", e);
             Alert.alert("Error", "Could not skip this step");

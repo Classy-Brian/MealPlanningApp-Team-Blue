@@ -7,6 +7,7 @@ import SurveryPortion from './survey_3'
 import SurveyCuisines from './survey_4'
 import SurveyDislikedIngredientsScreen from './survey_5'
 import SurveyCalories from './survey_6'
+import SurveyRecipes from './survey_7'
 import SurveyFinal from './survey_final'
 import { createStackNavigator } from '@react-navigation/stack'
 import { styles } from '@/components/Sheet'
@@ -35,6 +36,9 @@ const _layout = () => {
           <Stack.Screen 
             name="survey6" 
             component={SurveyCalories} />
+          <Stack.Screen 
+            name="survey7" 
+            component={SurveyRecipes} />
           <Stack.Screen 
             name="surveyfinal" 
             component={SurveyFinal} />

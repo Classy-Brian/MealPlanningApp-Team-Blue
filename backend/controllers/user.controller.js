@@ -242,8 +242,6 @@ export const updateUserPreferences = async (req, res) => {
   }
   if (req.body.calories !== undefined) {
     const calorieData = req.body.calories;
-
-    // Check if calorieData is a valid object and has the needed properties
     if (calorieData && typeof calorieData === 'object' && calorieData !== null) {
       if (typeof calorieData.min === 'number') {
         updateData['profile.calories.min'] = calorieData.min;
@@ -258,6 +256,10 @@ export const updateUserPreferences = async (req, res) => {
     } else {
       console.warn("Received calories data is not a valid object:", calorieData);
     }
+  }
+  if (req.body.recipeCount !== undefined) {
+    const recipeCountData = req.body.recipeCount;
+    updateData['profile.recipes.wantToTry'] = recipeCountData;
   }
 
   if (Object.keys(updateData).length === 0) {

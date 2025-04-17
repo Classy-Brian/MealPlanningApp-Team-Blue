@@ -47,16 +47,18 @@ const SurveyFinal = ( { navigation, route } ) => {
       const savedCuisines = await AsyncStorage.getItem('cuisines');
       const SavedDislikedIngredients = await AsyncStorage.getItem('dislikes');
       const savedCalories = await AsyncStorage.getItem('surveyCalories');
+      const savedRecipeCount = await AsyncStorage.getItem('surveyRecipeCount');
 
       const allergies = savedAllergies ? JSON.parse(savedAllergies) : [];
       const portion = savedPortionSize ? JSON.parse(savedPortionSize) : "1";
       const cuisines = savedCuisines ? JSON.parse(savedCuisines) : [];
       const dislikes = SavedDislikedIngredients ? JSON.parse(SavedDislikedIngredients) : [];
       const calories = savedCalories ? JSON.parse(savedCalories) : [{min: 0, max: 0}];
+      const recipeCount = savedRecipeCount ? JSON.parse(savedRecipeCount) : "0";
 
-      console.log(allergies, portion, cuisines, dislikes, calories)
+      console.log(allergies, portion, cuisines, dislikes, calories, recipeCount)
 
-      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines, dislikes, calories },
+      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines, dislikes, calories, recipeCount },
         { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
@@ -67,6 +69,7 @@ const SurveyFinal = ( { navigation, route } ) => {
         await AsyncStorage.removeItem('cuisines')
         await AsyncStorage.removeItem('dislikes')
         await AsyncStorage.removeItem('surveyCalories')
+        await AsyncStorage.removeItem('surveyRecipeCount')
         router.replace('../../(start)/login');
       }
     } catch (err) {
@@ -88,7 +91,7 @@ const SurveyFinal = ( { navigation, route } ) => {
   }
 
   const prevPage = () => {
-    navigation.navigate('survey6', { allergies, portion, cuisines });
+    navigation.navigate('survey7', { allergies, portion, cuisines });
   }
 
   return (
