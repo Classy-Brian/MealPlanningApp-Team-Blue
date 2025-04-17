@@ -1,16 +1,14 @@
 import {
-    StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity, SafeAreaView,
-    TextInput, FlatList, ActivityIndicator, Image, Keyboard
+    Text, View, Alert, ScrollView, TouchableOpacity,
+    TextInput, Image
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 
-import { Ionicons } from '@expo/vector-icons'; 
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
-import { styles } from '@/components/Sheet'
+import { styles, styles_survey, styles_buttons } from '@/components/Sheet'
 
 const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 const nextArrowImage = require('../../assets/images/next_arrow_navigate.png');
@@ -117,40 +115,42 @@ const SurveyCalories = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView style={styles_calories.safeArea}>
-            <ScrollView
-                contentContainerStyle={styles_calories.scrollContainer}
-                keyboardShouldPersistTaps='handled'
-            >
-                <View style={styles_calories.screenContainer}>
+        <View style={styles.whiteBackground}>
+            <View style={styles.screenContainer}>
+                
+                <ScrollView
+                    contentContainerStyle={styles.scrollContainer}
+                    keyboardShouldPersistTaps='handled'
+                >
 
                     {/* Header buttons */}
-                    <View style={styles_calories.headerButtons}>
-                        <TouchableOpacity onPress={prevPage} disabled={isSaving}>
-                            <View style={styles_calories.greybutton}>
-                                <Ionicons name="arrow-back" size={20} color={textcolors.black} style={{ marginRight: 5 }} />
-                                <Text style={styles_calories.regularText}>Disliked Ingredients</Text>
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                        <TouchableOpacity onPress={prevPage}>
+                            <View style={styles.greybutton}>
+                            <Image style={{marginRight:10}} source={backArrowImage}/>
+                            <Text style={styles.regularText}>Disliked Ingredients</Text>
                             </View>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={skipPage} disabled={isSaving}>
-                            <View style={styles_calories.greybutton}>
-                                <Text style={[styles_calories.regularText, { marginRight: 5 }]}>Skip</Text>
-                                <Ionicons name="arrow-forward" size={20} color={textcolors.black} />
+                        <TouchableOpacity onPress={skipPage}>
+                            <View style={[styles.greybutton, {justifyContent: 'space-between'}]}>
+                            <Text style={[styles.regularText, {marginRight:10}]}>Skip</Text>
+                            <Image source={nextArrowImage}/>
                             </View>
                         </TouchableOpacity>
                     </View>
 
-                    <Text style={[styles_calories.title, { marginTop: 10 }]}>Calorie Goal</Text>
-                    <Text style={[styles_calories.regularText, styles_calories.subtitle]}>
+                    {/* Title */}
+                    <Text style={[styles.title, { marginTop: 10 }]}>Calorie Goal</Text>
+                    <Text style={[styles.regularText, {marginBottom: 20, color: textcolors.darkgrey}]}>
                         Set your target daily calorie intake range.
                     </Text>
 
                     {/* Input Fields */}
-                    <View style={styles_calories.inputGroup}>
-                        <View style={styles_calories.inputContainer}>
-                            <Text style={styles_calories.label}>Minimum Daily Calories</Text>
+                    <View style={styles_survey.inputGroup}>
+                        <View style={styles_survey.inputContainer}>
+                            <Text style={styles_survey.label}>Minimum Daily Calories</Text>
                             <TextInput
-                                style={styles_calories.input}
+                                style={styles_survey.input}
                                 placeholder="e.g., 1500"
                                 placeholderTextColor={textcolors.lightgrey}
                                 value={minCalories}
@@ -161,10 +161,10 @@ const SurveyCalories = ({ navigation }) => {
                             />
                         </View>
 
-                        <View style={styles_calories.inputContainer}>
-                            <Text style={styles_calories.label}>Maximum Daily Calories</Text>
+                        <View style={styles_survey.inputContainer}>
+                            <Text style={styles_survey.label}>Maximum Daily Calories</Text>
                             <TextInput
-                                style={styles_calories.input}
+                                style={styles_survey.input}
                                 placeholder="e.g., 2500"
                                 placeholderTextColor={textcolors.lightgrey}
                                 value={maxCalories}
@@ -176,113 +176,19 @@ const SurveyCalories = ({ navigation }) => {
                             />
                         </View>
                     </View>
-                </View>
-            </ScrollView>
+                    
+                </ScrollView>
+            </View>
 
             {/* Floating Next Button */}
-            <TouchableOpacity onPress={nextPage} style={styles_calories.nextButtonContainer} disabled={isSaving}>
-                <View style={[styles_calories.nextbutton, isSaving && styles_calories.buttonDisabled]}>
-                    {isSaving ? <ActivityIndicator color={colors.white}/> : <NextButton />}
+            <TouchableOpacity onPress={nextPage}>
+                <View style={[styles_buttons.nextbutton, {right: 0, top: 0, transform:[{translateX: 30}, {translateY: 265}]}]}>
+                    <NextButton />
                 </View>
             </TouchableOpacity>
-        </SafeAreaView>
+        </View>
     );
 
 };
-
-const styles_calories = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: colors.white,
-    },
-    scrollContainer: {
-        flexGrow: 1,
-        paddingBottom: 150,
-    },
-    screenContainer: {
-        flex: 1,
-        padding: 20,
-    },
-    headerButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 48,
-        fontFamily: fonts.bold,
-        color: textcolors.black,
-        marginBottom: 5,
-    },
-    subtitle: {
-        marginBottom: 30,
-        color: textcolors.darkgrey,
-        fontSize: 16,
-        fontFamily: fonts.regular,
-    },
-    regularText: {
-        fontSize: 16,
-        color: textcolors.black,
-        fontFamily: fonts.regular,
-    },
-    greybutton: {
-        flexDirection: 'row',
-        borderRadius: 15,
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-        backgroundColor: colors.othergrey,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 2,
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1,
-    },
-    inputGroup: {
-        marginVertical: 20,
-    },
-    inputContainer: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 14,
-        color: textcolors.darkgrey,
-        marginBottom: 8,
-        fontFamily: fonts.regular,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: colors.grey,
-        backgroundColor: colors.white,
-        borderRadius: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 15,
-        fontSize: 18,
-        fontFamily: fonts.regular,
-        color: textcolors.black,
-    },
-    nextButtonContainer: {
-        position: 'absolute',
-        bottom: 30,
-        right: 30,
-    },
-    nextbutton: {
-        borderRadius: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#91A9C8',
-        height: 100,
-        width: 100,
-        elevation: 2,
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1,
-    },
-     buttonDisabled: {
-        opacity: 0.6,
-    },
-});
 
 export default SurveyCalories;

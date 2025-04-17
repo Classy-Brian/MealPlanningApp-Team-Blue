@@ -1,15 +1,15 @@
 import {
-    StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity, SafeAreaView,
-    TextInput, FlatList, ActivityIndicator, Image, Keyboard
+    Text, View, Alert, ScrollView, TouchableOpacity,
+    TextInput, ActivityIndicator, Image, Keyboard
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { Ionicons } from '@expo/vector-icons'; 
 
+import { Ionicons } from '@expo/vector-icons'; 
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
-import { fonts } from '../../components/Fonts'
+import { styles, styles_survey, styles_buttons } from '@/components/Sheet'
 
 const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 const nextArrowImage = require('../../assets/images/next_arrow_navigate.png');
@@ -25,9 +25,9 @@ function NextButton() {
 
 const SurveyDislikedIngredientsScreen = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState([]); // To store results from Edamam
+    const [searchResults, setSearchResults] = useState([]);
     const [dislikedIngredients, setDislikedIngredients] = useState([]);
-    const [isSearching, setIsSearching] = useState(false); // Loading indicator for search
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => {
         const loadDislikes = async () => {
@@ -45,26 +45,36 @@ const SurveyDislikedIngredientsScreen = ({ navigation }) => {
             } catch (err) {
             console.error("Failed to load dislikes from storage", err);
             }
-            };
+        };
         loadDislikes();
     }, []);
 
     const nextPage = async () => {
         await AsyncStorage.setItem('dislikes', JSON.stringify(dislikedIngredients));
-        navigation.navigate('survey6', { dislikedIngredients });
+        navigation.navigate('survey6');
     };
 
     const prevPage = async () => {
         await AsyncStorage.setItem('dislikes', JSON.stringify(dislikedIngredients));
-        navigation.navigate('survey4', { dislikedIngredients });
+        navigation.navigate('survey4');
     }
+
+    const skipPage = async () => {
+        try {
+          await AsyncStorage.removeItem('dislikes');
+          navigation.navigate('survey6');
+        } catch (e) {
+          console.error("Failed to handle skip dislikes", e);
+          Alert.alert("Error", "Could not skip this step");
+        }
+    };
 
     // Ingredient Search Logic
     const searchIngredients = async () => {
-        if (!searchQuery.trim()) return; // Don't search if query is empty
+        if (!searchQuery.trim()) return;
 
         setIsSearching(true);
-        setSearchResults([]); // Clear previous results
+        setSearchResults([]);
         console.log(`Searching Edamam Food DB for: "${searchQuery}"`);
 
         try {
@@ -85,116 +95,91 @@ const SurveyDislikedIngredientsScreen = ({ navigation }) => {
                         app_id: API_ID,
                         app_key: API_KEY,
                         ingr: searchQuery,
-                        // Can add category filters if needed, e.g., category: 'generic-foods', maybe for later
                     },
-                    timeout: 10000, // 10 second timeout
+                    timeout: 10000,
                 }
             );
 
-            // Process results
             const foodData = response.data.hints.map((hint) => {
                 const food = hint.food;
                 return {
-                    // Use foodId as a unique key if available, otherwise label
                     id: food.foodId || food.label,
                     label: food.label,
                     category: food.category,
-                    image: food.image || null, // null if no image
+                    image: food.image || null,
                 };
             }).filter(item => item.label); // Ensure items have a label
 
             setSearchResults(foodData);
-             console.log(`Found ${foodData.length} results.`);
+            console.log(`Found ${foodData.length} results.`);
 
         } catch (err) {
             console.error("Error searching Edamam ingredients:", err.message);
             if (err.code === 'ECONNABORTED') {
-                 Alert.alert("Error", "Search timed out. Please try again.");
+                Alert.alert("Error", "Search timed out. Please try again.");
             } else {
-                 Alert.alert("Error", "Could not search for ingredients.");
+                Alert.alert("Error", "Could not search for ingredients.");
             }
         } finally {
             setIsSearching(false);
         }
     };
 
-    // Add Disliked Ingredients 
     const addDislikedIngredient = (ingredientLabel) => {
-        // Check if the ingredient is NOT already in the list
         if (!dislikedIngredients.includes(ingredientLabel)) {
             setDislikedIngredients(prev => [...prev, ingredientLabel]); 
         }
-        setSearchQuery(''); // Clear search after adding
-        setSearchResults([]); // Clear results after adding
-        Keyboard.dismiss(); // Dismiss keyboard
-   };
+        setSearchQuery('');
+        setSearchResults([]);
+        Keyboard.dismiss();
+    };
 
-   // Remove Disliked Ingredients 
     const removeDislikedIngredient = (ingredientLabel) => {
         setDislikedIngredients(prev => prev.filter(item => item !== ingredientLabel));
-   };
-
-    // Render Functions 
-    const renderSearchResultItem = ({ item }) => (
-        <TouchableOpacity
-            style={styles.searchResultItem}
-            onPress={() => addDislikedIngredient(item.label)}
-        >
-            {/* ... */}
-            <Text style={styles.resultLabel}>{item.label}</Text>
-            <Ionicons name="add-circle-outline" size={24} color={colors.header} />
-        </TouchableOpacity>
-    );
-
-    const renderDislikedItem = ({ item }) => (
-        <View style={styles.dislikedItem}>
-            <Text style={styles.dislikedText}>{item}</Text>
-            <TouchableOpacity onPress={() => removeDislikedIngredient(item)}>
-                <Ionicons name="remove-circle-outline" size={24} color="red" />
-            </TouchableOpacity>
-        </View>
-    );
+    };
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-             {/* Use ScrollView because content might overflow */}
-             <ScrollView
-                 contentContainerStyle={styles.scrollContainer}
-                 keyboardShouldPersistTaps='handled' // Dismiss keyboard when tapping outside input
-             >
-                <View style={styles.screenContainer}>
+        <View style={styles.whiteBackground}>
+            <View style={styles.screenContainer}>
+                
+                {/* Use ScrollView because content might overflow */}
+                <ScrollView
+                    contentContainerStyle={styles.scrollContainer}
+                    keyboardShouldPersistTaps='handled'
+                >
 
                     {/* Header buttons */}
-                    <View style={styles.headerButtons}>
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                         <TouchableOpacity onPress={prevPage}>
                             <View style={styles.greybutton}>
-                                <Ionicons name="arrow-back" size={20} color={textcolors.black} style={{ marginRight: 5 }} />
-                                <Text style={styles.regularText}>Cuisine</Text>
+                            <Image style={{marginRight:10}} source={backArrowImage}/>
+                            <Text style={styles.regularText}>Cuisines</Text>
                             </View>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={nextPage}>
-                            <View style={styles.greybutton}>
-                                <Text style={[styles.regularText, { marginRight: 5 }]}>Skip</Text>
-                                <Ionicons name="arrow-forward" size={20} color={textcolors.black} />
+                        <TouchableOpacity onPress={skipPage}>
+                            <View style={[styles.greybutton, {justifyContent: 'space-between'}]}>
+                            <Text style={[styles.regularText, {marginRight:10}]}>Skip</Text>
+                            <Image source={nextArrowImage}/>            
                             </View>
-                        </TouchableOpacity>
+                        </TouchableOpacity>          
                     </View>
 
+                    {/* Title */}
                     <Text style={[styles.title, { marginTop: 10 }]}>Disliked Ingredients</Text>
-                    <Text style={[styles.regularText, styles.subtitle]}>
+                    <Text style={[styles.regularText, {marginBottom: 20, color: textcolors.darkgrey}]}>
                         Search for and add any ingredients you want to avoid.
                     </Text>
 
                     {/* Search Input and Button */}
-                    <View style={styles.searchContainer}>
+                    <View style={styles_survey.searchContainer}>
                         <TextInput
-                            style={styles.searchInput}
+                            style={styles_survey.searchInput}
                             placeholder="Search ingredient (e.g., cilantro)"
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                             onSubmitEditing={searchIngredients} // Trigger search on submit
                         />
-                        <TouchableOpacity onPress={searchIngredients} style={styles.searchButton}>
+                        <TouchableOpacity onPress={searchIngredients} style={styles_buttons.searchButton}>
                             {isSearching ? (
                                 <ActivityIndicator color={colors.white} />
                             ) : (
@@ -205,20 +190,20 @@ const SurveyDislikedIngredientsScreen = ({ navigation }) => {
 
                     {/* Search Results List */}
                     {isSearching && searchResults.length === 0 && (
-                        <Text style={styles.infoText}>Searching...</Text>
+                        <Text style={styles_survey.infoText}>Searching...</Text>
                     )}
                     {!isSearching && searchQuery && searchResults.length === 0 && (
-                         <Text style={styles.infoText}>No results found for "{searchQuery}".</Text>
+                         <Text style={styles_survey.infoText}>No results found for "{searchQuery}".</Text>
                     )}
                      {searchResults.length > 0 && (
-                        <View style={styles.searchResultsList}>
+                        <View style={styles_survey.searchResultsList}>
                             {searchResults.map((item, index) => ( 
                                 <TouchableOpacity
                                     key={`${item.id}-${index}`}
-                                    style={styles.searchResultItem}
+                                    style={styles_survey.searchResultItem}
                                     onPress={() => addDislikedIngredient(item.label)}
                                 >
-                                    <Text style={styles.resultLabel}>{item.label}</Text>
+                                    <Text style={styles_survey.resultLabel}>{item.label}</Text>
                                     <Ionicons name="add-circle-outline" size={24} color={colors.header} />
                                 </TouchableOpacity>
                             ))}
@@ -228,11 +213,11 @@ const SurveyDislikedIngredientsScreen = ({ navigation }) => {
 
                     {/* List of Disliked Ingredients */}
                     {dislikedIngredients.length > 0 && (
-                        <View style={styles.dislikedListContainer}>
-                            <Text style={styles.dislikedListTitle}>Your Disliked Ingredients:</Text>
+                        <View style={styles_survey.dislikedListContainer}>
+                            <Text style={styles_survey.dislikedListTitle}>Your Disliked Ingredients:</Text>
                             {dislikedIngredients.map((item, index) => (
-                                 <View key={index} style={styles.dislikedItem}>
-                                     <Text style={styles.dislikedText}>{item}</Text>
+                                 <View key={index} style={styles_survey.dislikedItem}>
+                                     <Text style={styles_survey.dislikedText}>{item}</Text>
                                      <TouchableOpacity onPress={() => removeDislikedIngredient(item)}>
                                           <Ionicons name="remove-circle-outline" size={24} color="red" />
                                      </TouchableOpacity>
@@ -240,187 +225,17 @@ const SurveyDislikedIngredientsScreen = ({ navigation }) => {
                              ))}
                         </View>
                     )}
-
-                </View>
-            </ScrollView>
+                </ScrollView>
+            </View>
 
             {/* Floating Next Button */}
-            <TouchableOpacity onPress={nextPage} style={styles.nextButtonContainer}>
-                <View style={[styles.nextbutton, {right: 0, top: 0, transform:[{translateX: 60}, {translateY: 75}]}]}>
-                <NextButton />
+            <TouchableOpacity onPress={nextPage}>
+                <View style={[styles_buttons.nextbutton, {right: 0, top: 0, transform:[{translateX: 30}, {translateY: 265}]}]}>
+                    <NextButton />
                 </View>
             </TouchableOpacity>
-        </SafeAreaView>
+        </View>
     );
 };
-
-const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: colors.white,
-    },
-    scrollContainer: {
-        flexGrow: 1,
-        paddingBottom: 150,
-    },
-    screenContainer: {
-        flex: 1,
-        padding: 20,
-    },
-    headerButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 48,
-        fontFamily: fonts.bold,
-        color: textcolors.black,
-        marginBottom: 5,
-    },
-    subtitle: {
-        marginBottom: 20,
-        color: textcolors.darkgrey,
-        fontSize: 16,
-        fontFamily: fonts.regular,
-    },
-    regularText: {
-        fontSize: 16,
-        color: textcolors.black,
-        fontFamily: fonts.regular,
-    },
-    greybutton: {
-        flexDirection: 'row',
-        borderRadius: 15,
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-        backgroundColor: colors.othergrey,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 2,
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1,
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-    searchInput: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: colors.grey,
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        fontSize: 16,
-        fontFamily: fonts.regular,
-        marginRight: 10,
-    },
-    searchButton: {
-        backgroundColor: colors.header,
-        padding: 10,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-     infoText: {
-        textAlign: 'center',
-        color: textcolors.darkgrey,
-        marginVertical: 10,
-    },
-    searchResultsList: {
-        // maxHeight: 200,
-        marginBottom: 20,
-        backgroundColor: colors.white,
-        borderWidth: 1,
-        borderColor: colors.othergrey,
-        borderRadius: 8,
-        elevation: 1,
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 1,
-    },
-    searchResultItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.lightgrey,
-    },
-    resultLabel: {
-        flex: 1,
-        fontSize: 16,
-        fontFamily: fonts.regular,
-    },
-    // resultIcon: { 
-    //     width: 30,
-    //     height: 30,
-    //     marginRight: 10,
-    //     borderRadius: 4,
-    // },
-     dislikedListContainer: {
-        marginTop: 20,
-        borderTopWidth: 1,
-        borderTopColor: colors.othergrey,
-        paddingTop: 15,
-    },
-    dislikedListTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-        marginBottom: 10,
-    },
-    dislikedItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.lightgrey,
-    },
-    dislikedText: {
-        fontSize: 16,
-        fontFamily: fonts.regular,
-        flex: 1, // Allow text to take space
-        marginRight: 10,
-    },
-    nextButtonContainer: {
-        position: 'absolute',
-        bottom: 30,
-        right: 30,
-    },
-    nextbutton: {
-        borderRadius: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#91A9C8',
-        height: 170,
-        width: 170,
-        elevation: 2,
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1,
-    },
-});
-
-const button = StyleSheet.create({
-    nextbutton: {
-        borderRadius: 100,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#91A9C8',
-        height: 170,
-        width: 170,
-        position: 'absolute',
-        elevation: 2,
-        shadowColor: colors.black,
-        
-    },
-});
 
 export default SurveyDislikedIngredientsScreen

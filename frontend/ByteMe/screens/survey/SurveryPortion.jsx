@@ -1,12 +1,11 @@
-import { Image, StyleSheet, Text, View, Button, ScrollView, TouchableOpacity, Dimensions, Alert } from 'react-native'
+import { Image, Text, View, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { RadioButton } from 'react-native-paper'
+
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
-import { fonts } from '../../components/Fonts'
-import { styles } from '@/components/Sheet'
-import { RadioButton } from 'react-native-paper'
-import { useRouter } from 'expo-router'
+import { styles, styles_survey, styles_buttons } from '@/components/Sheet'
 
 const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 const nextArrowImage = require('../../assets/images/next_arrow_navigate.png');
@@ -30,7 +29,6 @@ const PORTION_OPTIONS = [
 ]
 
 const SurveyPortion = ({ navigation }) => {
-    const window = Dimensions.get('window')
 
     const [portion, setSelectedPortion] = useState(null);
 
@@ -59,13 +57,23 @@ const SurveyPortion = ({ navigation }) => {
 
     const nextPage = async () => {
         await AsyncStorage.setItem('portion', JSON.stringify(portion));
-        navigation.navigate('survey4', { portion });
+        navigation.navigate('survey4');
     };
     
     const prevPage = async () => {
         await AsyncStorage.setItem('portion', JSON.stringify(portion));
-        navigation.navigate('survey2', { portion });
+        navigation.navigate('survey2');
     }
+
+    const skipPage = async () => {
+        try {
+          await AsyncStorage.removeItem('portion');
+          navigation.navigate('survey4');
+        } catch (e) {
+          console.error("Failed to handle skip portion", e);
+          Alert.alert("Error", "Could not skip this step");
+        }
+    };
 
     return (
         <View style={styles.whiteBackground}>
@@ -74,36 +82,37 @@ const SurveyPortion = ({ navigation }) => {
                 {/* Header buttons */}
                 <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                     <TouchableOpacity onPress={prevPage}>
-                        <View style={styles_portion.greybutton}>
+                        <View style={styles.greybutton}>
                             <Image style={{marginRight:10}} source={backArrowImage}/>
                             <Text style={styles.regularText}>Allergies</Text>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={nextPage}>
-                        <View style={[styles_portion.greybutton, {justifyContent: 'space-between'}]}>
+                    <TouchableOpacity onPress={skipPage}>
+                        <View style={[styles.greybutton, {justifyContent: 'space-between'}]}>
                             <Text style={[styles.regularText, {marginRight:10}]}>Skip</Text>
                             <Image source={nextArrowImage}/>            
                         </View>
                     </TouchableOpacity>          
                 </View>
 
+                {/* Title */}
                 <Text style={[styles.title, {marginTop: 10}]}>Portion Size </Text>
                 <Text style={[styles.regularText, {marginBottom: 20, color: textcolors.darkgrey}]}>
                     Select your preferred portion size.
                 </Text>
 
                 {/* Radio Button Options */}
-                <View style={styles_portion.optionsContainer}>
+                <View style={styles_survey.optionsContainer}>
                     <RadioButton.Group onValueChange={newValue => handleSelection(parseInt(newValue, 10))} value={portion?.toString()}>
                         {PORTION_OPTIONS.map((option) => (
-                            <TouchableOpacity key={option.value} onPress={() => handleSelection(option.value)} style={styles_portion.optionRow}>
+                            <TouchableOpacity key={option.value} onPress={() => handleSelection(option.value)} style={styles_survey.optionRow}>
                                 <RadioButton.Android 
                                     value={option.value.toString()} 
                                     status={portion === option.value ? 'checked' : 'unchecked'}
                                     color={colors.header}
                                 />
-                                <Text style={styles_portion.optionLabel}>{option.label}</Text>
-                                <Image source={option.icon} style={styles_portion.optionIcon} />
+                                <Text style={styles_survey.optionLabel}>{option.label}</Text>
+                                <Image source={option.icon} style={styles_survey.optionIcon} />
                             </TouchableOpacity>
                         ))}
                     </RadioButton.Group>
@@ -112,7 +121,7 @@ const SurveyPortion = ({ navigation }) => {
             </View>
 
             <TouchableOpacity onPress={nextPage}>
-                <View style={[styles_portion.nextbutton, {right: 0, top: 0, transform:[{translateX: 30}, {translateY: 265}]}]}>
+                <View style={[styles_buttons.nextbutton, {right: 0, top: 0, transform:[{translateX: 30}, {translateY: 265}]}]}>
                     <NextButton />
                 </View>
             </TouchableOpacity>
@@ -121,61 +130,5 @@ const SurveyPortion = ({ navigation }) => {
     );
 
 };
-
-const styles_portion = StyleSheet.create({
-    greybutton: {
-        flexDirection: 'row',
-        borderRadius: 15,
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-        backgroundColor: colors.othergrey,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 20,
-        elevation: 2,
-        shadowColor: colors.black,
-    },
-    optionsContainer: {
-        marginTop: 20,
-    },
-    optionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.lightgrey,
-        borderRadius: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        marginBottom: 15,
-    },
-    optionLabel: {
-        fontSize: 18,
-        marginLeft: 10,
-        flex: 1,
-    },
-    optionIcon: {
-        width: 30,
-        height: 30,
-        marginLeft: 10,
-        resizeMode: 'contain',
-    },
-    nextButtonContainer: {
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-        transform:[{translateX: 30}, {translateY: 130}]
-    },
-    nextbutton: {
-        borderRadius: 100,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#91A9C8',
-        height: 170,
-        width: 170,
-        position: 'absolute',
-        elevation: 2,
-        shadowColor: colors.black,
-    },
-});
 
 export default SurveyPortion

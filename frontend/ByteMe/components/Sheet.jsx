@@ -149,4 +149,158 @@ export const styles = StyleSheet.create({
       elevation: 2,
       shadowColor: colors.black,
   },
-  })
+})
+
+export const styles_survey = StyleSheet.create({
+  optionsContainer: {
+    marginTop: 20,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.lightgrey,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+  },
+  optionLabel: {
+    fontSize: 18,
+    marginLeft: 10,
+    flex: 1,
+  },
+  optionIcon: {
+    width: 30,
+    height: 30,
+    marginLeft: 10,
+    resizeMode: 'contain',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  searchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.grey,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    fontFamily: fonts.regular,
+    marginRight: 10,
+  },
+  infoText: {
+    textAlign: 'center',
+    color: textcolors.darkgrey,
+    marginVertical: 10,
+  },
+  searchResultsList: {
+    // maxHeight: 200,
+    marginBottom: 20,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.othergrey,
+    borderRadius: 8,
+    elevation: 1,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
+  },
+  resultLabel: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: fonts.regular,
+  },
+  dislikedListContainer: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.othergrey,
+    paddingTop: 15,
+  },
+  dislikedListTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: fonts.bold,
+    marginBottom: 10,
+  },
+  dislikedItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
+  },
+  dislikedText: {
+    fontSize: 16,
+    fontFamily: fonts.regular,
+    flex: 1,
+    marginRight: 10,
+  },
+  inputGroup: {
+    marginVertical: 20,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    color: textcolors.darkgrey,
+    marginBottom: 8,
+    fontFamily: fonts.regular,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.grey,
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    fontSize: 18,
+    fontFamily: fonts.regular,
+    color: textcolors.black,
+  },
+})
+
+export const styles_buttons = StyleSheet.create({
+  checklist: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  greybox: {
+    backgroundColor: colors.lightgrey,
+    borderRadius: 10,
+  },
+  whitebox: {
+    backgroundColor: colors.white,
+    borderRadius: 10,
+  },
+  nextbutton: {
+    borderRadius: 100,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#91A9C8',
+    height: 170,
+    width: 170,
+    position: 'absolute',
+    elevation: 2,
+    shadowColor: colors.black,
+  },
+  searchButton: {
+    backgroundColor: colors.header,
+    padding: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+})
