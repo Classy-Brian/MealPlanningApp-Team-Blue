@@ -21,11 +21,21 @@ const AddDayScreen = () => {
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
 
-  // Handle recipe passed from SavedRecipesDupi
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await getUserIdFromToken();
+      setUserId(id);
+    };
+    fetchUserId();
+  }, []);
+
+  // Receive recipe from savedrecipesdupi
   useEffect(() => {
     if (route.params?.selectedRecipe) {
       const { label, value, calories } = route.params.selectedRecipe;
-      const formattedTime = selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      const formattedTime = selectedTime.toLocaleTimeString([], {
+        hour: '2-digit', minute: '2-digit', hour12: true
+      });
 
       setSelectedMeals(prev => [...prev, {
         label,
@@ -37,17 +47,9 @@ const AddDayScreen = () => {
     }
   }, [route.params?.selectedRecipe]);
 
-  useEffect(() => {
-    const fetchUserId = async () => {
-      const id = await getUserIdFromToken();
-      setUserId(id);
-    };
-    fetchUserId();
-  }, []);
-
   const handleSave = async () => {
     if (!selectedDate || selectedMeals.length === 0) {
-      Alert.alert("Please select a date and add at least one recipe.");
+      Alert.alert("Please select a date and at least one recipe.");
       return;
     }
 
@@ -70,7 +72,6 @@ const AddDayScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* 🔙 Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('calendar')}>
         <Image source={Back_butt} style={styles.backIcon} />
         <Text style={styles.backText}>Calendar</Text>
@@ -78,7 +79,7 @@ const AddDayScreen = () => {
 
       <Text style={styles.title}>Add Recipes to Calendar</Text>
 
-      {/* 📅 Date Picker */}
+      {/* Date Picker */}
       <Text style={styles.label}>Pick Date</Text>
       <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.timePickerButton}>
         <Text style={styles.timeText}>{selectedDate.toDateString()}</Text>
@@ -95,7 +96,7 @@ const AddDayScreen = () => {
         />
       )}
 
-      {/* 🕒 Time Picker */}
+      {/* Time Picker */}
       <Text style={styles.label}>Select Time</Text>
       <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.timePickerButton}>
         <Text style={styles.timeText}>
@@ -114,7 +115,7 @@ const AddDayScreen = () => {
         />
       )}
 
-      {/* 📥 Select from Saved Recipes */}
+      {/* Button to go to savedrecipesdupi */}
       <Text style={styles.label}>Pick a Recipe</Text>
       <TouchableOpacity
         style={styles.selectRecipeButton}
@@ -125,13 +126,12 @@ const AddDayScreen = () => {
         <Text style={styles.selectRecipeText}>Browse Saved Recipes</Text>
       </TouchableOpacity>
 
-      {/* 🧾 Selected Meals */}
+      {/* Selected Meals */}
       <Text style={styles.label}>Selected Meals:</Text>
       {selectedMeals.map((m, i) => (
         <Text key={i}>• {m.label} at {m.time}</Text>
       ))}
 
-      {/* ✅ Save Button */}
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveText}>Save Day</Text>
       </TouchableOpacity>
