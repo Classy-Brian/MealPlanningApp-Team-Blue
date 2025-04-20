@@ -24,6 +24,7 @@ import GroceryLayout from '../(grocery)/_layout';
 import PantryLayout from '../(pantry)/_layout';
 import RecipeLayout from '../(recipe)/_layout';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { PantryProvider } from '@/components/PantryContext';
 
 const Tab = createBottomTabNavigator();
 
@@ -93,35 +94,38 @@ const getTabIcon = (name, isActive) => {
 export default function TabLayout() {
 
   return (
-    <Tab.Navigator    
-      screenOptions={{
-        tabBarStyle: {
-          position: 'absolute',
-        }
-      }}
-      tabBar={(props) => <CustomTabBar {...props} />}
-    >
-      <Tab.Screen 
-        name="home" 
-        component={Homepage} 
-        options={{ title: 'Home', headerShown: false }} />
-      <Tab.Screen 
-        name="calendar" 
-        component={CalendarLayout} 
-        options={{ title: 'Calendar', headerShown: false }} />
-      <Tab.Screen 
-        name="recipe" 
-        component={RecipeLayout} 
-        options={{ title: 'Recipe', headerShown: false }} />
-      <Tab.Screen 
-        name="grocery" 
-        component={GroceryLayout} 
-        options={{ title: 'Grocery', headerShown: false }} />
-      <Tab.Screen 
-        name="pantry" 
-        component={PantryLayout} 
-        options={{ title: 'Pantry', headerShown: false }} />
-    </Tab.Navigator>
+    <PantryProvider>
+        <Tab.Navigator    
+        screenOptions={{
+          tabBarStyle: {
+            position: 'absolute',
+          }
+        }}
+        tabBar={(props) => <CustomTabBar {...props} />}
+      >
+        <Tab.Screen 
+          name="home" 
+          component={Homepage} 
+          options={{ title: 'Home', headerShown: false }} />
+        <Tab.Screen 
+          name="calendar" 
+          component={CalendarLayout} 
+          options={{ title: 'Calendar', headerShown: false }} />
+        <Tab.Screen 
+          name="recipe" 
+          component={RecipeLayout} 
+          options={{ title: 'Recipe', headerShown: false }} />
+        <Tab.Screen 
+          name="grocery" 
+          component={GroceryLayout} 
+          options={{ title: 'Grocery', headerShown: false }} />
+        <Tab.Screen 
+          name="pantry" 
+          component={PantryLayout} 
+          options={{ title: 'Pantry', headerShown: false }} />
+      </Tab.Navigator>
+    </PantryProvider>
+    
   );
 }
 

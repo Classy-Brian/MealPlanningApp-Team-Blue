@@ -24,6 +24,7 @@ import { filterModal } from '@/components/Filter'
 import { fonts } from '@/components/Fonts';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { usePantry } from '@/components/PantryContext';
 
 
 function BackButton() {
@@ -41,9 +42,10 @@ function BackButton() {
 }
 
 const PantrySuggestions = ( { route } ) => {
-  const [recipes, setRecipes] = useState([]);
+  const { suggestions: recipes, loading, reloadSuggestions } = usePantry()
+  // const [recipes, setRecipes] = useState([]);
   const { ingrLabels } = route.params
-  const [loading, setLoading] = useState(false) 
+  // const [loading, setLoading] = useState(false) 
   const [error, setError] = useState(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false)
   const navigation = useNavigation();
@@ -61,78 +63,11 @@ const PantrySuggestions = ( { route } ) => {
     setFilters({ category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', dietLabel: '', healthLabel: '', caution: '' });
   };
 
-  
-  const fetchRecipes = async () => {
-    const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
-    const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
-    setLoading(true);
-    setError(null);
-    try {
-      const userId = await getUserIdFromToken();
-      if (!userId) {
-        console.warn("User ID not found");
-        setLoading(false);
-        return;
-      }
-      // console.log("sending user id: ", userId);
-
-      const res = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai/${userId}/generate-pantry-suggestions/`,
-        {ingrLabels: ingrLabels}
-      );
-
-      const ideas = res.data.choices[0].message.content.split('\n').map(line => line.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
-      // console.log("returned ideas:", ideas)
-
-      const recipePromises = ideas.map(async (idea) => {
-        const encoded = encodeURIComponent(idea)
-        console.log("idea being sent: ", idea)
-        const response = await axios.get(
-          `https://api.edamam.com/api/recipes/v2?type=public&q=${encoded}&app_id=${API_ID}&app_key=${API_KEY}`
-        );
-        return response.data.hits.slice(0, 3);
-      });
-
-      const results = await Promise.all(recipePromises)
-      const flattenedResults = results.flat()
-      
-      
-      setRecipes(flattenedResults || []);
-      await AsyncStorage.setItem('lastRecipes', JSON.stringify(flattenedResults || []))
-    } catch (err) {
-      console.error('Error fetching recipes:', err);
-      setError('Failed to fetch recipes. Please try again later.');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (ingrLabels?.length > 0) {
+      reloadSuggestions(ingrLabels)
     }
-  };
-
-  useEffect( () => {
-    const checkAndFetchRecipes = async () => {
-      try {
-        const stored = await AsyncStorage.getItem('lastPantry')
-        const storedRecipesRaw = await AsyncStorage.getItem('lastRecipes')
-        const storedPantry = stored ? JSON.parse(stored) : null
-        const storedRecipes = storedRecipesRaw ? JSON.parse(storedRecipesRaw) : []
-        const pantryChanged = JSON.stringify(ingrLabels) !== JSON.stringify(storedPantry)
-
-        if (ingrLabels && ingrLabels.length > 0 && pantryChanged) {
-        console.log("Pantry has updated, fetching new recipes");
-        await AsyncStorage.setItem('lastPantry', JSON.stringify(ingrLabels))
-        fetchRecipes()
-        } else {
-          console.log("Pantry unchanges, skipping fetch")
-          setRecipes(storedRecipes)
-        }
-      } catch (err) {
-        console.error("Error with AsyncStorage or pantry comparison:", err)
-      }
-      
-    }
-    
-    
-    checkAndFetchRecipes()
-    
-  }, [ingrLabels])
+  }, [JSON.stringify(ingrLabels)])
 
   const categories = ['All', ...new Set(recipes.flatMap(r => r.recipe.mealType || []))];
   const cuisines = ['All', ...new Set(recipes.flatMap(r => r.recipe.cuisineType || []).map(c => c.charAt(0).toUpperCase() + c.slice(1)))];

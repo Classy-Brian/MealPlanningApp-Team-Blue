@@ -33,8 +33,8 @@ const generatePantrySuggestions =  async (ingrLabels) => {
       const results = await Promise.all(recipePromises)
       const flattenedResults = results.flat()
 
-      await AsyncStorage.setItem('lastRecipes', JSON.stringify(flattenedResults || []))
-      await AsyncStorage.setItem('lastPantry', JSON.stringify(ingrLabels))
+      // await AsyncStorage.setItem('lastRecipes', JSON.stringify(flattenedResults || []))
+      // await AsyncStorage.setItem('lastPantry', JSON.stringify(ingrLabels))
 
       return flattenedResults
     } catch (err) {

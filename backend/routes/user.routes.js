@@ -84,7 +84,7 @@ router.post("/save-recipe", saveRecipe);
 //removing saved recipe 
 router.delete("/remove/remove-recipe", unsaveRecipe);
 
-router.get("/:id/get-saved-pantry", getSavedPantry);
+router.get("/:userId/get-saved-pantry", getSavedPantry);
 
 router.put('/:userId/update-pantry', addIngredientToPantry);
 

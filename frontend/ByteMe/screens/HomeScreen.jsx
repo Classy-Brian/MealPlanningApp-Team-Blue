@@ -92,6 +92,13 @@ const HomeScreen = () => {
         fetchUserProfile();
     }, [axiosInstance]); 
 
+    useEffect(() => {
+        const loadUserPantry = async () => {
+            await generateUserIngrLabels()
+        }
+        loadUserPantry()
+    }, [])
+
     const handleReciprePress = (recipe) => {
         console.log("Recipe pressed:", recipe.title);
     }

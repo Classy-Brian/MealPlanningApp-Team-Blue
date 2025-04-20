@@ -63,7 +63,9 @@ function UpdateIngredient({ ingredient, quantity }) {
       }
       const response = await axios.put(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/update-grocery`,
-        { foodId: ingredient?.foodId, quantity }
+        { foodId: ingredient?.foodId, 
+          label: ingredient?.label,
+          quantity }
       );
       if (response.status === 200) {
         Alert.alert("Success!", "Grocery ingredient updated successfully!");
