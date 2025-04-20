@@ -12,20 +12,21 @@ import {
   ScrollView,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
-import { styles } from '@/components/Sheet';
+import { useNavigation } from '@react-navigation/native';
+import { styles as sharedStyles } from '@/components/Sheet';
 
-export default function SavedRecipesDupi() {
+const SavedRecipesDupi = () => {
   const navigation = useNavigation();
   const [query, setQuery] = useState('');
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
   const [filters, setFilters] = useState({
     category: 'All',
     ingredient: '',
@@ -50,9 +51,7 @@ export default function SavedRecipesDupi() {
     setLoading(true);
     try {
       const userId = await getUserIdFromToken();
-      const response = await axios.get(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/get-saved-recipes`
-      );
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/get-saved-recipes`);
 
       const recipes = response.data?.savedRecipes || [];
       setSavedRecipes(recipes);
@@ -118,22 +117,32 @@ export default function SavedRecipesDupi() {
       maxCalories: '',
       diet: '',
       health: '',
-      caution: ''
+      caution: '',
+    });
+  };
+
+  const handleSelectRecipe = (recipe) => {
+    navigation.navigate('addday', {
+      selectedRecipe: {
+        label: recipe.label,
+        value: recipe.uri,
+        calories: recipe.calories || 0,
+      }
     });
   };
 
   return (
     <View style={det.container}>
-      <Text style={styles.title}>Pick a Saved Recipe</Text>
+      <Text style={sharedStyles.title}>Browse Saved Recipes</Text>
 
       <View style={det.searchContainer}>
         <View style={det.inputContainer}>
           <TextInput
-            placeholder='Search through your recipes'
+            placeholder="Search your recipes"
             placeholderTextColor={textcolors.lightgrey}
             style={det.inputText}
             value={query}
-            onChangeText={(text) => setQuery(text)}
+            onChangeText={setQuery}
           />
         </View>
 
@@ -149,15 +158,7 @@ export default function SavedRecipesDupi() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={det.recipeContainer}
-            onPress={() => {
-              navigation.navigate("addday", {
-                selectedRecipe: {
-                  label: item.label,
-                  value: item.uri || item.id,
-                  calories: item.calories || 0,
-                }
-              });
-            }}
+            onPress={() => handleSelectRecipe(item)}
           >
             <View style={det.rectangleView}>
               <Image source={{ uri: item.image }} style={det.recipeImage} />
@@ -168,7 +169,7 @@ export default function SavedRecipesDupi() {
         ListEmptyComponent={!loading && <Text style={det.noRecipesText}>No recipes found.</Text>}
       />
 
-      <Modal visible={filterModalVisible} animationType='slide' transparent={true}>
+      <Modal visible={filterModalVisible} animationType="slide" transparent={true}>
         <View style={det.modalBackground}>
           <View style={det.modalContainer}>
             <ScrollView>
@@ -200,7 +201,7 @@ export default function SavedRecipesDupi() {
               <Text style={det.modalLabel}>Ingredient</Text>
               <TextInput
                 style={det.modalInput}
-                placeholder='e.g. chicken'
+                placeholder="e.g. chicken"
                 value={filters.ingredient}
                 onChangeText={(text) => setFilters({ ...filters, ingredient: text })}
               />
@@ -208,8 +209,8 @@ export default function SavedRecipesDupi() {
               <Text style={det.modalLabel}>Max Calories</Text>
               <TextInput
                 style={det.modalInput}
-                placeholder='e.g. 500'
-                keyboardType='numeric'
+                placeholder="e.g. 500"
+                keyboardType="numeric"
                 value={filters.maxCalories}
                 onChangeText={(text) => setFilters({ ...filters, maxCalories: text })}
               />
@@ -231,7 +232,7 @@ export default function SavedRecipesDupi() {
       {error && <Text style={det.error}>{error}</Text>}
     </View>
   );
-}
+};
 
 const det = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
@@ -244,7 +245,7 @@ const det = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: textcolors.lightgrey,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   inputText: { flex: 1, fontSize: 16, paddingVertical: 8 },
   filterButton: {
@@ -258,6 +259,22 @@ const det = StyleSheet.create({
     alignItems: 'center',
   },
   filterButtonText: { color: '#fff', fontWeight: '700', fontSize: 18 },
+  recipeContainer: { alignItems: 'center', paddingVertical: 10 },
+  rectangleView: {
+    height: 150,
+    borderRadius: 10,
+    backgroundColor: 'rgba(31, 80, 143, 0.06)',
+    borderColor: '#777',
+    borderWidth: 1,
+    width: '90%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  recipeImage: { width: '100%', height: 100, resizeMode: 'cover' },
+  recipeTitle: { fontSize: 18, fontWeight: 'bold', color: '#133E7C', marginTop: 5 },
+  noRecipesText: { fontSize: 16, textAlign: 'center', marginTop: 20, color: textcolors.lightgrey },
   modalBackground: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000088' },
   modalContainer: { backgroundColor: 'white', borderRadius: 10, padding: 20, width: '90%' },
   modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
@@ -297,21 +314,7 @@ const det = StyleSheet.create({
   filterOptionSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
   filterOptionText: { color: textcolors.darkgrey },
   filterOptionTextSelected: { color: '#fff' },
-  recipeContainer: { alignItems: 'center', paddingVertical: 10 },
-  rectangleView: {
-    height: 150,
-    borderRadius: 10,
-    backgroundColor: 'rgba(31, 80, 143, 0.06)',
-    borderColor: '#777',
-    borderWidth: 1,
-    width: '90%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    overflow: 'hidden',
-  },
-  recipeImage: { width: '100%', height: 100, resizeMode: 'cover' },
-  recipeTitle: { fontSize: 18, fontWeight: 'bold', color: '#133E7C', marginTop: 5 },
-  noRecipesText: { fontSize: 16, textAlign: 'center', marginTop: 20, color: textcolors.lightgrey },
   error: { color: 'red', textAlign: 'center', marginBottom: 10 },
 });
+
+export default SavedRecipesDupi;
