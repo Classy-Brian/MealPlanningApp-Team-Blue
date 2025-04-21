@@ -29,14 +29,14 @@ const AddDayScreen = () => {
     fetchUserId();
   }, []);
 
-  // Handle recipe from savedrecipesdupi
   useEffect(() => {
     if (route.params?.selectedRecipe) {
-      const { label, value, imageUri } = route.params.selectedRecipe;
-      const formattedTime = selectedTime.toLocaleTimeString([], {
+      const { label, value, imageUri, selectedTime, selectedDate } = route.params.selectedRecipe;
+
+      const formattedTime = new Date(selectedTime).toLocaleTimeString([], {
         hour: '2-digit', minute: '2-digit', hour12: true
       });
-      const formattedDate = selectedDate.toDateString();
+      const formattedDate = new Date(selectedDate).toDateString();
 
       const newMeal = {
         label,
@@ -134,7 +134,12 @@ const AddDayScreen = () => {
       <Text style={styles.label}>Pick a Recipe</Text>
       <TouchableOpacity
         style={styles.selectRecipeButton}
-        onPress={() => navigation.navigate('savedrecipesdupi')}
+        onPress={() =>
+          navigation.navigate('savedrecipesdupi', {
+            selectedDate,
+            selectedTime
+          })
+        }
       >
         <Text style={styles.selectRecipeText}>Browse Saved Recipes</Text>
       </TouchableOpacity>

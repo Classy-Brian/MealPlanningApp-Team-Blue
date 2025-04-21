@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Image } from 'react-native';
+import {
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, Image
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
 import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
-import { styles } from '@/components/Sheet';
-
 import EditIcon from '@/assets/images/edit.png';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -13,6 +13,12 @@ const CalendarScreen = () => {
   const navigation = useNavigation();
   const [selectedDate, setSelectedDate] = useState(null);
   const [savedDays, setSavedDays] = useState([]);
+
+  const getLocalTodayString = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.toISOString().split('T')[0];
+  };
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -32,31 +38,53 @@ const CalendarScreen = () => {
     fetchSavedDays();
   }, []);
 
-  const markedDates = savedDays.reduce((acc, day) => {
-    const formatted = formatDate(day.date);
-    acc[formatted] = {
-      marked: true,
-      dotColor: '#4CAF50',
-      ...(selectedDate === formatted && {
-        selected: true,
-        selectedColor: '#133E7C',
-        selectedTextColor: '#fff',
-      })
+  const markedDates = (() => {
+    const today = getLocalTodayString();
+
+    const marks = savedDays.reduce((acc, day) => {
+      const formatted = formatDate(day.date);
+      acc[formatted] = {
+        marked: true,
+        dotColor: '#4CAF50',
+        ...(selectedDate === formatted && {
+          selected: true,
+          selectedColor: '#133E7C',
+          selectedTextColor: '#fff',
+        }),
+      };
+      return acc;
+    }, {});
+
+    // ✅ Always show blue circle on today
+    marks[today] = {
+      ...(marks[today] || {}),
+      customStyles: {
+        container: {
+          backgroundColor: '#1F508F',
+          borderRadius: 50,
+        },
+        text: {
+          color: '#fff',
+          fontWeight: 'bold',
+        },
+      }
     };
-    return acc;
-  }, {});
+
+    return marks;
+  })();
 
   const displayedDays = selectedDate
     ? savedDays.filter(d => formatDate(d.date) === selectedDate)
     : savedDays;
 
   return (
-    <View style={det.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Calendar</Text>
 
       <Calendar
         onDayPress={(day) => setSelectedDate(day.dateString)}
         markedDates={markedDates}
+        markingType="custom"
         theme={{
           calendarBackground: "#fff",
           textSectionTitleColor: "#133E7C",
@@ -70,60 +98,57 @@ const CalendarScreen = () => {
         }}
       />
 
-      <ScrollView style={det.cardsContainer}>
-      {displayedDays.map((day, index) => {
-        const formatted = new Date(day.date);
-        const dayOfWeek = formatted.toLocaleDateString('en-US', { weekday: 'long' });
-        const monthDay = formatted.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+      <ScrollView style={styles.cardsContainer}>
+        {displayedDays.map((day, index) => {
+          const formatted = new Date(day.date);
+          const dayOfWeek = formatted.toLocaleDateString('en-US', { weekday: 'long' });
+          const monthDay = formatted.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
 
-        const mealList = day.meals.map((m, i) => (
-          <View key={i} style={[det.mealRow, i < day.meals.length - 1 && det.mealRowBorder]}>
-            <View style={det.mealBox}>
-              <Text style={det.mealText}>{m.recipeLabel || m.recipeId}</Text>
-            </View>
-          </View>
-        ));
-
-        const totalCalories = day.totalCalories ?? day.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
-
-        return (
-          <React.Fragment key={index}>
-            <View style={det.card}>
-              {/*Edit icon */}
-              <TouchableOpacity
-                style={det.editIconWrapper}
-                onPress={() => navigation.navigate('editsaveday',{date: day.date, meals: day.meals,})
-                }
-              >
-                <Image source={EditIcon} style={det.editIcon} />
-              </TouchableOpacity>
-
-              <View style={det.cardRow}>
-                {/*Date Box */}
-                <View style={det.dateBox}>
-                  <Text style={det.dateDay}>{dayOfWeek}</Text>
-                  <Text style={det.dateNumber}>{monthDay}</Text>
-                </View>
-
-                {/* Vertical Line */}
-                <View style={det.verticalDivider} />
-
-                {/*Meals */}
-                <View style={det.cardContent}>
-                  {mealList}
-                </View>
+          const mealList = day.meals.map((m, i) => (
+            <View key={i} style={[styles.mealRow, i < day.meals.length - 1 && styles.mealRowBorder]}>
+              <View style={styles.mealBox}>
+                <Text style={styles.mealText}>{m.recipeLabel || m.recipeId}</Text>
               </View>
             </View>
+          ));
 
-            {/*Total Calories Below Card */}
-            <View style={det.footerBox}>
-              <Text style={det.footerText}>
-                Total Calories: {totalCalories.toLocaleString()}
-              </Text>
-            </View>
-          </React.Fragment>
-        );
-      })}
+          const totalCalories = day.totalCalories ?? day.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+
+          return (
+            <React.Fragment key={index}>
+              <View style={styles.card}>
+                <TouchableOpacity
+                  style={styles.editIconWrapper}
+                  onPress={() =>
+                    navigation.navigate('editsaveday', {
+                      date: day.date,
+                      meals: day.meals,
+                    })
+                  }
+                >
+                  <Image source={EditIcon} style={styles.editIcon} />
+                </TouchableOpacity>
+
+                <View style={styles.cardRow}>
+                  <View style={styles.dateBox}>
+                    <Text style={styles.dateDay}>{dayOfWeek}</Text>
+                    <Text style={styles.dateNumber}>{monthDay}</Text>
+                  </View>
+
+                  <View style={styles.verticalDivider} />
+
+                  <View style={styles.cardContent}>{mealList}</View>
+                </View>
+              </View>
+
+              <View style={styles.footerBox}>
+                <Text style={styles.footerText}>
+                  Total Calories: {totalCalories.toLocaleString()}
+                </Text>
+              </View>
+            </React.Fragment>
+          );
+        })}
       </ScrollView>
 
       <TouchableOpacity
@@ -131,12 +156,12 @@ const CalendarScreen = () => {
         onPress={() => navigation.navigate('addday')}
       >
         <Ionicons name="add" size={60} color='#d9d9d9' />
-        </TouchableOpacity>
+      </TouchableOpacity>
     </View>
   );
 };
 
-const det = StyleSheet.create({
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
   title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: '#000' },
   cardsContainer: { marginTop: 20 },
@@ -243,10 +268,6 @@ const det = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 5,
-  },
-  addButtonText: {
-    fontSize: 30,
-    color: '#fff',
   },
 });
 
