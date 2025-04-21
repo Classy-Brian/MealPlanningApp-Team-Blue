@@ -77,7 +77,7 @@ const AddDayScreen = () => {
       ));
 
       Alert.alert("Saved", "Meal plans saved successfully");
-      navigation.goBack();
+      navigation.navigate('calendar');
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Could not save. Try again.");
