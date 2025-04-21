@@ -10,12 +10,13 @@ import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { styles as sharedStyles } from '@/components/Sheet';
+import Back_butt from '@/assets/images/backbutton.png';
 
 const SavedRecipesDupi = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  const { selectedTime, selectedDate } = route.params;
+  const { selectedTime, selectedDate } = route.params || {};
 
   const [query, setQuery] = useState('');
   const [savedRecipes, setSavedRecipes] = useState([]);
@@ -120,8 +121,15 @@ const SavedRecipesDupi = () => {
 
   return (
     <View style={styles.container}>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('addday')}>
+        <Image source={Back_butt} style={styles.backIcon} />
+        <Text style={styles.backText}>Back to Add Day</Text>
+      </TouchableOpacity>
+
       <Text style={sharedStyles.title}>Browse Saved Recipes</Text>
 
+      {/* Search & Filter */}
       <View style={styles.searchContainer}>
         <View style={styles.inputContainer}>
           <TextInput
@@ -142,6 +150,7 @@ const SavedRecipesDupi = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Recipe List */}
       <FlatList
         data={filteredRecipes}
         keyExtractor={(item, index) => index.toString()}
@@ -159,6 +168,7 @@ const SavedRecipesDupi = () => {
         ListEmptyComponent={!loading && <Text style={styles.noRecipesText}>No recipes found.</Text>}
       />
 
+      {/* Filter Modal */}
       <Modal visible={filterModalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
@@ -229,6 +239,17 @@ const SavedRecipesDupi = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#D7E2F1',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+  },
+  backIcon: { width: 20, height: 20, marginRight: 5 },
+  backText: { fontSize: 16, color: '#000' },
   searchContainer: { marginBottom: 10 },
   inputContainer: {
     height: 50, flexDirection: 'row', alignItems: 'center',

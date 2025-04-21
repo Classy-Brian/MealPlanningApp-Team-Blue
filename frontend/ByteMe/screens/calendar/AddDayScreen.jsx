@@ -8,7 +8,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import axios from 'axios';
 import Back_butt from '@/assets/images/backbutton.png';
-import TrashIcon from '@/assets/images/edit.png';
+import { Ionicons } from '@expo/vector-icons';
+
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -153,7 +154,7 @@ const AddDayScreen = () => {
             <Text style={styles.mealSubText}>{m.time} on {m.date}</Text>
           </View>
           <TouchableOpacity onPress={() => removeMeal(i)}>
-            <Image source={TrashIcon} style={styles.trashIcon} />
+            <Ionicons name="trash" size={24} color="#d00" />
           </TouchableOpacity>
         </View>
       ))}
