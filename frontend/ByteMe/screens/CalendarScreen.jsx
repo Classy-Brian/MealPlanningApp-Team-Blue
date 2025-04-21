@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, Image
+  View, Text, TouchableOpacity, StyleSheet,
+  ScrollView, Alert, Image
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
@@ -22,7 +23,7 @@ const CalendarScreen = () => {
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toISOString().split('T')[0]; // "YYYY-MM-DD"
+    return date.toISOString().split('T')[0];
   };
 
   useEffect(() => {
@@ -37,6 +38,20 @@ const CalendarScreen = () => {
     };
     fetchSavedDays();
   }, []);
+
+  const deleteDay = async (dateToDelete) => {
+    try {
+      const userId = await getUserIdFromToken();
+      await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/delete-day`, {
+        data: { date: dateToDelete }
+      });
+      setSavedDays(prev => prev.filter(day => formatDate(day.date) !== formatDate(dateToDelete)));
+      Alert.alert("Deleted", "Day removed from calendar.");
+    } catch (err) {
+      console.error("Delete error:", err);
+      Alert.alert("Error", "Could not delete day.");
+    }
+  };
 
   const markedDates = (() => {
     const today = getLocalTodayString();
@@ -55,7 +70,6 @@ const CalendarScreen = () => {
       return acc;
     }, {});
 
-    // ✅ Always show blue circle on today
     marks[today] = {
       ...(marks[today] || {}),
       customStyles: {
@@ -117,6 +131,7 @@ const CalendarScreen = () => {
           return (
             <React.Fragment key={index}>
               <View style={styles.card}>
+                {/* Edit Button */}
                 <TouchableOpacity
                   style={styles.editIconWrapper}
                   onPress={() =>
@@ -139,6 +154,13 @@ const CalendarScreen = () => {
 
                   <View style={styles.cardContent}>{mealList}</View>
                 </View>
+
+                {/* Trash Icon at Bottom of Card */}
+                <View style={styles.trashWrapper}>
+                  <TouchableOpacity onPress={() => deleteDay(day.date)}>
+                    <Ionicons name="trash" size={24} color="#d00" />
+                  </TouchableOpacity>
+                </View>
               </View>
 
               <View style={styles.footerBox}>
@@ -155,7 +177,7 @@ const CalendarScreen = () => {
         style={styles.addButton}
         onPress={() => navigation.navigate('addday')}
       >
-        <Ionicons name="add" size={60} color='#d9d9d9' />
+        <Ionicons name="add" size={60} color="#d9d9d9" />
       </TouchableOpacity>
     </View>
   );
@@ -251,11 +273,10 @@ const styles = StyleSheet.create({
     height: 20,
     tintColor: '#000',
   },
-  noMealText: {
-    fontSize: 16,
-    color: 'gray',
-    textAlign: 'center',
-    marginTop: 40,
+  trashWrapper: {
+    marginTop: 10,
+    alignItems: 'flex-end',
+    paddingRight: 10,
   },
   addButton: {
     position: 'absolute',
