@@ -1,3 +1,4 @@
+// AddDayScreen.jsx
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
@@ -9,7 +10,6 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import axios from 'axios';
 import Back_butt from '@/assets/images/backbutton.png';
 import { Ionicons } from '@expo/vector-icons';
-
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -30,6 +30,7 @@ const AddDayScreen = () => {
     fetchUserId();
   }, []);
 
+  // ⬇️ Add meal when coming back from SavedRecipesDupi
   useEffect(() => {
     if (route.params?.selectedRecipe) {
       const { label, value, imageUri, selectedTime, selectedDate } = route.params.selectedRecipe;
@@ -48,9 +49,14 @@ const AddDayScreen = () => {
         meal: 'extra'
       };
 
+      // ✅ Append to list without replacing existing
       setSelectedMeals(prev => [...prev, newMeal]);
     }
   }, [route.params?.selectedRecipe]);
+
+  const removeMeal = (index) => {
+    setSelectedMeals(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSave = async () => {
     if (selectedMeals.length === 0) {
@@ -58,19 +64,19 @@ const AddDayScreen = () => {
       return;
     }
 
-    const mealsByDate = selectedMeals.reduce((acc, m) => {
-      if (!acc[m.date]) acc[m.date] = [];
-      acc[m.date].push({
-        recipeLabel: m.label,
-        recipeId: m.value,
-        time: m.time,
-        meal: m.meal
+    const groupedByDate = selectedMeals.reduce((acc, meal) => {
+      if (!acc[meal.date]) acc[meal.date] = [];
+      acc[meal.date].push({
+        recipeLabel: meal.label,
+        recipeId: meal.value,
+        time: meal.time,
+        meal: meal.meal,
       });
       return acc;
     }, {});
 
     try {
-      await Promise.all(Object.entries(mealsByDate).map(([date, meals]) =>
+      await Promise.all(Object.entries(groupedByDate).map(([date, meals]) =>
         axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
           date,
           meals
@@ -79,14 +85,10 @@ const AddDayScreen = () => {
 
       Alert.alert("Saved", "Meal plans saved successfully");
       navigation.navigate('calendar');
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       Alert.alert("Error", "Could not save. Try again.");
     }
-  };
-
-  const removeMeal = (index) => {
-    setSelectedMeals(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -137,8 +139,8 @@ const AddDayScreen = () => {
         style={styles.selectRecipeButton}
         onPress={() =>
           navigation.navigate('savedrecipesdupi', {
-            selectedDate,
-            selectedTime
+            selectedTime,
+            selectedDate
           })
         }
       >
@@ -146,16 +148,29 @@ const AddDayScreen = () => {
       </TouchableOpacity>
 
       <Text style={styles.label}>Selected Meals:</Text>
-      {selectedMeals.map((m, i) => (
-        <View key={i} style={styles.mealCard}>
-          <Image source={{ uri: m.image }} style={styles.mealImage} />
-          <View style={styles.mealDetails}>
-            <Text style={styles.mealText}>{m.label}</Text>
-            <Text style={styles.mealSubText}>{m.time} on {m.date}</Text>
-          </View>
-          <TouchableOpacity onPress={() => removeMeal(i)}>
-            <Ionicons name="trash" size={24} color="#d00" />
-          </TouchableOpacity>
+
+      {/* 🧾 Show meals grouped by date */}
+      {Object.entries(
+        selectedMeals.reduce((acc, meal) => {
+          if (!acc[meal.date]) acc[meal.date] = [];
+          acc[meal.date].push(meal);
+          return acc;
+        }, {})
+      ).map(([date, meals]) => (
+        <View key={date} style={styles.groupBox}>
+          <Text style={styles.groupDate}>{date}</Text>
+          {meals.map((m, i) => (
+            <View key={`${m.value}-${m.time}-${i}`} style={styles.mealCard}>
+              <Image source={{ uri: m.image }} style={styles.mealImage} />
+              <View style={styles.mealDetails}>
+                <Text style={styles.mealText}>{m.label}</Text>
+                <Text style={styles.mealSubText}>{m.time}</Text>
+              </View>
+              <TouchableOpacity onPress={() => removeMeal(selectedMeals.indexOf(m))}>
+                <Ionicons name="trash" size={22} color="#d00" />
+              </TouchableOpacity>
+            </View>
+          ))}
         </View>
       ))}
 
@@ -193,13 +208,25 @@ const styles = StyleSheet.create({
   selectRecipeText: {
     fontWeight: 'bold', color: '#1F508F',
   },
+  groupBox: {
+    backgroundColor: '#e4edff',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10
+  },
+  groupDate: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1F508F',
+    marginBottom: 8
+  },
   mealCard: {
     flexDirection: 'row',
-    backgroundColor: '#f6f8fa',
+    backgroundColor: '#fff',
     padding: 10,
-    borderRadius: 10,
-    marginVertical: 6,
-    alignItems: 'center'
+    borderRadius: 8,
+    marginBottom: 8,
+    alignItems: 'center',
   },
   mealImage: {
     width: 50, height: 50,
@@ -208,7 +235,6 @@ const styles = StyleSheet.create({
   mealDetails: { flex: 1 },
   mealText: { fontWeight: 'bold', fontSize: 16, color: '#1F508F' },
   mealSubText: { fontSize: 14, color: '#555' },
-  trashIcon: { width: 24, height: 24, tintColor: '#d00' },
   saveButton: {
     backgroundColor: '#1F508F',
     padding: 15, borderRadius: 10,
