@@ -48,6 +48,7 @@ const SurveyFinal = ( { navigation, route } ) => {
       const SavedDislikedIngredients = await AsyncStorage.getItem('dislikes');
       const savedCalories = await AsyncStorage.getItem('surveyCalories');
       const savedRecipeCount = await AsyncStorage.getItem('surveyRecipeCount');
+      const savedFrequency = await AsyncStorage.getItem('surveyFrequency');
 
       const allergies = savedAllergies ? JSON.parse(savedAllergies) : [];
       const portion = savedPortionSize ? JSON.parse(savedPortionSize) : "1";
@@ -55,10 +56,11 @@ const SurveyFinal = ( { navigation, route } ) => {
       const dislikes = SavedDislikedIngredients ? JSON.parse(SavedDislikedIngredients) : [];
       const calories = savedCalories ? JSON.parse(savedCalories) : [{min: 0, max: 0}];
       const recipeCount = savedRecipeCount ? JSON.parse(savedRecipeCount) : "0";
+      const frequency = savedFrequency ? JSON.parse(savedFrequency) : "0";
 
-      console.log(allergies, portion, cuisines, dislikes, calories, recipeCount)
+      console.log(allergies, portion, cuisines, dislikes, calories, recipeCount, frequency)
 
-      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines, dislikes, calories, recipeCount },
+      const res = await axios.patch(process.env.EXPO_PUBLIC_BACKEND_URL + "/api/users/preferences", { allergies, portion, cuisines, dislikes, calories, recipeCount, frequency },
         { headers: { Authorization: `Bearer ${token}`}});
       console.log('Survey saved:', res.data);
 
@@ -70,6 +72,7 @@ const SurveyFinal = ( { navigation, route } ) => {
         await AsyncStorage.removeItem('dislikes')
         await AsyncStorage.removeItem('surveyCalories')
         await AsyncStorage.removeItem('surveyRecipeCount')
+        await AsyncStorage.removeItem('surveyFrequency')
         router.replace('../../(start)/login');
       }
     } catch (err) {
@@ -91,7 +94,7 @@ const SurveyFinal = ( { navigation, route } ) => {
   }
 
   const prevPage = () => {
-    navigation.navigate('survey7', { allergies, portion, cuisines });
+    navigation.navigate('survey8');
   }
 
   return (

@@ -31,6 +31,9 @@ const userSchema = new mongoose.Schema({
     cuisines: [{
         type: String
     }],
+    frequency: {
+        type: String
+    },
     
     // Profile section
     profile: {

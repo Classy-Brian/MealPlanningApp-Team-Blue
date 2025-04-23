@@ -261,6 +261,9 @@ export const updateUserPreferences = async (req, res) => {
     const recipeCountData = req.body.recipeCount;
     updateData['profile.recipes.wantToTry'] = recipeCountData;
   }
+  if (req.body.frequency !== undefined) {
+    updateData.frequency = req.body.frequency;
+  }
 
   if (Object.keys(updateData).length === 0) {
     res.status(400);
