@@ -1062,3 +1062,26 @@ export const getUserSavedDays = async (req, res) => {
     res.status(500).json({ message: "Failed to load saved days" });
   }
 };
+
+export const deleteCalendarDayForUser = async (req, res) => {
+  const { userId } = req.params;
+  const { date } = req.body;
+
+  if (!date) {
+    return res.status(400).json({ message: "Date is required to delete." });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    user.savedDays = user.savedDays.filter(day => day.date !== date);
+    await user.save();
+
+    res.status(200).json({ message: "Day deleted successfully." });
+  } catch (err) {
+    console.error("Delete error:", err);
+    res.status(500).json({ message: "Failed to delete day." });
+  }
+};
+

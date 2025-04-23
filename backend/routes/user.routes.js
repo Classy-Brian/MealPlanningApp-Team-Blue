@@ -23,10 +23,10 @@ import {
   updateUserPassword,
   verifyCurrentUserPassword,
   verifyUserEmail,
-  
   getUserSavedDays,
   unsaveRecipe,
   saveCalendarDayForUser,
+  deleteCalendarDayForUser,
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -102,6 +102,10 @@ router.post('/:userId/save-day', saveCalendarDayForUser);
 
 // GET saved-days
 router.get('/:userId/saved-days', getUserSavedDays);
+
+//delete saved-days
+router.delete('/:userId/delete-day', deleteCalendarDayForUser);
+
 
 
 export default router;
