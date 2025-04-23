@@ -1,22 +1,22 @@
-// SavedRecipesDupi.jsx
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, FlatList, Image, Alert, StyleSheet,
-  TouchableOpacity, Modal, ScrollView
+  View, Text, TextInput, FlatList, Image, Alert,
+  StyleSheet, TouchableOpacity, Modal, ScrollView
 } from 'react-native';
 import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { styles as sharedStyles } from '@/components/Sheet';
 import Back_butt from '@/assets/images/backbutton.png';
 
 const SavedRecipesDupi = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { selectedTime, selectedDate } = route.params;
+
+  const { selectedTime, selectedDate } = route.params || {};
 
   const [query, setQuery] = useState('');
   const [savedRecipes, setSavedRecipes] = useState([]);
@@ -32,7 +32,7 @@ const SavedRecipesDupi = () => {
     categories: ['All'], cuisines: ['All'], diets: [], healthLabels: [], cautions: []
   });
 
-  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+  const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
 
   const fetchSavedRecipes = async () => {
     setLoading(true);
@@ -43,28 +43,26 @@ const SavedRecipesDupi = () => {
       setSavedRecipes(recipes);
       setFilteredRecipes(recipes);
 
-      const sets = {
-        categories: new Set(),
-        cuisines: new Set(),
-        diet: new Set(),
-        health: new Set(),
-        caution: new Set(),
-      };
+      const categories = new Set();
+      const cuisines = new Set();
+      const diet = new Set();
+      const health = new Set();
+      const caution = new Set();
 
       recipes.forEach(r => {
-        r.mealType?.forEach(t => sets.categories.add(capitalize(t)));
-        r.cuisineType?.forEach(t => sets.cuisines.add(capitalize(t)));
-        r.dietLabels?.forEach(t => sets.diet.add(capitalize(t)));
-        r.healthLabels?.forEach(t => sets.health.add(capitalize(t)));
-        r.cautions?.forEach(t => sets.caution.add(capitalize(t)));
+        r.mealType?.forEach(t => categories.add(capitalize(t)));
+        r.cuisineType?.forEach(t => cuisines.add(capitalize(t)));
+        r.dietLabels?.forEach(t => diet.add(capitalize(t)));
+        r.healthLabels?.forEach(t => health.add(capitalize(t)));
+        r.cautions?.forEach(t => caution.add(capitalize(t)));
       });
 
       setAvailableFilters({
-        categories: ['All', ...Array.from(sets.categories)],
-        cuisines: ['All', ...Array.from(sets.cuisines)],
-        diets: Array.from(sets.diet),
-        healthLabels: Array.from(sets.health),
-        cautions: Array.from(sets.caution),
+        categories: ['All', ...Array.from(categories)],
+        cuisines: ['All', ...Array.from(cuisines)],
+        diets: Array.from(diet),
+        healthLabels: Array.from(health),
+        cautions: Array.from(caution),
       });
 
     } catch (err) {
@@ -123,14 +121,15 @@ const SavedRecipesDupi = () => {
 
   return (
     <View style={styles.container}>
-      {/* 🔙 Back button to AddDayScreen */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('addday')}>
         <Image source={Back_butt} style={styles.backIcon} />
-        <Text style={styles.backText}>Back to Calendar</Text>
+        <Text style={styles.backText}>Back to Add Day</Text>
       </TouchableOpacity>
 
       <Text style={sharedStyles.title}>Browse Saved Recipes</Text>
 
+      {/* Search & Filter */}
       <View style={styles.searchContainer}>
         <View style={styles.inputContainer}>
           <TextInput
@@ -151,6 +150,7 @@ const SavedRecipesDupi = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Recipe List */}
       <FlatList
         data={filteredRecipes}
         keyExtractor={(item, index) => index.toString()}
@@ -168,8 +168,8 @@ const SavedRecipesDupi = () => {
         ListEmptyComponent={!loading && <Text style={styles.noRecipesText}>No recipes found.</Text>}
       />
 
-      {/* Modal for Filters */}
-      <Modal visible={filterModalVisible} animationType="slide" transparent>
+      {/* Filter Modal */}
+      <Modal visible={filterModalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
             <ScrollView>
@@ -230,6 +230,9 @@ const SavedRecipesDupi = () => {
           </View>
         </View>
       </Modal>
+
+      {loading && <Text>Loading...</Text>}
+      {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
 };
@@ -237,13 +240,13 @@ const SavedRecipesDupi = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
   backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#D7E2F1",
-    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#D7E2F1',
     borderRadius: 10,
-    alignSelf: 'flex-start',
+    padding: 10,
     marginBottom: 10,
+    alignSelf: 'flex-start',
   },
   backIcon: { width: 20, height: 20, marginRight: 5 },
   backText: { fontSize: 16, color: '#000' },

@@ -54,7 +54,8 @@ const userSchema = new mongoose.Schema({
               meal: { type: String, required: true },
               recipeId: { type: String, required: true },
               recipeLabel: { type: String },             
-              calories: { type: Number, default: 0 },   
+              calories: { type: Number, default: 0 },   // total calories for that recipe
+              servings: { type: Number, default: 1 },   // added for calories per serving
               time: { type: String, required: true }
             }
           ]
