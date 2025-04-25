@@ -65,6 +65,18 @@ const SignUp = () => {
         return;
       }
 
+      const gmailRegex = /^[^\s@]+@gmail\.com$/i;
+
+      if (!gmailRegex.test(email)) {
+        Alert.alert(
+          "Invalid Email",
+          "Please enter a valid Gmail address (e.g., example@gmail.com). This app currently only supports Gmail accounts.",
+          [{text: "OK"}],
+          {cancelable: true}
+        );
+        return;
+      }
+
       if (password != confpassword) {
         Alert.alert("Password doesn't match", "", [{text: "OK"}], {cancelable: true});
         return;
