@@ -7,11 +7,8 @@ import { textcolors} from '../../components/TextColors'
 import { fonts } from '../../components/Fonts'
 import { styles } from '@/components/Sheet'
 import { RadioButton } from 'react-native-paper'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 
-const feeds1Icon = require('../../assets/images/feeds1_icon.png')
-const feeds2Icon = require('../../assets/images/feeds2_icon.png')
-const feeds4Icon = require('../../assets/images/feeds4_icon.png')
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { useNavigation } from "@react-navigation/native";
 
@@ -29,17 +26,16 @@ function BackButton() {
     )
 }
 
-const PORTION_OPTIONS = [
-    { value: 1, label: 'Feeds 1', description: 'Individual', icon: feeds1Icon },
-    { value: 2, label: 'Feeds 2', description: 'Couple', icon: feeds2Icon },
-    { value: 4, label: 'Feeds 4', description: 'Family', icon: feeds4Icon },
-]
+const FREQUENCY_OPTIONS = [
+    { value: "1.5", label: '1-2 days / week', description: 'Light Cook' },
+    { value: "3.5", label: '3-4 days / week', description: 'Moderate Cook' },
+    { value: "6",   label: '5-7 days / week', description: 'Heavy Cook' },
+];
 
-const PortionSettingsScreen = () => {
-    const [portion, setSelectedPortion] = useState(null);
+const FrequencySettingsScreen = () => {
+    const [frequency, setSelectedFrequency] = useState(null);
     const params = useLocalSearchParams();
     const { from } = params;
-    // const router = useRouter();
     const [token, setToken] = useState(null);
     const [axiosInstance, setAxiosInstance] = useState(null);
 
@@ -67,14 +63,16 @@ const PortionSettingsScreen = () => {
     }, []);
 
     const fetchUserData = async () => {
-        if (!axiosInstance) return;
+        if (!axiosInstance || !token) return;
 
         try {
-            console.log("Fetching user data for portion size");
+            console.log("Fetching user data for frequency");
             const response = await axiosInstance.get(`/api/users/profile/${token}`)
-            const userPortion = response.data.portion;
-            const portionValue = parseInt(userPortion, 10);
-            setSelectedPortion(isNaN(portionValue) ? 1: portionValue)
+            const userFrequency = response.data.frequency;
+            const frequencyValue = FREQUENCY_OPTIONS.some(opt => opt.value === userFrequency)
+                                    ? userFrequency
+                                    : FREQUENCY_OPTIONS[0].value;
+            setSelectedFrequency(frequencyValue)
         } catch (error) {
             console.error("Error, fetching user data:", error);
             if (err.response && err.response.status === 404) {
@@ -82,7 +80,7 @@ const PortionSettingsScreen = () => {
             } else if (err.response && err.response.status === 401) {
                 Alert.alert("Error", "Unauthorized. Please log in again.");
             } else {
-                Alert.alert("Error", "Could not load portion data.");
+                Alert.alert("Error", "Could not load frequency data.");
             }
         }
     };
@@ -94,12 +92,12 @@ const PortionSettingsScreen = () => {
     }, [axiosInstance]);
 
     const handleSelection = (value) => {
-        setSelectedPortion(value);
+        setSelectedFrequency(value);
     };
-
-    const savePortionSize = async () => {
-        if (portion === null) {
-            Alert.alert("Selection Needed", "Please select a portion size to save.");
+    
+    const saveFrequency = async() => {
+        if (frequency === null) {
+            Alert.alert("Selection Needed", "Please select a frequency to save.");
             return;
         }
         if (!axiosInstance) {
@@ -108,60 +106,61 @@ const PortionSettingsScreen = () => {
         }
 
         try { 
-            console.log("Saving portion size:", portion)
+            console.log("Saving frequency:", frequency)
 
             await axiosInstance.patch(`/api/users/preferences`, {
-                portion: portion
+                frequency: frequency
             });
 
-            Alert.alert("Success", "Portion size updated successfully!");
+            Alert.alert("Success", "frequency updated successfully!");
 
         } catch (error) {
-            console.error("Error updating portion size:", error);
-            Alert.alert("Error", "Could not update portion size. Please try again.");
+            console.error("Error updating frequency:", error);
+            Alert.alert("Error", "Could not update frequency. Please try again.");
         }
     }
 
     return (
-        <SafeAreaView style={styles_portion.safeArea}>
-            <View style={styles_portion.container}>
-
+        <SafeAreaView style={styles_frequency.safeArea}>
+            <View style={styles_frequency.container}>
+    
                 {/* Header */}
                 <BackButton />
 
-                <Text style={[styles.title, {marginTop: 10}]}>Portion Size</Text>
-                <Text style={styles_portion.normalText}>Select your preferred portion size.</Text>
-
+                <Text style={[styles.title, {marginTop: 10}]}>Cooking Frequency</Text>
+                <Text style={styles_frequency.normalText}>How many days per week do you typically plan to cook or prepare meals?</Text>
+    
                 {/* Radio Button Options */}
-                <View style={styles_portion.optionsContainer}>
-                    <RadioButton.Group onValueChange={newValue => handleSelection(parseInt(newValue, 10))} value={portion?.toString()}>
-                        {PORTION_OPTIONS.map((option) => (
-                            <TouchableOpacity key={option.value} onPress={() => handleSelection(option.value)} style={styles_portion.optionRow}>
-                                <RadioButton.Android
-                                    value={option.value.toString()}
-                                    status={portion === option.value ? 'checked' : 'unchecked'}
+                <View style={styles_frequency.optionsContainer}>
+                    <RadioButton.Group onValueChange={newValue => handleSelection(newValue)} value={frequency}>
+                        {FREQUENCY_OPTIONS.map((option) => (
+                            <TouchableOpacity key={option.value} onPress={() => handleSelection(option.value)} style={styles_frequency.optionRow}>
+                                <RadioButton.Android 
+                                    value={option.value} 
+                                    status={frequency === option.value ? 'checked' : 'unchecked'}
                                     color={colors.header}
                                 />
-                                <Text style={styles_portion.optionLabel}>{option.label}</Text>
-                                <Image source={option.icon} style={styles_portion.optionIcon} />
+                                <Text style={styles_frequency.optionLabel}>{option.description}</Text>
+                                <Text style={styles_frequency.optionLabel}>{option.label}</Text>
                             </TouchableOpacity>
                         ))}
                     </RadioButton.Group>
                 </View>
-
-                <TouchableOpacity
-                    style={styles_portion.saveButton}
-                    onPress={savePortionSize}
-                >
-                    <Text style={styles_portion.saveButtonText}>Save</Text>
-                </TouchableOpacity>
-
+    
+                    <TouchableOpacity
+                        style={styles_frequency.saveButton}
+                        onPress={saveFrequency}
+                    >
+                        <Text style={styles_frequency.saveButtonText}>Save</Text>
+                    </TouchableOpacity>
+    
             </View>
         </SafeAreaView>
     );
+
 };
 
-const styles_portion = StyleSheet.create({
+const styles_frequency = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#fff',
@@ -244,4 +243,4 @@ const styles_portion = StyleSheet.create({
     },
 });
 
-export default PortionSettingsScreen;
+export default FrequencySettingsScreen;

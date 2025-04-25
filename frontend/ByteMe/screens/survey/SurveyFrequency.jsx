@@ -137,8 +137,8 @@ const SurveyFrequency = ({ navigation }) => {
                                         status={selectedFrequency === option.value ? 'checked' : 'unchecked'}
                                         color={colors.header}
                                     />
-                                    <Text style={styles_survey.optionLabel}>{option.label}</Text>
                                     <Text style={styles_survey.optionLabel}>{option.description}</Text>
+                                    <Text style={styles_survey.optionLabel}>{option.label}</Text>
                                 </TouchableOpacity>
                             ))}
                         </RadioButton.Group>

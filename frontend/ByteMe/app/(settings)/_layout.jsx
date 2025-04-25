@@ -5,6 +5,7 @@ import ConfirmDeleteScreen from './confirmdelete';
 import CuisineSettingScreen from './cuisine';
 import DislikedSettingsScreen from './disliked';
 import PortionSettingsScreen from './portion';
+import FrequencySettingsScreen from './frequency';
 import PreferenceSettingsScreen from './preference';
 import SettingsScreen from './settings';
 import UpdatePasswordScreen from './updatepassword';
@@ -26,25 +27,28 @@ const SettingsLayout = () => {
           <Stack.Screen 
             name="allergy_settings" 
             component={AllergySettingsScreen} />
-            <Stack.Screen 
+          <Stack.Screen 
             name="confirm_delete" 
             component={ConfirmDeleteScreen} />
-            <Stack.Screen 
+          <Stack.Screen 
             name="cuisine_settings" 
             component={CuisineSettingScreen} />
-            <Stack.Screen 
+          <Stack.Screen 
             name="disliked_settings" 
             component={DislikedSettingsScreen} />
           <Stack.Screen 
             name="portion_settings" 
             component={PortionSettingsScreen} />
           <Stack.Screen 
+            name="frequency_settings" 
+            component={FrequencySettingsScreen} />
+          <Stack.Screen 
             name="preference_settings" 
             component={PreferenceSettingsScreen} />
-            <Stack.Screen 
+          <Stack.Screen 
             name="update_pass" 
             component={UpdatePasswordScreen} />
-            <Stack.Screen 
+          <Stack.Screen 
             name="verify_pass" 
             component={VerifyPasswordScreen} />
       </Stack.Navigator>

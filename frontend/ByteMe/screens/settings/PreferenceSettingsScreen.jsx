@@ -104,19 +104,23 @@ const PreferenceSettingsScreen = () => {
                         </TouchableOpacity>
                     </Link>
 
-                    <TouchableOpacity style={styles_preference.settingItem}>
-                        <MaterialIcons name="tune" size={40} color="#000000" />
-                        <View style={styles_preference.textContainer}>
-                            <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
-                                Preset Meal Plans
-                            </Text>
-                            <Text style={styles_preference.settingDescriptionText}>
-                                Select the type(s) of meal plans {"\n"}
-                                you'd like to see more of.
-                            </Text>
-                        </View>
-                        <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
-                    </TouchableOpacity>
+                    <Link href={{ pathname: "/(settings)/frequency", params: { from: 'Frequency' } }} asChild>
+                        <TouchableOpacity 
+                            style={styles_preference.settingItem}
+                            onPress={() => navigation.navigate('frequency_settings')}>
+                            <MaterialIcons name="tune" size={40} color="#000000" />
+                            <View style={styles_preference.textContainer}>
+                                <Text style={[styles_preference.settingTitleText, {fontWeight: 'bold'}]}>
+                                    Cooking Frequency
+                                </Text>
+                                <Text style={styles_preference.settingDescriptionText}>
+                                    How many days per week do you typically {"\n"}
+                                    plan to cook or prepare meals?
+                                </Text>
+                            </View>
+                            <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
+                        </TouchableOpacity>
+                    </Link>
 
                 </View>
             </ScrollView>
