@@ -31,6 +31,33 @@ const NewPasswordScreen = ({ navigation, route }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null); 
 
+    const validatePassword = (password) => {
+        const minLength = 8;
+        const errors = [];
+        
+        if (password.length < minLength) {
+          errors.push(`Password must be at least ${minLength} characters long.`);
+        }
+    
+        if (!/[A-Z]/.test(password)) {
+          errors.push("Password must contain at least one uppercase letter.");
+        }
+    
+        if (!/[a-z]/.test(password)) {
+          errors.push("Password must contain at least one lowercase letter.");
+        }
+    
+        if (!/\d/.test(password)) {
+          errors.push("Password must contain at least one number.");
+        }
+    
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
+          errors.push("Password must contain at least one special character (e.g., !@#$%).");
+        }
+    
+        return errors.length > 0 ? errors.join('\n') : null;
+    };
+
     const handleSetNewPassword = async () => {
         // Basic Validation
         if (!newPassword.trim() || !confirmPassword.trim()) {
@@ -41,10 +68,17 @@ const NewPasswordScreen = ({ navigation, route }) => {
             Alert.alert("Error", "Passwords do not match.");
             return;
         }
-        // if (newPassword.length < 6) {
-        //      Alert.alert("Error", "Password must be at least 6 characters long.");
-        //      return;
-        // }
+        
+        const passwordValidationError = validatePassword(newPassword);
+        if (passwordValidationError) {
+            Alert.alert(
+                "Invalid Password",
+                passwordValidationError,
+                [{text: "OK"}],
+                {cancelable: true}
+            );
+            return;
+        }
 
         Keyboard.dismiss();
 
