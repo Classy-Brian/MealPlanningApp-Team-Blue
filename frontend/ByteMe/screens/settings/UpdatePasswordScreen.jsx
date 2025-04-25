@@ -31,6 +31,33 @@ function BackButton() {
     )
 }
 
+const validatePassword = (password) => {
+    const minLength = 8;
+    const errors = [];
+    
+    if (password.length < minLength) {
+      errors.push(`Password must be at least ${minLength} characters long.`);
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      errors.push("Password must contain at least one uppercase letter.");
+    }
+
+    if (!/[a-z]/.test(password)) {
+      errors.push("Password must contain at least one lowercase letter.");
+    }
+
+    if (!/\d/.test(password)) {
+      errors.push("Password must contain at least one number.");
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
+      errors.push("Password must contain at least one special character (e.g., !@#$%).");
+    }
+
+    return errors.length > 0 ? errors.join('\n') : null;
+};
+
 const UpdatePasswordScreen = () => {
     const router = useRouter();
     const params = useLocalSearchParams();
@@ -80,6 +107,17 @@ const UpdatePasswordScreen = () => {
         }
         if (newPassword !== confirmPassword) {
             Alert.alert("Error", "New passwords do not match.");
+            return;
+        }
+
+        const passwordValidationError = validatePassword(newPassword);
+        if (passwordValidationError) {
+            Alert.alert(
+                "Invalid Password",
+                passwordValidationError,
+                [{text: "OK"}],
+                {cancelable: true}
+            );
             return;
         }
 
