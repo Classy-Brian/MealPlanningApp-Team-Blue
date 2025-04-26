@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, ActivityIndicator, ScrollView, Alert,
-  ImageBackground, TouchableOpacity, Image
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  ImageBackground, Image, Alert, ActivityIndicator
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
@@ -24,77 +24,56 @@ const placeholderRecipes = [
 ];
 
 const HomeScreen = () => {
+  const router = useRouter();
   const [userName, setUserName] = useState(null);
-  const [token, setToken] = useState(null);
-  const [axiosInstance, setAxiosInstance] = useState(null);
   const [todayMeals, setTodayMeals] = useState([]);
   const [completedMeals, setCompletedMeals] = useState({});
-  const router = useRouter();
+  const [loadingMeals, setLoadingMeals] = useState(true);
 
   useEffect(() => {
-    const getTokenAndSetupAxios = async () => {
+    const fetchData = async () => {
       try {
-        const storedToken = await AsyncStorage.getItem('authToken');
-        if (storedToken) {
-          setToken(storedToken);
-          setAxiosInstance(() => axios.create({
-            baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
-            headers: { Authorization: `Bearer ${storedToken}` },
-          }));
-        } else {
+        const token = await AsyncStorage.getItem('authToken');
+        if (!token) {
           router.replace('/(start)/login');
+          return;
+        }
+
+        const axiosInstance = axios.create({
+          baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const userRes = await axiosInstance.get(`/api/users/profile/${token}`);
+        if (userRes.data?.name) setUserName(userRes.data.name);
+
+        const userId = userRes.data?._id;
+        if (!userId) throw new Error("User ID not found.");
+
+        const calendarRes = await axiosInstance.get(`/api/users/${userId}/saved-days`);
+        const todayString = new Date().toDateString();
+        const todayData = calendarRes.data.savedDays.find(day => new Date(day.date).toDateString() === todayString);
+
+        if (todayData) {
+          setTodayMeals(todayData.meals);
+        } else {
+          setTodayMeals([]);
         }
       } catch (error) {
-        console.error("Error getting token:", error);
-        Alert.alert("Error", "Could not load authentication token.");
+        console.error(error);
+        Alert.alert("Error loading data", error.message || "Unknown error");
+      } finally {
+        setLoadingMeals(false);
       }
     };
-    getTokenAndSetupAxios();
+
+    fetchData();
   }, []);
-
-  useEffect(() => {
-    if (axiosInstance) fetchUserProfile();
-  }, [axiosInstance]);
-
-  useEffect(() => {
-    if (axiosInstance) fetchTodayMeals();
-  }, [axiosInstance]);
-
-  const fetchUserProfile = async () => {
-    try {
-      const res = await axiosInstance.get(`/api/users/profile/${token}`);
-      if (res.data?.name) {
-        setUserName(res.data.name);
-      }
-    } catch (error) {
-      if (error.response?.status === 401) router.replace('/(start)/login');
-    }
-  };
-
-  const fetchTodayMeals = async () => {
-    try {
-      const userId = await getUserIdFromToken();
-      const res = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/saved-days`);
-      const todayString = new Date().toDateString();
-
-      const todayData = res.data.savedDays.find(day => {
-        return new Date(day.date).toDateString() === todayString;
-      });
-
-      if (todayData) {
-        setTodayMeals(todayData.meals);
-      } else {
-        setTodayMeals([]);
-      }
-    } catch (err) {
-      console.error('Failed to fetch today meals', err);
-    }
-  };
 
   const handleToggleComplete = (index) => {
     setCompletedMeals(prev => ({
       ...prev,
-      [index]: !prev[index],
+      [index]: !prev[index]
     }));
   };
 
@@ -105,19 +84,18 @@ const HomeScreen = () => {
         recipeLabel: meal.recipeLabel,
         recipeId: meal.recipeId,
         time: meal.time,
+        imageUri: meal.imageUri || '',   // Add image
+        ingredients: JSON.stringify(meal.ingredients || []),  // Pass ingredients
+        allergies: JSON.stringify(meal.allergies || []),      // Pass allergies
+        nutrition: JSON.stringify(meal.nutrition || {}),      // Pass nutrition
       },
     });
-  };
-
-  const handleRecipePress = (recipe) => {
-    console.log('Recipe pressed:', recipe.title);
-    // you can add navigate to explore details later if you want
   };
 
   return (
     <ScrollView style={styles_home.container}>
       {/* Welcome */}
-      <View style={[styles_home.welcomeContainer, { borderBottomColor: 'gray', borderBottomWidth: 1 }]}>
+      <View style={[styles_home.welcomeContainer, { borderBottomWidth: 1, borderBottomColor: 'gray' }]}>
         <Text style={styles_home.welcomeMessage}>
           Welcome{userName ? `, ${userName}` : ''}!
         </Text>
@@ -128,7 +106,7 @@ const HomeScreen = () => {
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles_home.horizontalRecipeList}>
         {placeholderRecipes.map((recipe) => (
-          <TouchableOpacity key={recipe.id} style={styles_home.recipeCard} onPress={() => handleRecipePress(recipe)}>
+          <TouchableOpacity key={recipe.id} style={styles_home.recipeCard}>
             <ImageBackground source={recipe.image} style={styles_home.cardImage} imageStyle={styles_home.cardImageStyle}>
               <View style={styles_home.cardTextOverlay}>
                 <Text style={styles_home.cardTitle}>{recipe.title}</Text>
@@ -138,7 +116,7 @@ const HomeScreen = () => {
         ))}
       </ScrollView>
 
-      {/* Discover More Button */}
+      {/* Discover More */}
       <TouchableOpacity style={styles_home.discoverButton} onPress={() => router.push('/explorerecipes')}>
         <Text style={styles_home.discoverButtonText}>Discover more</Text>
       </TouchableOpacity>
@@ -146,15 +124,23 @@ const HomeScreen = () => {
       {/* Meal Plan for Today */}
       <Text style={styles_home.sectionTitle}>Meal Plan for Today</Text>
 
-      {todayMeals.length === 0 ? (
-        <Text style={{ textAlign: 'center', marginVertical: 20, color: 'gray' }}>
-          No meals scheduled for today.
-        </Text>
+      {loadingMeals ? (
+        <ActivityIndicator size="large" color={colors.primary} />
+      ) : todayMeals.length === 0 ? (
+        <View style={{ alignItems: 'center', marginTop: 20 }}>
+          <Text style={{ fontSize: 16, color: 'gray' }}>No meals scheduled for today!</Text>
+          <TouchableOpacity style={styles_home.addMealButton} onPress={() => router.push('/addday')}>
+            <Text style={styles_home.addMealButtonText}>+ Add Meal</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <View style={styles_home.mealPlanContainer}>
           {todayMeals.map((meal, index) => (
             <TouchableOpacity key={index} style={styles_home.mealItemCard} onPress={() => handleMealPress(meal)}>
-              <TouchableOpacity style={styles_home.checkCircle} onPress={() => handleToggleComplete(index)}>
+              <TouchableOpacity style={[
+                styles_home.checkCircle,
+                completedMeals[index] && { backgroundColor: '#1F508F', borderColor: '#1F508F' }
+              ]} onPress={() => handleToggleComplete(index)}>
                 {completedMeals[index] && (
                   <Ionicons name="checkmark" size={16} color="#fff" />
                 )}
@@ -163,8 +149,17 @@ const HomeScreen = () => {
               <Text style={styles_home.mealTime}>{meal.time}</Text>
 
               <View style={styles_home.mealDetails}>
-                <Text style={[styles_home.mealRecipeName, completedMeals[index] && { textDecorationLine: 'line-through', color: 'gray' }]}>
+                <Text style={[
+                  styles_home.mealRecipeName,
+                  completedMeals[index] && { textDecorationLine: 'line-through', color: 'gray' }
+                ]}>
                   {meal.recipeLabel}
+                </Text>
+                <Text style={[
+                  styles_home.mealCalories,
+                  completedMeals[index] && { textDecorationLine: 'line-through', color: 'gray' }
+                ]}>
+                  {meal.calories ? `${Math.round(meal.calories)} Calories` : 'No calorie info'}
                 </Text>
               </View>
 
@@ -196,6 +191,9 @@ const styles_home = StyleSheet.create({
   mealTime: { fontSize: 14, fontWeight: 'bold', color: textcolors.darkgrey, width: 70, marginRight: 15 },
   mealDetails: { flex: 1 },
   mealRecipeName: { fontSize: 16, fontWeight: 'bold', color: textcolors.black },
+  mealCalories: { fontSize: 13, color: textcolors.darkgrey },
+  addMealButton: { backgroundColor: '#1F508F', padding: 10, borderRadius: 20, marginTop: 10 },
+  addMealButtonText: { color: '#fff', fontWeight: 'bold' }
 });
 
 export default HomeScreen;
