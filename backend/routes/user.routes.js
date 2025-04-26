@@ -25,6 +25,7 @@ import {
   verifyUserEmail,
   getUserSavedDays,
   unsaveRecipe,
+  markMealCompleted,
   saveCalendarDayForUser,
   deleteCalendarDayForUser,
 } from '../controllers/user.controller.js';
@@ -106,6 +107,6 @@ router.get('/:userId/saved-days', getUserSavedDays);
 //delete saved-days
 router.delete('/:userId/delete-day', deleteCalendarDayForUser);
 
-
+router.patch('/:userId/mark-meal-completed', markMealCompleted);
 
 export default router;

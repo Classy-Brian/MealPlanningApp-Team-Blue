@@ -56,7 +56,8 @@ const userSchema = new mongoose.Schema({
               recipeLabel: { type: String },             
               calories: { type: Number, default: 0 },   // total calories for that recipe
               servings: { type: Number, default: 1 },   // added for calories per serving
-              time: { type: String, required: true }
+              time: { type: String, required: true },
+              completed: { type: Boolean, default: false }
             }
           ]
         }
