@@ -46,14 +46,41 @@
 
 ---
 
-## Phase 4: Serve the Customer & Polish ✨ (Future)
+## Phase 4: Frontend Integration & Polish ✨
 
-* **Status:** [`TODO`]
-* **Goal:** Show the plan in the app and add features.
-* **Analogy:** Presenting the beautiful menu to the customer and adding service touches.
-* **Checkpoints:** (Stuff for later)
-    * 📱 Frontend display.
-    * 💾 Buttons (`Save`, `Regenerate`).
-    * ⚠️ Error handling.
+* **Status:** [`DONE (Core Functionality)`] 
+* **Goal:** Allow users to generate and view their AI-powered meal plan within the React frontend, triggered from the homepage.
+* **Analogy:** Setting up the display case (UI) and connecting the 'Generate Menu' button (API call) so the customer can easily get and see their personalized menu (meal plan).
+* **Checkpoints (Core Functionality - Homepage Button):**
+    1.  🖱️ **UI Trigger:** Add a 'Generate AI Plan' button (or similar element) to the main Homepage component (e.g., `HomePage.js`).
+    2.  💾 **State Setup:** In the Homepage component, implement `useState` hooks to manage:
+        * `mealPlan` (to store the fetched plan object, default `null`).
+        * `isLoading` (boolean, to show a loading state, default `false`).
+        * `error` (to store any error messages, default `null`).
+    3.  📞 **API Call Function:** Create an `async` function (e.g., `WorkspaceAiMealPlan`) within the component that will:
+        * Set `isLoading` to `true`, clear previous `error` and `mealPlan`.
+        * Get the user's authentication token (from context, local storage, etc.).
+        * Make the `POST` request to `/api/ai/generate-structured-plan` with the auth header using `axios` or `Workspace`.
+        * On success: Parse the response, update `mealPlan` state with `response.data.generatedPlan`.
+        * On failure: Parse the error, update `error` state.
+        * In a `finally` block: Set `isLoading` back to `false`.
+    4.  🚦 **Conditional Rendering:** In the component's JSX:
+        * Show a loading indicator (e.g., "Generating...") when `isLoading` is true.
+        * Show an error message (e.g., contents of `error`) if `error` is not null.
+        * Render the meal plan display only when `mealPlan` has data (and not loading or errored).
+    5.  🍽️ **Plan Display Logic:** Create the JSX structure to display the `mealPlan` data:
+        * Map or list out Breakfast, Lunch, Dinner sections.
+        * For each meal, check `mealPlan[mealType].source`:
+            * If `'edamam'`: Display `label`, `imageUrl`, `calories`, maybe link `url`.
+            * If `'ai'` or `'ai_error'`: Display the `suggestion` text.
 
 ---
+
+* **Checkpoints (Future Polish / Enhancements):** *(Still TODO)*
+    * ✨ Improve styling and layout of the displayed plan.
+    * 💾 Add 'Save Plan' functionality (Phase 5?).
+    * 🔄 Add 'Regenerate Plan' button.
+    * 🎉 Implement post-survey automatic generation (Hybrid approach).
+    * 💪 More robust frontend error handling/user feedback messages.
+    * 🖱️ Make the meal cards clickable (e.g., link to Edamam URL).
+    * 🤔 Refine Edamam results (e.g., pick a better match than just the first hit, re-evaluate calorie filter).

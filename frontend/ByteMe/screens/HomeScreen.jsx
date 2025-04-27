@@ -31,6 +31,12 @@ const HomeScreen = () => {
     const [axiosInstance, setAxiosInstance] = useState(null);
     const router = useRouter();
 
+    // --- New state variables ---
+    const [mealPlan, setMealPlan] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    // --- New state variables ---
+
     useEffect(() => {
         const getTokenAndSetupAxios = async () => {
             let storedToken = null;
@@ -57,6 +63,52 @@ const HomeScreen = () => {
         };
         getTokenAndSetupAxios();
     }, []); 
+
+    // --- New function to call backend API ---
+
+    const fetchAiMealPlan = async () => {
+        console.log("Frontend: Attempting to fetch AI meal plan...");
+        setIsLoading(true);
+        setError(null);
+        setMealPlan(null);
+
+        if (!axiosInstance) {
+            console.error("Frontend: Axios instance not ready.");
+            setError("Session data is not ready. Please try again shortly.");
+            setIsLoading(false);
+            Alert.alert("Error", "Session data is not ready. Please try again shortly.");
+            return;
+        }
+
+        try {
+            const response = await axiosInstance.post('/api/ai/generate-structured-plan');
+            console.log("Frontend: AI Plan fetched successfully!", response.data);
+
+            if (response.data && response.data.generatedPlan) {
+                setMealPlan(response.data.generatedPlan);
+            } else {
+                console.error("Frontend: Generated plan data missing in response:", response.data);
+                throw new Error("Received plan data in unexpected format from server.");
+            }
+
+        } catch (err) {
+            console.error("Frontend: Error fetching AI plan:", err);
+            let message = "An error occurred while generating the plan.";
+            if (err.response && err.response.data && err.response.data.error) {
+                message = err.response.data.error;
+            } else if (err.message) {
+                message = err.message;
+            }
+            setError(message);
+            setMealPlan(null);
+            Alert.alert("Plan Generation Failed", message);
+        } finally {
+            setIsLoading(false);
+            console.log("Frontend: Finished fetching AI meal plan attempt.");
+        }
+    };
+
+    // --- New function to call backend API ---
 
     const fetchUserProfile = async () => {
         if (!axiosInstance) return;
@@ -145,34 +197,147 @@ const HomeScreen = () => {
             {/* --- Meal Plan for Today Section --- */}
             <Text style={styles_home.sectionTitle}>Meal Plan for Today</Text>
 
+            {/* --- AI Button --- */}
+            <TouchableOpacity
+                style={localStyles.aiButton}
+                onPress={fetchAiMealPlan}
+                disabled={isLoading}
+            >
+                {/* Change text based on loading state */}
+                <Text style={localStyles.aiButtonText}>
+                    {isLoading ? "Generating Plan..." : "✨ Generate AI Plan for Today ✨"}
+                </Text>
+            </TouchableOpacity>
+            {/* --- AI Button --- */}
+
             <View style={styles_home.mealPlanContainer}>
-                {placeholderMealPlan.map((item, index) => (
-                <View key={index}>
-                    {/* Meal Type Header (e.g., Breakfast, Lunch) */}
-                    <View style={styles_home.mealTypeHeader}>
-                    <Text style={styles_home.mealTypeText}>{item.meal}</Text>
-                    <Text style={styles_home.mealTypeIcon}>{item.icon}</Text>
+                {isLoading ? (
+                    <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 20 }} />
+                ) : error ? (
+                    <Text style={localStyles.errorText}>Error: {error}</Text>
+                ) : mealPlan ? (
+                    <View>
+                        {Object.entries(mealPlan).map(([mealType, mealData]) => {
+                            let icon = '🍽️';
+                            if (mealType === 'breakfast') icon = '☀️';
+                            else if (mealType === 'lunch') icon = '🌤️';
+                            else if (mealType === 'dinner') icon = '🌙';
+
+                            return (
+                                <View key={mealType}>
+                                    {/* Meal Type Header */}
+                                    <View style={styles_home.mealTypeHeader}>
+                                        {/* Capitalize meal type */}
+                                        <Text style={styles_home.mealTypeText}>{mealType.charAt(0).toUpperCase() + mealType.slice(1)}</Text>
+                                        <Text style={styles_home.mealTypeIcon}>{icon}</Text>
+                                    </View>
+
+                                    {/* Meal Item Card */}
+                                    <TouchableOpacity
+                                        style={styles_home.mealItemCard}
+                                        // add onPress later to navigate to recipe URL or show details
+                                        // onPress={() => {
+                                        //    if(mealData.source === 'edamam' && mealData.url) {
+                                        //        Linking.openURL(mealData.url); // Requires importing Linking from react-native
+                                        //    } else if (mealData.suggestion) {
+                                        //        Alert.alert(mealType.charAt(0).toUpperCase() + mealType.slice(1), mealData.suggestion);
+                                        //    }
+                                        // }}
+                                    >
+                                        {mealData.source === 'edamam' ? (
+                                            // Display Edamam Recipe Details
+                                            <>
+                                                {/* Add Image for Edamam recipes */}
+                                                <Image source={{ uri: mealData.imageUrl }} style={localStyles.mealImage} />
+                                                <View style={styles_home.mealDetails}>
+                                                    <Text style={styles_home.mealRecipeName} numberOfLines={2}>{mealData.label}</Text>
+                                                    <Text style={styles_home.mealCalories}>~{mealData.calories} Calories / serving</Text>
+                                                    {/* Optional: Show servings: <Text style={styles_home.mealCalories}>Yields: {mealData.servings}</Text> */}
+                                                    <Text style={localStyles.mealSource}>Source: Edamam</Text>
+                                                </View>
+                                                <Image source={forwardButton}/>
+                                            </>
+                                        ) : (
+                                            // Display AI Suggestion (source 'ai' or 'ai_error')
+                                            // Use flex: 1 to allow text to take available space
+                                            <View style={[styles_home.mealDetails, { flex: 1, marginLeft: 10 }]}>
+                                                <Text style={styles_home.mealRecipeName} numberOfLines={3}>{mealData.suggestion}</Text>
+                                                <Text style={localStyles.mealSource}>Source: AI Suggestion</Text>
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            );
+                        })}
+                        {/* Optional: Calculate and display total calories from mealPlan */}
+                        {/*
+                        <View style={styles_home.totalCaloriesContainer}>
+                           <Text style={styles_home.totalCaloriesText}>Estimated Total Calories: CALCULATE_ME</Text>
+                        </View>
+                        */}
                     </View>
-                    {/* Meal Item Card */}
-                    <TouchableOpacity style={styles_home.mealItemCard} onPress={() => handleMealPress(item)}>
-                    <Text style={styles_home.mealTime}>{item.time}</Text>
-                    <View style={styles_home.mealDetails}>
-                        <Text style={styles_home.mealRecipeName}>{item.recipeName}</Text>
-                        <Text style={styles_home.mealCalories}>Calories: {item.calories}</Text>
-                    </View>
-                    <Image source={forwardButton}/>
-                    </TouchableOpacity>
-                </View>
-                ))}
-                <View style={styles_home.totalCaloriesContainer}>
-                    <Text style={styles_home.totalCaloriesText}>Total Calories: 1,547</Text>
-                </View>
+                ) : (
+                    // Initial state before generating, or if plan is null
+                    <Text style={localStyles.placeholderText}>Press the button above to generate your AI meal plan for today!</Text>
+                )}
             </View>
 
         </ScrollView>
     );
 
 };
+
+const localStyles = StyleSheet.create({
+    aiButton: {
+        backgroundColor: colors.header,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginHorizontal: 20,
+        marginBottom: 15,
+        marginTop: 5,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+    },
+    aiButtonText: {
+        color: colors.white,
+        fontSize: 16,
+        fontWeight: 'bold',
+        fontFamily: fonts.bold,
+    },
+    errorText: {
+        color: 'red',
+        textAlign: 'center',
+        marginVertical: 20,
+        paddingHorizontal: 15,
+        fontSize: 16,
+    },
+    mealImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 8,
+        marginRight: 15,
+        backgroundColor: colors.lightgrey,
+    },
+    mealSource: {
+        fontSize: 11,
+        color: textcolors.grey,
+        fontStyle: 'italic',
+        marginTop: 4,
+    },
+    placeholderText: {
+        textAlign: 'center',
+        marginVertical: 40,
+        color: textcolors.grey,
+        fontSize: 16,
+        paddingHorizontal: 20,
+    }
+});
 
 const styles_home = StyleSheet.create({
     container: {
