@@ -1,34 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ImageBackground, Image, Alert, ActivityIndicator
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, ImageBackground, Image, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
 import { fonts } from '../components/Fonts';
-import { styles as sharedStyles } from '../components/Sheet';
 
 const forwardButton = require('../assets/images/forwardbutton.png');
 const foodImgExample = require('../assets/images/food_example.jpg');
 
-const placeholderRecipes = [
-  { id: '1', title: "Ploughman's Sandwich", image: foodImgExample },
-  { id: '2', title: "Shrimp Scampi", image: foodImgExample },
-  { id: '3', title: "Chicken Salad", image: foodImgExample },
-  { id: '4', title: "Veggie Wrap", image: foodImgExample },
-];
-
 const HomeScreen = () => {
   const router = useRouter();
   const [userName, setUserName] = useState(null);
-  const [todayMeals, setTodayMeals] = useState([]);
+  const [weekMeals, setWeekMeals] = useState({});
   const [completedMeals, setCompletedMeals] = useState({});
-  const [loadingMeals, setLoadingMeals] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,33 +36,47 @@ const HomeScreen = () => {
         const userRes = await axiosInstance.get(`/api/users/profile/${token}`);
         if (userRes.data?.name) setUserName(userRes.data.name);
 
-        const userId = userRes.data?._id;
-        if (!userId) throw new Error("User ID not found.");
+        const userId = userRes.data._id;
+        if (!userId) throw new Error('User ID not found.');
 
         const calendarRes = await axiosInstance.get(`/api/users/${userId}/saved-days`);
-        const todayString = new Date().toDateString();
-        const todayData = calendarRes.data.savedDays.find(day => new Date(day.date).toDateString() === todayString);
+        const savedDays = calendarRes.data.savedDays || [];
 
-        if (todayData) {
-          setTodayMeals(todayData.meals);
-        } else {
-          setTodayMeals([]);
+        // Build today + next 6 days
+        const weekMap = {};
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() + i);
+          weekMap[date.toDateString()] = [];
         }
+
+        savedDays.forEach((day) => {
+          const formatted = new Date(day.date).toDateString();
+          if (weekMap.hasOwnProperty(formatted)) {
+            weekMap[formatted] = day.meals;
+          }
+        });
+
+        setWeekMeals(weekMap);
       } catch (error) {
         console.error(error);
-        Alert.alert("Error loading data", error.message || "Unknown error");
+        Alert.alert('Error', 'Failed to load calendar data.');
       } finally {
-        setLoadingMeals(false);
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  const handleToggleComplete = (index) => {
-    setCompletedMeals(prev => ({
+  const handleToggleComplete = (day, index) => {
+    setCompletedMeals((prev) => ({
       ...prev,
-      [index]: !prev[index]
+      [day]: {
+        ...(prev[day] || {}),
+        [index]: !prev[day]?.[index],
+      },
     }));
   };
 
@@ -84,32 +87,42 @@ const HomeScreen = () => {
         recipeLabel: meal.recipeLabel,
         recipeId: meal.recipeId,
         time: meal.time,
-        imageUri: meal.imageUri || '',   // Add image
-        ingredients: JSON.stringify(meal.ingredients || []),  // Pass ingredients
-        allergies: JSON.stringify(meal.allergies || []),      // Pass allergies
-        nutrition: JSON.stringify(meal.nutrition || {}),      // Pass nutrition
+        imageUri: meal.imageUri || '',
+        ingredients: JSON.stringify(meal.ingredients || []),
+        allergies: JSON.stringify(meal.allergies || []),
+        nutrition: JSON.stringify(meal.nutrition || {}),
       },
     });
   };
 
+  const getTotalCaloriesLeft = (meals, completed) => {
+    return meals.reduce((sum, meal, idx) => {
+      if (!completed?.[idx]) {
+        return sum + (meal.calories || 0);
+      }
+      return sum;
+    }, 0);
+  };
+
+  const todayDateString = new Date().toDateString();
+
   return (
-    <ScrollView style={styles_home.container}>
-      {/* Welcome */}
-      <View style={[styles_home.welcomeContainer, { borderBottomWidth: 1, borderBottomColor: 'gray' }]}>
-        <Text style={styles_home.welcomeMessage}>
+    <ScrollView style={styles.container}>
+      {/* Welcome Message */}
+      <View style={[styles.welcomeContainer, { borderBottomWidth: 1, borderBottomColor: 'gray' }]}>
+        <Text style={styles.welcomeMessage}>
           Welcome{userName ? `, ${userName}` : ''}!
         </Text>
       </View>
 
       {/* Recipes You May Like */}
-      <Text style={styles_home.sectionTitle}>Recipes you may like</Text>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles_home.horizontalRecipeList}>
-        {placeholderRecipes.map((recipe) => (
-          <TouchableOpacity key={recipe.id} style={styles_home.recipeCard}>
-            <ImageBackground source={recipe.image} style={styles_home.cardImage} imageStyle={styles_home.cardImageStyle}>
-              <View style={styles_home.cardTextOverlay}>
-                <Text style={styles_home.cardTitle}>{recipe.title}</Text>
+      <Text style={styles.sectionTitle}>Recipes you may like</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalRecipeList}>
+        {[1,2,3,4].map((id) => (
+          <TouchableOpacity key={id} style={styles.recipeCard}>
+            <ImageBackground source={foodImgExample} style={styles.cardImage} imageStyle={styles.cardImageStyle}>
+              <View style={styles.cardTextOverlay}>
+                <Text style={styles.cardTitle}>Example Recipe {id}</Text>
               </View>
             </ImageBackground>
           </TouchableOpacity>
@@ -117,64 +130,72 @@ const HomeScreen = () => {
       </ScrollView>
 
       {/* Discover More */}
-      <TouchableOpacity style={styles_home.discoverButton} onPress={() => router.push('/explorerecipes')}>
-        <Text style={styles_home.discoverButtonText}>Discover more</Text>
+      <TouchableOpacity style={styles.discoverButton} onPress={() => router.push('/explorerecipes')}>
+        <Text style={styles.discoverButtonText}>Discover more</Text>
       </TouchableOpacity>
 
-      {/* Meal Plan for Today */}
-      <Text style={styles_home.sectionTitle}>Meal Plan for Today</Text>
+      {/* Weekly Meal Plan */}
+      <Text style={styles.sectionTitle}>Your Meal Plan (Today + Next 6 Days)</Text>
 
-      {loadingMeals ? (
+      {loading ? (
         <ActivityIndicator size="large" color={colors.primary} />
-      ) : todayMeals.length === 0 ? (
-        <View style={{ alignItems: 'center', marginTop: 20 }}>
-          <Text style={{ fontSize: 16, color: 'gray' }}>No meals scheduled for today!</Text>
-          <TouchableOpacity style={styles_home.addMealButton} onPress={() => router.push('/addday')}>
-            <Text style={styles_home.addMealButtonText}>+ Add Meal</Text>
-          </TouchableOpacity>
-        </View>
       ) : (
-        <View style={styles_home.mealPlanContainer}>
-          {todayMeals.map((meal, index) => (
-            <TouchableOpacity key={index} style={styles_home.mealItemCard} onPress={() => handleMealPress(meal)}>
-              <TouchableOpacity style={[
-                styles_home.checkCircle,
-                completedMeals[index] && { backgroundColor: '#1F508F', borderColor: '#1F508F' }
-              ]} onPress={() => handleToggleComplete(index)}>
-                {completedMeals[index] && (
-                  <Ionicons name="checkmark" size={16} color="#fff" />
-                )}
-              </TouchableOpacity>
+        Object.entries(weekMeals).map(([day, meals]) => (
+          <View key={day} style={styles.mealPlanContainer}>
+            <View style={styles.dayHeader}>
+              <Text style={styles.dayTitle}>
+                {day === todayDateString ? 'Today' : day}
+              </Text>
+              <Text style={styles.totalCalories}>
+                {getTotalCaloriesLeft(meals, completedMeals[day])} Calories
+              </Text>
+            </View>
 
-              <Text style={styles_home.mealTime}>{meal.time}</Text>
+            {meals.length === 0 ? (
+              <Text style={styles.noMealText}>No meals scheduled</Text>
+            ) : (
+              meals.map((meal, index) => (
+                <TouchableOpacity key={index} style={styles.mealItemCard} onPress={() => handleMealPress(meal)}>
+                  <TouchableOpacity
+                    style={[
+                      styles.checkCircle,
+                      completedMeals[day]?.[index] && { backgroundColor: '#1F508F', borderColor: '#1F508F' }
+                    ]}
+                    onPress={() => handleToggleComplete(day, index)}
+                  >
+                    {completedMeals[day]?.[index] && (
+                      <Ionicons name="checkmark" size={16} color="#fff" />
+                    )}
+                  </TouchableOpacity>
 
-              <View style={styles_home.mealDetails}>
-                <Text style={[
-                  styles_home.mealRecipeName,
-                  completedMeals[index] && { textDecorationLine: 'line-through', color: 'gray' }
-                ]}>
-                  {meal.recipeLabel}
-                </Text>
-                <Text style={[
-                  styles_home.mealCalories,
-                  completedMeals[index] && { textDecorationLine: 'line-through', color: 'gray' }
-                ]}>
-                  {meal.calories ? `${Math.round(meal.calories)} Calories` : 'No calorie info'}
-                </Text>
-              </View>
+                  <Text style={styles.mealTime}>{meal.time}</Text>
 
-              <Ionicons name="arrow-forward" size={22} color="#333" />
-            </TouchableOpacity>
-          ))}
-        </View>
+                  <View style={styles.mealDetails}>
+                    <Text style={[
+                      styles.mealRecipeName,
+                      completedMeals[day]?.[index] && { textDecorationLine: 'line-through', color: 'gray' }
+                    ]}>
+                      {meal.recipeLabel}
+                    </Text>
+                    <Text style={styles.mealCalories}>
+                      {meal.calories ? `${Math.round(meal.calories)} Calories` : 'No calorie info'}
+                    </Text>
+                  </View>
+
+                  <Ionicons name="arrow-forward" size={22} color="#333" />
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        ))
       )}
     </ScrollView>
   );
 };
 
-const styles_home = StyleSheet.create({
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  welcomeContainer: { paddingHorizontal: 20, paddingVertical: 15, minHeight: 50 },
+  welcomeContainer: { paddingHorizontal: 20, paddingVertical: 15 },
   welcomeMessage: { fontSize: 30, fontWeight: 'bold', color: textcolors.black },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', marginHorizontal: 20, marginTop: 10, marginBottom: 10 },
   horizontalRecipeList: { paddingHorizontal: 15, paddingVertical: 10 },
@@ -185,15 +206,17 @@ const styles_home = StyleSheet.create({
   cardTitle: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
   discoverButton: { backgroundColor: colors.othergrey, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20, alignSelf: 'center', marginTop: 10, marginBottom: 20 },
   discoverButtonText: { color: textcolors.black, fontSize: 16, fontWeight: 'bold' },
-  mealPlanContainer: { marginTop: 10, paddingHorizontal: 15, backgroundColor: colors.lightgrey, paddingVertical: 10, borderRadius: 8 },
-  mealItemCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 10, padding: 15, marginBottom: 15, borderWidth: 1, borderColor: colors.othergrey },
+  mealPlanContainer: { backgroundColor: colors.lightgrey, marginBottom: 20, borderRadius: 8, padding: 10, marginHorizontal: 10 },
+  dayHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
+  dayTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F508F' },
+  totalCalories: { fontSize: 14, fontWeight: 'bold', color: '#1F508F' },
+  noMealText: { textAlign: 'center', marginVertical: 10, color: textcolors.darkgrey },
+  mealItemCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 10, padding: 15, marginTop: 8, borderWidth: 1, borderColor: colors.othergrey },
   checkCircle: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#1F508F', justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  mealTime: { fontSize: 14, fontWeight: 'bold', color: textcolors.darkgrey, width: 70, marginRight: 15 },
+  mealTime: { fontSize: 14, fontWeight: 'bold', width: 70, marginRight: 10, color: textcolors.darkgrey },
   mealDetails: { flex: 1 },
   mealRecipeName: { fontSize: 16, fontWeight: 'bold', color: textcolors.black },
   mealCalories: { fontSize: 13, color: textcolors.darkgrey },
-  addMealButton: { backgroundColor: '#1F508F', padding: 10, borderRadius: 20, marginTop: 10 },
-  addMealButtonText: { color: '#fff', fontWeight: 'bold' }
 });
 
 export default HomeScreen;
