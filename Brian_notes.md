@@ -22,7 +22,7 @@
 
 ## Phase 2: Edamam as the Recipe Book 📚
 
-* **Status:** [`TODO`]
+* **Status:** [`DONE`]
 * **Goal:** Find *real recipes* in the Edamam Recipe Book for the AI Chef's ideas.
 * **Analogy:** Now we take the chef's ideas ("Spicy Pasta") and look them up in a massive cookbook (Edamam) to find actual recipes that fit the user's dietary rules.
 * **Checkpoints:**
@@ -36,7 +36,7 @@
 
 ## Phase 3: Create the Final Menu 🍽️
 
-* **Status:** [`TODO`]
+* **Status:** [`PARTIALLY DONE`]
 * **Goal:** Combine the AI's meal structure (Breakfast/Lunch/Dinner) with the real recipe details from the Edamam book.
 * **Analogy:** We're taking the chef's basic meal structure and filling in the details using the specific recipes found in the cookbook to create the final menu for the customer.
 * **Checkpoints:**

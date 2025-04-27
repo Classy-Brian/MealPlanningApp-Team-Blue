@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -10,6 +11,12 @@ const openai = new OpenAI({
 });
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+const EDAMAM_APP_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
+const EDAMAM_APP_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
+if (!EDAMAM_APP_ID || !EDAMAM_APP_KEY) {
+  console.error("FATAL ERROR: Edamam App ID or App Key not found in environment variables.");
+}
 
 export const getMealPlanFromAI = async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -279,15 +286,132 @@ export const generateStructuredMealPlan = async (req, res) => {
     }
 
     // ============================================================
-    // SECTION 4: PREPARE FINAL RESPONSE
+    // SECTION 4: EDAMAM INTEGRATION
     // ============================================================
 
-    console.log("Placeholder: Ready for Edamam integration.");
+    let processedMeals = {};
+
+    console.log("--- Starting Edamam Search Loop ---");
+
+    for (const [mealType, mealData] of Object.entries(parsedPlan.meals)) {
+      const aiSuggestion = mealData?.suggestion;
+      console.log(`\nProcessing Meal: ${mealType.toUpperCase()}`);
+
+      if (!aiSuggestion) {
+        console.log(`No AI suggestion found for ${mealType}. Skipping Edamam search.`);
+        processedMeals[mealType] = { source: 'ai', suggestion: 'No suggestion provided.' };
+        continue;
+      }
+
+      // --- Build Edamam query parameters (Health, Excluded, Calories) ---
+      console.log("Mapping allergies...");
+      const edamamHealthLabels = {
+        'Milk': 'dairy-free',
+        'Egg': 'egg-free',
+        'Fish': 'fish-free',
+        'Shellfish': 'shellfish-free',
+        'Tree Nuts': 'tree-nut-free',
+        'Peanuts': 'peanut-free',
+        'Wheat': 'wheat-free',
+        'Soybeans': 'soy-free',
+        'Sesame': 'sesame-free'
+      };
+      let healthParams = user.allergies.map(a => edamamHealthLabels[a]).filter(l => l).map(l => `&health=${encodeURIComponent(l)}`).join('');
+      console.log("Generated Health Params:", healthParams);
+
+      console.log("Mapping dislikes...");
+      let excludedParams = user.dislikes.map(d => `&excluded=${encodeURIComponent(d.toLowerCase())}`).join('');
+      console.log("Generated Excluded Params:", excludedParams);
+
+      console.log("Calculating calorie range...");
+      const dailyMinCalories = user.profile?.calories?.min || 2000;
+      const dailyMaxCalories = user.profile?.calories?.max || 3000;
+      const avgDailyCalories = (dailyMinCalories + dailyMaxCalories) / 2;
+      const targetCaloriesPerMeal = Math.round(avgDailyCalories / 3);
+      const calorieBuffer = 150;
+      const calorieRange = `${Math.max(0, targetCaloriesPerMeal - calorieBuffer)}-${targetCaloriesPerMeal + calorieBuffer}`;
+      const caloriesParam = `&calories=${encodeURIComponent(calorieRange)}`;
+      console.log("Generated Calories Param:", caloriesParam);
+
+      // --- Construct Edamam URL (with all filters) ---
+      const query = encodeURIComponent(aiSuggestion || '');
+      // const edamamApiUrl = 
+      //   `https://api.edamam.com/api/recipes/v2?type=public&q=${query}&app_id=${EDAMAM_APP_ID}&app_key=${EDAMAM_APP_KEY}${healthParams}${excludedParams}${caloriesParam}`;
+      
+      // Removed calorie param
+      const edamamApiUrl =
+        `https://api.edamam.com/api/recipes/v2?type=public&q=${query}&app_id=${EDAMAM_APP_ID}&app_key=${EDAMAM_APP_KEY}${healthParams}${excludedParams}`;
+      
+      console.log(`Request URL (debug, with all filters): ${edamamApiUrl}`);
+
+      // --- Call Edamam API (Now inside the loop) ---
+      try {
+        console.log(`Searching Edamam for "${mealType}": "${aiSuggestion}"`);
+        const edamamResponse = await axios.get(edamamApiUrl);
+        const edamamData = edamamResponse.data;
+        console.log(`Edamam Response Status: ${edamamResponse.status}, Found ${edamamData.hits?.length || 0} recipes.`);
+
+        if (edamamData.hits?.length > 0) {
+          const recipe = edamamData.hits[0].recipe;
+
+          // Extract relevant details
+          const label = recipe.label;
+          const uri = recipe.uri;
+          const url = recipe.url;
+          const imageUrl = recipe.image;
+          const totalCalories = Math.round(recipe.calories);
+          const servings = recipe.yield || 1;
+          const caloriesPerServing = Math.round(totalCalories / servings);
+
+          // Log the extracted details for confirmation
+          console.log(`  -> Found: ${label}`);
+          console.log(`     URI: ${uri}`);
+          console.log(`     URL: ${url}`);
+          console.log(`     Image: ${imageUrl}`);
+          console.log(`     Cal/Serving: ${caloriesPerServing} (Total: ${totalCalories}, Yield: ${servings})`);
+
+          // Store the extracted Edamam data for this meal type
+          processedMeals[mealType] = {
+            source: 'edamam',
+            label: label,
+            uri: uri,
+            url: url,
+            imageUrl: imageUrl,
+            calories: caloriesPerServing,
+            servings: servings
+          };
+          
+        } else {
+          console.log(`  -> No recipes found on Edamam for ${mealType}. Storing AI suggestion.`);
+          processedMeals[mealType] = {
+              source: 'ai',
+              suggestion: aiSuggestion
+          };
+        }
+      } catch (edamamError) {
+        console.error(`Error fetching data from Edamam for "${mealType}":`);
+        if (edamamError.response) {
+          console.error('Edamam Error Status:', edamamError.response.status);
+            console.error('Edamam Error Data:', edamamError.response.data);
+        } else if (edamamError.request) {
+          console.error('Edamam Error Request:', edamamError.request);
+        } else {
+          console.error('Edamam Error Message:', edamamError.message);
+        }
+        console.log("Continuing plan generation despite Edamam error for this meal.");
+        console.log(`Storing original AI suggestion for ${mealType} due to Edamam error.`);
+        processedMeals[mealType] = {
+          source: 'ai_error',
+          suggestion: aiSuggestion
+        };
+      }
+    }
+    console.log("--- Finished Edamam Search Loop ---");
     
     return res.status(200).json({
-      message: "AI response parsed successfully. Edamam integration pending.",
+      message: "AI response parsed. Edamam loop structure test complete.",
       userEmail: user.email,
-      generatedPlan: parsedPlan
+      generatedPlan: processedMeals
     });
   } catch (error) {
     console.error("Error in generateStructuredMealPlan:", error);
