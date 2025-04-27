@@ -1,238 +1,107 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, FlatList, Image, Alert,
-  StyleSheet, TouchableOpacity, Modal, ScrollView
+  View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, StyleSheet
 } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
-import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { styles as sharedStyles } from '@/components/Sheet';
-import Back_butt from '@/assets/images/backbutton.png';
+
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 const SavedRecipesDupi = () => {
   const navigation = useNavigation();
   const route = useRoute();
-
-  const { selectedTime, selectedDate } = route.params || {};
+  const { selectedDate, selectedTime } = route.params || {};
 
   const [query, setQuery] = useState('');
   const [savedRecipes, setSavedRecipes] = useState([]);
-  const [filteredRecipes, setFilteredRecipes] = useState([]);
+  const [selectedRecipes, setSelectedRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    category: 'All', ingredient: '', maxCalories: '', cuisine: 'All',
-    diet: '', health: '', caution: '',
-  });
-  const [availableFilters, setAvailableFilters] = useState({
-    categories: ['All'], cuisines: ['All'], diets: [], healthLabels: [], cautions: []
-  });
-
-  const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
-
-  const fetchSavedRecipes = async () => {
-    setLoading(true);
-    try {
-      const userId = await getUserIdFromToken();
-      const res = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/get-saved-recipes`);
-      const recipes = res.data.savedRecipes || [];
-      setSavedRecipes(recipes);
-      setFilteredRecipes(recipes);
-
-      const categories = new Set();
-      const cuisines = new Set();
-      const diet = new Set();
-      const health = new Set();
-      const caution = new Set();
-
-      recipes.forEach(r => {
-        r.mealType?.forEach(t => categories.add(capitalize(t)));
-        r.cuisineType?.forEach(t => cuisines.add(capitalize(t)));
-        r.dietLabels?.forEach(t => diet.add(capitalize(t)));
-        r.healthLabels?.forEach(t => health.add(capitalize(t)));
-        r.cautions?.forEach(t => caution.add(capitalize(t)));
-      });
-
-      setAvailableFilters({
-        categories: ['All', ...Array.from(categories)],
-        cuisines: ['All', ...Array.from(cuisines)],
-        diets: Array.from(diet),
-        healthLabels: Array.from(health),
-        cautions: Array.from(caution),
-      });
-
-    } catch (err) {
-      console.error("Error fetching recipes:", err);
-      setError("Failed to load recipes");
-      Alert.alert("Error", "Could not load saved recipes");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
+    const fetchSavedRecipes = async () => {
+      setLoading(true);
+      try {
+        const userId = await getUserIdFromToken();
+        const res = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/get-saved-recipes`);
+        setSavedRecipes(res.data.savedRecipes || []);
+      } catch (err) {
+        console.error(err);
+        Alert.alert('Error', 'Failed to load saved recipes.');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchSavedRecipes();
   }, []);
 
-  const applyFilters = () => {
-    const filtered = savedRecipes.filter(recipe =>
-      recipe.label.toLowerCase().includes(query.toLowerCase()) &&
-      (filters.category === 'All' || recipe.mealType?.some(t => capitalize(t) === filters.category)) &&
-      (filters.cuisine === 'All' || recipe.cuisineType?.some(t => capitalize(t) === filters.cuisine)) &&
-      (filters.ingredient.trim() === '' || recipe.ingredients?.some(line => line.toLowerCase().includes(filters.ingredient.toLowerCase()))) &&
-      (filters.maxCalories.trim() === '' || (!isNaN(parseFloat(filters.maxCalories)) && recipe.calories <= parseFloat(filters.maxCalories))) &&
-      (filters.diet === '' || recipe.dietLabels?.some(t => capitalize(t) === filters.diet)) &&
-      (filters.health === '' || recipe.healthLabels?.some(t => capitalize(t) === filters.health)) &&
-      (filters.caution === '' || recipe.cautions?.some(t => capitalize(t) === filters.caution))
-    );
-    setFilteredRecipes(filtered);
+  const toggleSelectRecipe = (recipe) => {
+    const exists = selectedRecipes.find(r => r.uri === recipe.uri);
+    if (exists) {
+      setSelectedRecipes(prev => prev.filter(r => r.uri !== recipe.uri));
+    } else {
+      setSelectedRecipes(prev => [...prev, { ...recipe, selectedDate, selectedTime }]);
+    }
   };
 
-  const handleSelectRecipe = (recipe) => {
-    navigation.navigate('addday', {
-      selectedRecipe: {
-        label: recipe.label,
-        value: recipe.uri,
-        calories: recipe.calories || 0,
-        imageUri: recipe.image,
-        selectedTime,
-        selectedDate
-      }
-    });
-  };
-
-  const toggleFilter = (key, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: prev[key] === value ? (key === 'category' || key === 'cuisine' ? 'All' : '') : value
-    }));
-  };
-
-  const resetFilters = () => {
-    setFilters({
-      category: 'All', cuisine: 'All', ingredient: '',
-      maxCalories: '', diet: '', health: '', caution: '',
-    });
+  const confirmSelection = () => {
+    navigation.navigate('addday', { selectedRecipes });
   };
 
   return (
     <View style={styles.container}>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('addday')}>
-        <Image source={Back_butt} style={styles.backIcon} />
-        <Text style={styles.backText}>Back to Add Day</Text>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <MaterialIcons name="arrow-back" size={24} color="#1F508F" />
+        <Text style={styles.backButtonText}>Back to Add Day</Text>
       </TouchableOpacity>
 
-      <Text style={sharedStyles.title}>Browse Saved Recipes</Text>
+      {/* Title */}
+      <Text style={styles.title}>Saved Recipes</Text>
 
-      {/* Search & Filter */}
-      <View style={styles.searchContainer}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Search your recipes"
-            placeholderTextColor={textcolors.lightgrey}
-            style={styles.inputText}
-            value={query}
-            onChangeText={(text) => {
-              setQuery(text);
-              applyFilters();
-            }}
-          />
-        </View>
-
-        <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
-          <MaterialIcons name="filter-list" size={24} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.filterButtonText}>Filter</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Recipe List */}
-      <FlatList
-        data={filteredRecipes}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.recipeContainer}
-            onPress={() => handleSelectRecipe(item)}
-          >
-            <View style={styles.rectangleView}>
-              <Image source={{ uri: item.image }} style={styles.recipeImage} />
-              <Text style={styles.recipeTitle}>{item.label}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={!loading && <Text style={styles.noRecipesText}>No recipes found.</Text>}
+      {/* Search Input */}
+      <TextInput
+        placeholder="Search recipes..."
+        placeholderTextColor={textcolors.lightgrey}
+        style={styles.input}
+        value={query}
+        onChangeText={(text) => setQuery(text)}
       />
 
-      {/* Filter Modal */}
-      <Modal visible={filterModalVisible} animationType="slide" transparent={true}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <ScrollView>
-              <Text style={styles.modalTitle}>Filter Options</Text>
+      {/* Recipes List */}
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.primary} />
+      ) : (
+        <FlatList
+          data={savedRecipes.filter(recipe =>
+            recipe.label.toLowerCase().includes(query.toLowerCase())
+          )}
+          keyExtractor={(item) => item.uri}
+          renderItem={({ item }) => {
+            const isSelected = selectedRecipes.find(r => r.uri === item.uri);
+            return (
+              <TouchableOpacity
+                style={[styles.recipeCard, isSelected && styles.selectedCard]}
+                onPress={() => toggleSelectRecipe(item)}
+              >
+                <Image source={{ uri: item.image }} style={styles.recipeImage} />
+                <Text style={styles.recipeLabel}>{item.label}</Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      )}
 
-              {[
-                ['Category', 'category', availableFilters.categories],
-                ['Cuisine', 'cuisine', availableFilters.cuisines],
-                ['Diet', 'diet', availableFilters.diets],
-                ['Health', 'health', availableFilters.healthLabels],
-                ['Caution', 'caution', availableFilters.cautions],
-              ].map(([label, key, options]) => (
-                <View key={key} style={{ marginBottom: 10 }}>
-                  <Text style={styles.modalLabel}>{label}</Text>
-                  <ScrollView horizontal style={styles.filterRow}>
-                    {options.map((val) => (
-                      <TouchableOpacity
-                        key={val}
-                        style={[styles.filterOption, filters[key] === val && styles.filterOptionSelected]}
-                        onPress={() => toggleFilter(key, val)}
-                      >
-                        <Text style={filters[key] === val ? styles.filterOptionTextSelected : styles.filterOptionText}>{val}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              ))}
-
-              <Text style={styles.modalLabel}>Ingredient</Text>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="e.g. chicken"
-                value={filters.ingredient}
-                onChangeText={(text) => setFilters({ ...filters, ingredient: text })}
-              />
-
-              <Text style={styles.modalLabel}>Max Calories</Text>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="e.g. 500"
-                keyboardType="numeric"
-                value={filters.maxCalories}
-                onChangeText={(text) => setFilters({ ...filters, maxCalories: text })}
-              />
-
-              <View style={styles.modalActions}>
-                <TouchableOpacity onPress={resetFilters} style={styles.cancelButton}>
-                  <Text style={{ color: 'black' }}>Reset</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                  applyFilters();
-                  setFilterModalVisible(false);
-                }} style={styles.applyButton}>
-                  <Text style={{ color: 'white' }}>Apply Filters</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {loading && <Text>Loading...</Text>}
-      {error && <Text style={styles.error}>{error}</Text>}
+      {/* Confirm Button */}
+      {selectedRecipes.length > 0 && (
+        <TouchableOpacity style={styles.confirmButton} onPress={confirmSelection}>
+          <Text style={styles.confirmButtonText}>Confirm Selection</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -243,64 +112,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#D7E2F1',
-    borderRadius: 10,
     padding: 10,
+    borderRadius: 10,
     marginBottom: 10,
     alignSelf: 'flex-start',
   },
-  backIcon: { width: 20, height: 20, marginRight: 5 },
-  backText: { fontSize: 16, color: '#000' },
-  searchContainer: { marginBottom: 10 },
-  inputContainer: {
-    height: 50, flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 10, borderRadius: 10, borderWidth: 1,
-    borderColor: textcolors.lightgrey, backgroundColor: colors.white
+  backButtonText: {
+    fontSize: 16,
+    color: '#1F508F',
+    marginLeft: 5,
+    fontWeight: '600',
   },
-  inputText: { flex: 1, fontSize: 16, paddingVertical: 8 },
-  filterButton: {
-    flexDirection: 'row', alignSelf: 'flex-start',
-    backgroundColor: colors.primary, paddingVertical: 10,
-    paddingHorizontal: 20, borderRadius: 30, marginTop: 12, alignItems: 'center',
+  title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: colors.primary },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    height: 45,
+    marginBottom: 10,
   },
-  filterButtonText: { color: '#fff', fontWeight: '700', fontSize: 18 },
-  recipeContainer: { alignItems: 'center', paddingVertical: 10 },
-  rectangleView: {
-    height: 150, borderRadius: 10,
-    backgroundColor: 'rgba(31, 80, 143, 0.06)', borderColor: '#777',
-    borderWidth: 1, width: '90%', justifyContent: 'center', alignItems: 'center',
-    marginBottom: 10, overflow: 'hidden',
+  recipeCard: {
+    backgroundColor: '#f1f1f1',
+    borderRadius: 10,
+    marginBottom: 10,
+    padding: 10,
+    alignItems: 'center',
   },
-  recipeImage: { width: '100%', height: 100, resizeMode: 'cover' },
-  recipeTitle: { fontSize: 18, fontWeight: 'bold', color: '#133E7C', marginTop: 5 },
-  noRecipesText: { fontSize: 16, textAlign: 'center', marginTop: 20, color: textcolors.lightgrey },
-  modalBackground: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000088' },
-  modalContainer: { backgroundColor: 'white', borderRadius: 10, padding: 20, width: '90%' },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
-  modalLabel: { fontWeight: '600', marginTop: 10 },
-  modalInput: {
-    borderWidth: 1, borderColor: textcolors.lightgrey,
-    borderRadius: 8, padding: 10, marginTop: 5,
+  selectedCard: { backgroundColor: '#cde0fc' },
+  recipeImage: { width: '100%', height: 100, borderRadius: 10, marginBottom: 8 },
+  recipeLabel: { fontWeight: 'bold', color: '#1F508F' },
+  confirmButton: {
+    backgroundColor: colors.primary,
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
   },
-  modalActions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
-  cancelButton: {
-    padding: 10, borderRadius: 8, backgroundColor: '#eee',
-    flex: 1, marginRight: 10, alignItems: 'center'
-  },
-  applyButton: {
-    padding: 10, borderRadius: 8, backgroundColor: colors.primary,
-    flex: 1, alignItems: 'center',
-  },
-  filterRow: { flexDirection: 'row', marginTop: 5, marginBottom: 10 },
-  filterOption: {
-    paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20,
-    borderWidth: 1, borderColor: textcolors.lightgrey, marginRight: 8,
-  },
-  filterOptionSelected: {
-    backgroundColor: colors.primary, borderColor: colors.primary
-  },
-  filterOptionText: { color: textcolors.darkgrey },
-  filterOptionTextSelected: { color: '#fff' },
-  error: { color: 'red', textAlign: 'center', marginBottom: 10 },
+  confirmButtonText: { color: 'white', fontWeight: 'bold' },
 });
 
 export default SavedRecipesDupi;
