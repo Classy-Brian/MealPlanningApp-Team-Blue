@@ -92,6 +92,7 @@ export const createUser = asyncHandler(async (req, res) => {
   }
 
   const loginToken = generateToken(user._id, '1h'); // Generate login token
+  console.log(`loginToken: ${loginToken}`)
 
   res.status(201).json({
     user: {

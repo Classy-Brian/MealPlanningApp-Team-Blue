@@ -13,6 +13,7 @@ import ingredientRoutes from './routes/ingredient.routes.js';
 
 const app = express();
 const PORT = process.env.PORT;
+const URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 app.use(express.json()); // Allows us to accept JSON data in the req body
 app.use(cors());
@@ -25,5 +26,5 @@ app.use('/api/ingredients', ingredientRoutes);
 
 app.listen(PORT, () => {
     connectDB(); // Connect to DB after starting server
-    console.log(`Server started at http://localhost:${PORT}`);
+    console.log(`Server started at ${URL}`);
 });
