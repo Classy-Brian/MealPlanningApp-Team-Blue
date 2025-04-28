@@ -111,9 +111,6 @@ Day 2
 };
 
 const constructMealPlanPrompt = (user) => {
-  // Extracts user preferences and builds the detailed prompt string
-  // requesting JSON output, as we designed previously.
-
   const allergies = Array.isArray(user.allergies) && user.allergies.length > 0 ? user.allergies.join(', ') : 'none';
   const dislikes = Array.isArray(user.dislikes) && user.dislikes.length > 0 ? user.dislikes.join(', ') : 'none';
   const cuisines = Array.isArray(user.cuisines) && user.cuisines.length > 0 ? user.cuisines.join(', ') : 'any';
