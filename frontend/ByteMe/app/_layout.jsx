@@ -83,6 +83,10 @@ const _layout = () => {
        <Stack.Screen name='(calendar)'
         options={{headerShown: false}}
       />
+
+      <Stack.Screen name='(home)'
+        options={{headerShown: false}}
+      />
       {/* Do not include SavedRecipesScreen directly in the Stack.Screen. 
           Just refer to the name and routing will handle the screen. */}
       

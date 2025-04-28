@@ -1087,3 +1087,50 @@ export const getUserSavedDays = async (req, res) => {
     res.status(500).json({ message: "Failed to load saved days" });
   }
 };
+
+export const deleteCalendarDayForUser = async (req, res) => {
+  const { userId } = req.params;
+  const { date } = req.body;
+
+  if (!date) {
+    return res.status(400).json({ message: "Date is required to delete." });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    user.savedDays = user.savedDays.filter(day => day.date !== date);
+    await user.save();
+
+    res.status(200).json({ message: "Day deleted successfully." });
+  } catch (err) {
+    console.error("Delete error:", err);
+    res.status(500).json({ message: "Failed to delete day." });
+  }
+};
+
+export const markMealCompleted = async (req, res) => {
+  const { userId } = req.params;
+  const { date, time } = req.body; // we pass which day and which time slot
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const day = user.savedDays.find((d) => d.date === date);
+    if (!day) return res.status(404).json({ message: "Day not found." });
+
+    const meal = day.meals.find((m) => m.time === time);
+    if (!meal) return res.status(404).json({ message: "Meal not found." });
+
+    meal.completed = true; // ✅ mark it completed
+
+    await user.save();
+    res.status(200).json({ message: "Meal marked as completed!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to mark meal completed." });
+  }
+};
+
