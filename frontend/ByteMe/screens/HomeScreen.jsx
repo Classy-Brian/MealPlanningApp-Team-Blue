@@ -22,6 +22,8 @@ const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   // --- New state variables ---
+  const [axiosInstance, setAxiosInstance] = useState(null);
+  const [token, setToken] = useState(null);
   const [mealPlan, setMealPlan] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
