@@ -1,10 +1,10 @@
-import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, FlatList, ActivityIndicator } from 'react-native'
+import { Image, View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, FlatList, ActivityIndicator, Modal, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { styles } from '@/components/Sheet'
 import { Divider } from 'react-native-paper'
 import { textcolors } from '@/components/TextColors'
 import { colors } from '@/components/Colors'
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons, MaterialIcons } from '@expo/vector-icons'
 import { fonts } from '@/components/Fonts'
 import maglass from "@/assets/images/magnifyingglass.png"
 import chright from "@/assets/images/chevron_right.png"
@@ -12,6 +12,7 @@ import Animated, { Easing, useAnimatedProps, useAnimatedStyle, useSharedValue, w
 import getUserIdFromToken from '@/components/getUserIdFromToken'
 import axios from 'axios'
 import { useNavigation } from '@react-navigation/native'
+import { filterModal } from '@/components/Filter'
 
 const SingleIngredient = ({ ingredient }) => {
   // console.log("Single ingredient being passed:", ingredient);  // checks what data is passed as ingredient
@@ -118,8 +119,44 @@ const Pantry = () => {
   const [groupedPantry, setGroupedPantry] = useState({});
   const [loading, setLoading] = useState(false);
   const [ingrLabels, setIngrLabels] = useState([]);
+  const [filterModalVisible, setFilterModalVisible] = useState(false)
+
 
   const [addPress, setAddPress] = useState(false);
+
+  const [filters, setFilters] = useState({
+      category: 'All', 
+      maxCalories: '', 
+      maxProtein: '', 
+      maxFat: '', 
+      maxCarb: '', 
+      maxFiber: ''
+    });
+
+
+  const toggleFilter = (key, value) => {
+    if (!value || typeof value !== 'string') return;
+    setFilters((prev) => ({ ...prev, [key]: prev[key] === value ? 'All' : value }));
+  };
+
+  const resetFilters = () => {
+    setFilters({ category: 'All', 
+      maxCalories: '', 
+      maxProtein: '', 
+      maxFat: '', 
+      maxCarb: '', 
+      maxFiber: '' 
+    });
+  };
+
+  const categories = ['All', ...new Set(savedPantry.flatMap(ingredient => ingredient.category || []))];
+  // const calories = [...new Set(savedPantry.flatMap(ingredient => ingredient.nutrients.ENERC_KCAL || []))];
+  // const proteins = [...new Set(savedPantry.flatMap(r => r.recipe.dietLabels || []))];
+  // const totFat = [...new Set(savedPantry.flatMap(r => r.recipe.healthLabels || []))];
+  // const totCarb = [...new Set(savedPantry.flatMap(r => r.recipe.cautions || []))];
+  // const fibers = [...new Set(savedPantry.flatMap(r => r.recipe.cautions || []))];
+
+
 
   const translateY1 = useSharedValue(0);
   const opacity = useSharedValue(0);
@@ -154,6 +191,8 @@ const Pantry = () => {
       setGroupedPantry(groupedData);
       // console.log("Grouped data: ", groupedData)
       setSavedPantry(response.data.savedPantry);
+
+
     } catch (err) {
       console.error("Error fetching saved pantry ingredients:", err);
       setError("Failed to load saved pantry ingredients.");
@@ -219,9 +258,29 @@ const Pantry = () => {
     }
   }
 
+  
+
   const filteredGroupedPantry = Object.entries(groupedPantry).reduce((acc, [category, ingredients]) => {
-    const filteredIngredients = ingredients.filter( ingredient => 
-      ingredient.label.toLowerCase().includes(query.toLowerCase())
+    const filteredIngredients = ingredients.filter( ingredient => {
+      const matchesQuery = ingredient.label?.toLowerCase().includes(query.toLowerCase())
+      const matchesCategory = filters.category === 'All' || (
+        typeof ingredient.category === 'string' ? ingredient.category.toLowerCase().includes(filters.category?.toLowerCase() || '')
+        : Array.isArray(ingredient.category)
+          ? ingredient.category.some(type => type.toLowerCase().includes(filters.category?.toLowerCase() || '')) : false
+      )
+      // const matchesCategory = filters.category === 'All' || ingredient.category?.some(type => type.toLowerCase().includes(filters.category.toLowerCase()))
+      const matchesCalories = !filters.maxCalories.trim() || (!isNaN(parseFloat(filters.maxCalories)) && ingredient.nutrients.ENERC_KCAL <= parseFloat(filters.maxCalories))
+      const matchesProtein = !filters.maxProtein.trim() || (!isNaN(parseFloat(filters.maxProtein)) && ingredient.nutrients.PROCNT <= parseFloat(filters.maxProtein))
+      const matchesFat = !filters.maxFat.trim() || (!isNaN(parseFloat(filters.maxFat)) && ingredient.nutrients?.FAT <= parseFloat(filters.maxFat));
+      const matchesCarbs = !filters.maxCarb.trim() || (!isNaN(parseFloat(filters.maxCarb)) && ingredient.nutrients?.CHOCDF <= parseFloat(filters.maxCarb));
+      const matchesFiber = !filters.maxFiber.trim() || (!isNaN(parseFloat(filters.maxFiber)) && ingredient.nutrients?.FIBTG <= parseFloat(filters.maxFiber));
+
+      // const matchesProtein = !filters.maxProtein || parseFloat(ingredient.protein) <= parseFloat(filters.maxProtein)
+      // const matchesFat = !filters.maxFat || parseFloat(ingredient.calories) <= parseFloat(filters.maxFat)
+      // const matchesCarb = !filters.maxCarb || parseFloat(ingredient.calories) <= parseFloat(filters.maxCarb)
+      // const matchesFiber = !filters.maxFiber || parseFloat(ingredient.calories) <= parseFloat(filters.maxFiber)
+      return matchesQuery && matchesCategory && matchesCalories && matchesProtein && matchesFat && matchesCarbs && matchesFiber
+    }
     )
     if (filteredIngredients.length > 0) {
       acc[category] = filteredIngredients
@@ -249,9 +308,106 @@ const Pantry = () => {
                 style={styles.regularText}
               />
             </View>
+            <View style={{marginBottom: 10}}>
+              <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
+                <MaterialIcons name="filter-list" size={24} color={textcolors.darkgrey} style={{ marginRight: 8 }} />
+                <Text style={styles.regularText}>Filter</Text>
+              </TouchableOpacity>
+            </View>
           <Divider />
 
           {loading && <ActivityIndicator size="large" color={colors.primary} />}
+
+              <Modal visible={filterModalVisible} animationType="slide" transparent>
+            <View style={{flex: 1}}>
+              <View style={filterModal.modalBackground}>
+                <View style={filterModal.modalContainer}>
+                  <ScrollView>
+                    <Text style={filterModal.modalTitle}>Filter Options</Text>
+                    {[
+                      ['Category', 'category', categories],
+                      // ['Calories', 'calories', calories],
+                      // ['Protein', 'proteins', dietLabels],
+                      // ['Total Fat', 'fat', healthLabels],
+                      // ['Total Carbohydrates', 'carbs', cautions],
+                      // ['Fiber ', 'fiber', cautions]
+                    ].map(([label, key, list]) => (
+                      <View key={key} style={{ marginBottom: 10 }}>
+                        <Text style={filterModal.modalLabel}>{label}</Text>
+                        <ScrollView horizontal style={filterModal.filterRow} contentContainerStyle={{flexGrow: 1 }}>
+                          {list.map((item) => (
+                            <TouchableOpacity
+                              key={item}
+                              onPress={() => toggleFilter(key, item)}
+                              style={[filterModal.filterOption, filters[key] === item && filterModal.filterOptionSelected]}
+                            >
+                              <Text style={filters[key] === item ? filterModal.filterOptionTextSelected : filterModal.filterOptionText }>{item}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    ))}
+                    {/* <Text style={filterModal.modalLabel}>Ingredient</Text>
+                    <TextInput
+                      placeholder="e.g. chicken"
+                      value={filters.ingredient}
+                      onChangeText={(val) => setFilters({ ...filters, ingredient: val })}
+                      style={filterModal.modalInput}
+                    /> */}
+                    <Text style={filterModal.modalLabel}>Max Calories</Text>
+                    <TextInput
+                      placeholder="e.g. 500"
+                      keyboardType="numeric"
+                      value={filters.maxCalories}
+                      onChangeText={(val) => setFilters({ ...filters, maxCalories: val })}
+                      style={filterModal.modalInput}
+                    />
+                    <Text style={filterModal.modalLabel}>Max Protein</Text>
+                    <TextInput
+                      placeholder="e.g. 500"
+                      keyboardType="numeric"
+                      value={filters.maxProtein}
+                      onChangeText={(val) => setFilters({ ...filters, maxProtein: val })}
+                      style={filterModal.modalInput}
+                    />
+                    <Text style={filterModal.modalLabel}>Max Fat</Text>
+                    <TextInput
+                      placeholder="e.g. 500"
+                      keyboardType="numeric"
+                      value={filters.maxFat}
+                      onChangeText={(val) => setFilters({ ...filters, maxFat: val })}
+                      style={filterModal.modalInput}
+                    />
+                    <Text style={filterModal.modalLabel}>Max Carbohydrates</Text>
+                    <TextInput
+                      placeholder="e.g. 500"
+                      keyboardType="numeric"
+                      value={filters.maxCarb}
+                      onChangeText={(val) => setFilters({ ...filters, maxCarb: val })}
+                      style={filterModal.modalInput}
+                    />
+                    <Text style={filterModal.modalLabel}>Max Fiber</Text>
+                    <TextInput
+                      placeholder="e.g. 500"
+                      keyboardType="numeric"
+                      value={filters.maxFiber}
+                      onChangeText={(val) => setFilters({ ...filters, maxFiber: val })}
+                      style={filterModal.modalInput}
+                    />
+                    <View style={filterModal.modalActions}>
+                      <TouchableOpacity onPress={resetFilters} style={filterModal.cancelButton}>
+                        <Text style={styles.regularText}>Reset</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={filterModal.applyButton}>
+                        <Text style={styles.regularText}>Apply</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </ScrollView>
+                </View>
+              </View>
+            </View>
+            
+          </Modal>
         </View>
         }
 
@@ -267,6 +423,8 @@ const Pantry = () => {
           !loading && <Text style={det.noRecipesText}>No saved pantry ingredients found.</Text>
         }
         />
+
+      
       
       <TouchableOpacity onPress={toggleAdd}>
         {addPress ? <CancelAddButton /> : <AddButton />}
