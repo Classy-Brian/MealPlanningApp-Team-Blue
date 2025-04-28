@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, ImageBackground, Image, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, ImageBackground, RefreshControl, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '../components/Colors';
@@ -19,54 +19,69 @@ const HomeScreen = () => {
   const [completedMeals, setCompletedMeals] = useState({});
   const [loading, setLoading] = useState(true);
   const [showWeekView, setShowWeekView] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        router.replace('/(start)/login');
+        return;
+      }
+
+      const axiosInstance = axios.create({
+        baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const userRes = await axiosInstance.get(`/api/users/profile/${token}`);
+      if (userRes.data?.name) setUserName(userRes.data.name);
+
+      const userId = userRes.data._id;
+      const calendarRes = await axiosInstance.get(`/api/users/${userId}/saved-days`);
+      const savedDays = calendarRes.data.savedDays || [];
+
+      const today = new Date();
+      const weekMap = {};
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        weekMap[date.toDateString()] = [];
+      }
+
+      savedDays.forEach((day) => {
+        const formatted = new Date(day.date).toDateString();
+        if (weekMap.hasOwnProperty(formatted)) {
+          weekMap[formatted] = day.meals || [];
+        }
+      });
+
+      setWeekMeals(weekMap);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to load calendar data.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await AsyncStorage.getItem('authToken');
-        if (!token) {
-          router.replace('/(start)/login');
-          return;
-        }
-
-        const axiosInstance = axios.create({
-          baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const userRes = await axiosInstance.get(`/api/users/profile/${token}`);
-        if (userRes.data?.name) setUserName(userRes.data.name);
-
-        const userId = userRes.data._id;
-        const calendarRes = await axiosInstance.get(`/api/users/${userId}/saved-days`);
-        const savedDays = calendarRes.data.savedDays || [];
-
-        const today = new Date();
-        const weekMap = {};
-        for (let i = 0; i < 7; i++) {
-          const date = new Date(today);
-          date.setDate(today.getDate() + i);
-          weekMap[date.toDateString()] = [];
-        }
-
-        savedDays.forEach((day) => {
-          const formatted = new Date(day.date).toDateString();
-          if (weekMap.hasOwnProperty(formatted)) {
-            weekMap[formatted] = day.meals;
-          }
-        });
-
-        setWeekMeals(weekMap);
-      } catch (error) {
-        console.error(error);
-        Alert.alert('Error', 'Failed to load calendar data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchData();
+  };
 
   const handleToggleComplete = (day, index) => {
     setCompletedMeals((prev) => ({
@@ -96,16 +111,20 @@ const HomeScreen = () => {
   const todayDateString = new Date().toDateString();
 
   const getTotalCaloriesLeft = (meals, completed) => {
-    return meals.reduce((sum, meal, idx) => {
+    const sum = meals.reduce((total, meal, idx) => {
       if (!completed?.[idx]) {
-        return sum + (meal.calories || 0);
+        return total + (meal.calories || 0);
       }
-      return sum;
+      return total;
     }, 0);
+    return Math.round(sum); // ✅ round total calories
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       {/* Welcome */}
       <View style={[styles.welcomeContainer, { borderBottomWidth: 1, borderBottomColor: 'gray' }]}>
         <Text style={styles.welcomeMessage}>
@@ -176,7 +195,7 @@ const HomeScreen = () => {
             <Text style={styles.noMealText}>No meals scheduled for today.</Text>
           )}
 
-          {/* ✅ Total Calories at Bottom */}
+          {/* ✅ Total Calories */}
           <View style={styles.totalCaloriesContainer}>
             <Text style={styles.totalCaloriesText}>
               Total Calories: {getTotalCaloriesLeft(weekMeals[todayDateString] || [], completedMeals[todayDateString])}
@@ -185,19 +204,19 @@ const HomeScreen = () => {
         </View>
       )}
 
-      {/* View Week Button */}
+      {/* View Full Week Button */}
       <TouchableOpacity onPress={() => setShowWeekView(!showWeekView)} style={styles.viewWeekButton}>
         <Text style={styles.viewWeekButtonText}>{showWeekView ? "Hide Week" : "View Full Week"}</Text>
       </TouchableOpacity>
 
-      {/* Week View */}
+      {/* Full Week View */}
       {showWeekView && (
-        Object.entries(weekMeals).map(([day, meals]) => {
-          if (day === todayDateString) return null;
-          return (
+        Object.entries(weekMeals)
+          .filter(([day, meals]) => meals.length > 0 && day !== todayDateString)
+          .map(([day, meals]) => (
             <View key={day} style={styles.mealPlanContainer}>
               <Text style={styles.dayTitle}>{day}</Text>
-              {meals.length > 0 ? meals.map((meal, idx) => (
+              {meals.map((meal, idx) => (
                 <TouchableOpacity key={idx} style={styles.mealItemCard} onPress={() => handleMealPress(meal)}>
                   <Text style={styles.mealTime}>{meal.time}</Text>
                   <View style={styles.mealDetails}>
@@ -208,12 +227,9 @@ const HomeScreen = () => {
                   </View>
                   <Ionicons name="arrow-forward" size={22} color="#333" />
                 </TouchableOpacity>
-              )) : (
-                <Text style={styles.noMealText}>No meals scheduled.</Text>
-              )}
+              ))}
             </View>
-          );
-        })
+          ))
       )}
     </ScrollView>
   );
@@ -233,7 +249,6 @@ const styles = StyleSheet.create({
   discoverButton: { backgroundColor: colors.othergrey, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20, alignSelf: 'center', marginTop: 10, marginBottom: 20 },
   discoverButtonText: { color: textcolors.black, fontSize: 16, fontWeight: 'bold' },
   mealPlanContainer: { backgroundColor: colors.lightgrey, marginBottom: 20, borderRadius: 8, padding: 10, marginHorizontal: 10 },
-  dayHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
   dayTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F508F' },
   noMealText: { textAlign: 'center', marginVertical: 10, color: textcolors.darkgrey },
   mealItemCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 10, padding: 15, marginTop: 8, borderWidth: 1, borderColor: colors.othergrey },

@@ -19,7 +19,7 @@ const AddDayScreen = () => {
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedMeals, setSelectedMeals] = useState([]);
-  const [timePickerIndex, setTimePickerIndex] = useState(null); // 👈 control picker per recipe
+  const [timePickerIndex, setTimePickerIndex] = useState(null);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -29,22 +29,25 @@ const AddDayScreen = () => {
     fetchUserId();
   }, []);
 
-  // 👇 When returning from SavedRecipesDupi
   useEffect(() => {
     if (route.params?.selectedRecipes) {
       const recipes = route.params.selectedRecipes.map(recipe => ({
         label: recipe.label,
         value: recipe.uri,
         calories: Math.round(recipe.calories || 0),
-        image: recipe.image,
-        time: null,         // No time yet
-        timeRaw: null,      // No raw time yet
+        image: recipe.imageUri || '',
+        ingredients: recipe.ingredients || [],
+        directions: recipe.directions || '',
+        allergies: recipe.allergies || [],
+        nutrition: recipe.nutrition || {},
+        time: null,         
+        timeRaw: null,      
         date: new Date(recipe.selectedDate).toDateString(),
         servings: 1,
         meal: 'extra',
       }));
 
-      setSelectedMeals(prev => [...prev, ...recipes]); // Append new
+      setSelectedMeals(prev => [...prev, ...recipes]);
     }
   }, [route.params?.selectedRecipes]);
 
@@ -59,6 +62,11 @@ const AddDayScreen = () => {
       acc[meal.date].push({
         recipeLabel: meal.label,
         recipeId: meal.value,
+        imageUri: meal.image,
+        ingredients: meal.ingredients,
+        directions: meal.directions,
+        allergies: meal.allergies,
+        nutrition: meal.nutrition,
         calories: meal.calories,
         time: meal.time || 'Not selected',
         servings: meal.servings,
@@ -111,7 +119,13 @@ const AddDayScreen = () => {
         const updated = [...prev];
         updated[timePickerIndex].time = selected.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
         updated[timePickerIndex].timeRaw = selected;
-        return updated;
+
+        // 🧠 After updating time, automatically sort meals inside the same date
+        return updated.sort((a, b) => {
+          if (a.date !== b.date) return 0;
+          if (!a.timeRaw || !b.timeRaw) return 0;
+          return new Date(a.timeRaw) - new Date(b.timeRaw);
+        });
       });
     }
 
@@ -173,7 +187,6 @@ const AddDayScreen = () => {
           <Text style={styles.groupDate}>{date}</Text>
 
           {meals
-            .sort((a, b) => new Date(a.timeRaw) - new Date(b.timeRaw))
             .map((m, i) => {
               const globalIndex = selectedMeals.findIndex(
                 sm => sm.label === m.label && sm.date === m.date && sm.value === m.value
@@ -212,7 +225,7 @@ const AddDayScreen = () => {
         </View>
       ))}
 
-      {/* Mini TimePicker */}
+      {/* Mini Time Picker */}
       {timePickerIndex !== null && (
         <DateTimePicker
           mode="time"
@@ -232,61 +245,24 @@ const AddDayScreen = () => {
 
 const styles = StyleSheet.create({
   container: { padding: 20 },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#D7E2F1",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    alignSelf: 'flex-start',
-  },
+  backButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#D7E2F1", padding: 10, borderRadius: 10, marginBottom: 10, alignSelf: 'flex-start' },
   backIcon: { width: 20, height: 20, marginRight: 5 },
   backText: { fontSize: 16, color: '#000' },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   label: { fontSize: 16, fontWeight: 'bold', marginTop: 20 },
-  timePickerButton: {
-    padding: 12,
-    backgroundColor: '#f1f3f8',
-    borderRadius: 8,
-    marginTop: 5,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
+  timePickerButton: { padding: 12, backgroundColor: '#f1f3f8', borderRadius: 8, marginTop: 5, alignItems: 'center', borderWidth: 1, borderColor: '#ccc' },
   timeText: { fontSize: 16, fontWeight: 'bold', color: '#1F508F' },
-  selectRecipeButton: {
-    padding: 12,
-    backgroundColor: '#cde0fc',
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-    borderColor: '#1F508F',
-    borderWidth: 1,
-  },
+  selectRecipeButton: { padding: 12, backgroundColor: '#cde0fc', borderRadius: 10, alignItems: 'center', marginTop: 10, borderColor: '#1F508F', borderWidth: 1 },
   selectRecipeText: { fontWeight: 'bold', color: '#1F508F' },
   groupBox: { backgroundColor: '#e4edff', borderRadius: 10, padding: 10, marginBottom: 10 },
   groupDate: { fontSize: 16, fontWeight: 'bold', color: '#1F508F', marginBottom: 8 },
-  mealCard: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
-    alignItems: 'center',
-  },
+  mealCard: { flexDirection: 'row', backgroundColor: '#fff', padding: 10, borderRadius: 8, marginBottom: 8, alignItems: 'center' },
   mealImage: { width: 50, height: 50, borderRadius: 10, marginRight: 10 },
   mealDetails: { flex: 1 },
   mealText: { fontWeight: 'bold', fontSize: 16, color: '#1F508F' },
   mealSubText: { fontSize: 14, color: '#555' },
   timeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
-  pickTimeButton: {
-    backgroundColor: '#1F508F',
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    marginLeft: 10,
-  },
+  pickTimeButton: { backgroundColor: '#1F508F', borderRadius: 20, paddingVertical: 4, paddingHorizontal: 10, marginLeft: 10 },
   pickTimeButtonText: { color: '#fff', fontSize: 12 },
   servingInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 4, width: 60, marginTop: 6 },
   saveButton: { backgroundColor: '#1F508F', padding: 15, borderRadius: 10, marginTop: 30, alignItems: 'center' },
