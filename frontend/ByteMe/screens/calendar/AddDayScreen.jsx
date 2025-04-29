@@ -30,6 +30,29 @@ const AddDayScreen = () => {
   }, []);
 
   useEffect(() => {
+    if (route.params?.editing && route.params.existingMeals && route.params.existingDate) {
+      const loadedMeals = route.params.existingMeals.map(meal => ({
+        label: meal.recipeLabel,
+        value: meal.recipeId,
+        calories: Math.round(meal.calories || 0),
+        image: meal.imageUri || '',
+        ingredients: meal.ingredients || [],
+        directions: meal.directions || '',
+        allergies: meal.allergies || [],
+        nutrition: meal.nutrition || {},
+        time: meal.time || null,
+        timeRaw: meal.time ? new Date(`${route.params.existingDate} ${meal.time}`) : null,
+        date: new Date(route.params.existingDate).toDateString(),
+        servings: meal.servings || 1,
+        meal: meal.meal || 'extra',
+      }));
+  
+      setSelectedMeals(loadedMeals);
+      setSelectedDate(new Date(route.params.existingDate));
+    }
+  }, [route.params?.editing]);
+
+  useEffect(() => {
     if (route.params?.selectedRecipes) {
       const recipes = route.params.selectedRecipes.map(recipe => ({
         label: recipe.label,

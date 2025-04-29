@@ -135,9 +135,10 @@ const CalendarScreen = () => {
                 <TouchableOpacity
                   style={styles.editIconWrapper}
                   onPress={() =>
-                    navigation.navigate('editsaveday', {
-                      date: day.date,
-                      meals: day.meals,
+                    navigation.navigate('addday', {
+                      editing: true,
+                      existingDate: formatDate(day.date),
+                      existingMeals: day.meals,
                     })
                   }
                 >
@@ -155,7 +156,7 @@ const CalendarScreen = () => {
                   <View style={styles.cardContent}>{mealList}</View>
                 </View>
 
-                {/* Trash Icon at Bottom of Card */}
+                {/* Trash Icon */}
                 <View style={styles.trashWrapper}>
                   <TouchableOpacity onPress={() => deleteDay(day.date)}>
                     <Ionicons name="trash" size={24} color="#d00" />
