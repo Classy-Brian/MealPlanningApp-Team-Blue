@@ -900,7 +900,7 @@ export const removeIngredientGrocery = async (req, res) => {
     return res.status(500).json({message: "Internal server error"});
   }
 };
-// REQUEST PASSWORD RESET (Generates Token, NO EMAIL SENT YET)
+// REQUEST PASSWORD RESET
 export const forgotPasswordRequest = asyncHandler(async (req, res) => {
   console.log("forgotPasswordRequest called for email:", req.body.email);
   const { email } = req.body;
@@ -964,10 +964,6 @@ export const resetPassword = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error('Invalid code format');
     }
-    //  if (newPassword.length < 6) {
-    //     res.status(400);
-    //     throw new Error('Password must be at least 6 characters long');
-    // }
 
     // Hash the numeric code received from the request body
     const hashedCode = crypto
@@ -1066,10 +1062,61 @@ export const saveCalendarDayForUser = async (req, res) => {
 
     await user.save();
 
-    return res.status(200).json({
-      message: "Calendar day saved successfully!",
-      savedDays: user.savedDays
-    });
+    console.log(`Preparing save confirmation email for ${user.email} for date ${date}`);
+    const emailSubject = `Your ByteMe Meal Plan for ${date} is Saved!`;
+
+    let emailMessage = `Hello ${user.name || 'User'},\n\n`;
+    emailMessage += `Your meal plan for ${date} has been successfully saved.\n\n`;
+    emailMessage += "Here's what was saved:\n";
+
+    if (meals && meals.length > 0) {
+      meals.forEach(mealItem => {
+          const mealType = mealItem.meal ? mealItem.meal.charAt(0).toUpperCase() + mealItem.meal.slice(1) : 'Meal';
+          const label = mealItem.recipeLabel || 'Unnamed Meal';
+          emailMessage += `- ${mealType} (${mealItem.time || 'No time'}): ${label}\n`;
+      });
+    } else {
+      emailMessage += "- No specific meals were saved for this date.\n";
+    }
+
+    emailMessage += `\nTotal Calories: ${totalCalories || 0}\n`;
+    emailMessage += "\nEnjoy your meals!\n\nThe ByteMe Team";
+
+    const emailOptions = {
+        email: user.email,
+        subject: emailSubject,
+        message: emailMessage
+    };
+
+    console.log("Prepared emailOptions:", emailOptions);
+
+    // TODO: Check user notification preferences before sending
+    // This assumes the user wants the notification unless explicitly turned off.
+    // Replace this check when settings are implemented.
+    const sendThisEmail = true; // user.settings?.emailNotifications?.saveConfirmation !== false; // Example check
+    if (sendThisEmail) {
+      try {
+        console.log(`Attempting to send save confirmation to ${emailOptions.email}...`);
+
+        const emailSent = await sendEmail(emailOptions);
+
+        if (emailSent) {
+          console.log("Save confirmation email queued successfully.");
+        } else {
+          console.error("sendEmail utility returned false, check its logs for details.");
+        }
+      } catch (emailError) {
+          console.error("Failed to send save confirmation email due to unexpected error:", emailError);
+      }
+    } else {
+      console.log(`Skipping save confirmation email for ${user.email} based on settings.`);
+    }
+
+  console.log("Save operation successful, sending response to client.");
+  return res.status(200).json({
+    message: "Calendar day saved successfully!",
+    savedDays: user.savedDays
+  });
 
   } catch (error) {
     console.error("Save day error:", error);

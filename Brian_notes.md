@@ -50,4 +50,18 @@
     6.  ✅ 🚀 **Frontend: API Call & UI Update (`handleSaveAiPlan`):** Add `try/catch/finally`, saving state, call `axiosInstance.post`, handle success (Alert, `WorkspaceData()`, `setMealPlan(null)`), handle error (Alert). *(Done)*
 
 ---
-*Note: Future polish items moved out of core phases for now.*
+
+
+## Phase 6: Email Notifications 📧
+
+* **Status:** `[DONE]` *(New Phase)*
+* **Goal:** Notify users via email about relevant events in the app.
+* **Analogy:** Sending the customer a quick receipt or confirmation slip after they've placed their order.
+* **Focus:** Start with event-triggered notifications.
+* **Checkpoints (Meal Plan Saved Confirmation):**
+    1.  📍 **Locate Trigger:** Identify success point in `saveCalendarDayForUser` backend controller (after `user.save()`). *(Done)*
+    2.  🔘 **Prepare Content:** Inside controller, construct email `options` (`email`, `subject`, `message`). *(Next Step)*
+    3.  🔘 **Call Send Function:** Call `await sendEmail(options)` with specific logging.
+    4.  🔘 **Test End-to-End:** Trigger save from frontend, check DB save, check email received.
+
+---

@@ -306,8 +306,6 @@ const HomeScreen = () => {
     setIsSaving(true);
     setError(null);
 
-    Alert.alert("Save WIP", "Payload assembled and logged! Checkpoint 5.4 complete!");
-
     try {
       console.log(`Frontend: Sending POST to /api/users/${userId}/save-day`);
       const response = await axiosInstance.post(`/api/users/${userId}/save-day`, payload);
@@ -315,14 +313,14 @@ const HomeScreen = () => {
       console.log("Frontend: Save successful!", response.data);
       Alert.alert("Success!", "AI meal plan saved for today!");
 
-      fetchData(); // Call the function that loads weekMeals state
-      setMealPlan(null); // Clear the temporary AI plan display
+      fetchData();
+      setMealPlan(null);
 
     } catch(err) {
       console.error("Frontend: Error saving AI plan:", err);
 
       let message = "Failed to save the plan.";
-      if (err.response?.data?.message) { // Use optional chaining and check for 'message' from backend
+      if (err.response?.data?.message) { 
         message = err.response.data.message;
       } else if (err.message) {
         message = err.message;
