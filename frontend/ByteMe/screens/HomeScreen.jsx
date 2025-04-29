@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, ImageBackground, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, ImageBackground, RefreshControl, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useRouter, useFocusEffect } from 'expo-router';
+import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '../components/Colors';
@@ -21,13 +22,18 @@ const HomeScreen = () => {
   const [showWeekView, setShowWeekView] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // --- New state variables ---
   const [axiosInstance, setAxiosInstance] = useState(null);
   const [token, setToken] = useState(null);
   const [mealPlan, setMealPlan] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  // --- New state variables ---
+  const [userId, setUserId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // console.log("--- Rendering HomeScreen ---");
+  // console.log("Current mealPlan state:", mealPlan);
+  // console.log("Current isLoading state:", isLoading);
+  // console.log("Current error state:", error);
 
   useEffect(() => {
       const getTokenAndSetupAxios = async () => {
@@ -56,7 +62,6 @@ const HomeScreen = () => {
       getTokenAndSetupAxios();
   }, []); 
 
-  // --- New function to call backend API ---
   const fetchAiMealPlan = async () => {
       console.log("Frontend: Attempting to fetch AI meal plan...");
       setIsLoading(true);
@@ -77,6 +82,7 @@ const HomeScreen = () => {
 
           if (response.data && response.data.generatedPlan) {
               setMealPlan(response.data.generatedPlan);
+              console.log("Frontend: setMealPlan called with data:", response.data.generatedPlan);
           } else {
               console.error("Frontend: Generated plan data missing in response:", response.data);
               throw new Error("Received plan data in unexpected format from server.");
@@ -98,7 +104,6 @@ const HomeScreen = () => {
           console.log("Frontend: Finished fetching AI meal plan attempt.");
       }
   };
-  // --- New function to call backend API ---
 
   const fetchData = async () => {
     try {
@@ -115,32 +120,55 @@ const HomeScreen = () => {
       });
 
       const userRes = await axiosInstance.get(`/api/users/profile/${token}`);
-      if (userRes.data?.name) setUserName(userRes.data.name);
 
-      const userId = userRes.data._id;
-      const calendarRes = await axiosInstance.get(`/api/users/${userId}/saved-days`);
-      const savedDays = calendarRes.data.savedDays || [];
+      let fetchedUserId = null;
 
-      const today = new Date();
-      const weekMap = {};
+      if (userRes.data?._id) {
+        // const userId = userRes.data._id;
+        fetchedUserId = userRes.data._id;
+        
+        setUserId(fetchedUserId);
+        console.log("Stored userId from profile fetch:", fetchedUserId);
 
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        weekMap[date.toDateString()] = [];
-      }
-
-      savedDays.forEach((day) => {
-        const formatted = new Date(day.date).toDateString();
-        if (weekMap.hasOwnProperty(formatted)) {
-          weekMap[formatted] = day.meals || [];
+        if (userRes.data?.name) {
+          setUserName(userRes.data.name);
+        } else {
+          setUserName(null);
         }
-      });
 
-      setWeekMeals(weekMap);
+        console.log(`Workspaceing saved days for user: ${fetchedUserId}`);
+        const calendarRes = await axiosInstance.get(`/api/users/${fetchedUserId}/saved-days`);
+        const savedDays = calendarRes.data.savedDays || [];
+
+        const today = new Date();
+        const weekMap = {};
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() + i);
+          weekMap[date.toDateString()] = [];
+        }
+
+        savedDays.forEach((day) => {
+          const formatted = new Date(day.date).toDateString();
+          if (weekMap.hasOwnProperty(formatted)) {
+            weekMap[formatted] = day.meals || [];
+          }
+        });
+
+        setWeekMeals(weekMap);
+      } else {
+        console.error("User ID (_id) not found in profile response. Cannot load user-specific data.");
+        Alert.alert("Error", "Failed to load complete user profile.");
+        setUserId(null);
+        setUserName(null);
+        setWeekMeals({});
+      }
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to load calendar data.');
+      console.error("Error in fetchData:", error);
+       Alert.alert('Error', 'Failed to load user data.');
+       setUserId(null);
+       setUserName(null);
+       setWeekMeals({});
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -199,6 +227,116 @@ const HomeScreen = () => {
     return Math.round(sum); // ✅ round total calories
   };
 
+  const handleSaveAiPlan = async () => {
+    console.log("Frontend: 'Save This Plan' button pressed.");
+
+    if (!mealPlan || !userId) {
+      Alert.alert("Error", "Cannot save plan. Missing plan data or user session.");
+      return;
+    }
+    console.log("Using userId from state for saving:", userId);
+
+    const today = new Date();
+    const dateToSave = today.toDateString();
+    const defaultTimes = { breakfast: "08:00 AM", lunch: "12:00 PM", dinner: "06:00 PM" };
+    const servingsToSave = 1;
+    let mealsToSave = [];
+    let calculatedTotalCalories = 0;
+
+    console.log("Looping through mealPlan object...");
+
+    for (const [mealType, mealData] of Object.entries(mealPlan)) {
+      console.log(` -> Processing mealType: ${mealType}`);
+      console.log(`    Data available:`, mealData);
+
+      let mealObject = {
+        meal: mealType.charAt(0).toUpperCase() + mealType.slice(1),
+        time: defaultTimes[mealType] || "N/A",
+        servings: servingsToSave,
+        recipeId: `ai_suggestion_${mealType}`,
+        recipeLabel: `Suggestion for ${mealType}`,
+        calories: 0,
+        imageUri: null,
+        ingredients: [],
+        directions: '',
+        allergies: [],
+        nutrition: {},
+      };
+
+      console.log(`    Initial mealObject created:`, mealObject);
+
+      if (mealData.source === 'edamam') {
+        mealObject.recipeLabel = mealData.label || "Edamam Recipe"; 
+        mealObject.recipeId = mealData.uri || `edamam_missing_uri_${mealType}`;
+        mealObject.calories = mealData.calories || 0;
+        mealObject.imageUri = mealData.imageUrl || null;
+        console.log(`    -> Overwrote with Edamam data.`);
+      } else {
+        mealObject.recipeLabel = mealData.suggestion || `AI Suggestion for ${mealType}`;
+         console.log(`    -> Using AI suggestion fallback data.`);
+      }
+
+      console.log(`    Final mealObject for ${mealType}:`, mealObject);
+      mealsToSave.push(mealObject);
+    }
+
+    console.log("Finished looping through meals.");
+    console.log("Collected mealsToSave array:", mealsToSave);
+
+    calculatedTotalCalories = mealsToSave.reduce((sum, meal) => {
+      const mealCalories = typeof meal.calories === 'number' ? meal.calories : 0;
+      const mealServings = typeof meal.servings === 'number' ? meal.servings : 1;
+      return sum + (mealCalories * mealServings);
+    }, 0);
+
+    console.log(`Calculated Total Calories for payload: ${Math.round(calculatedTotalCalories)}`);
+
+    const payload = {
+      date: dateToSave,
+      meals: mealsToSave,
+      totalCalories: Math.round(calculatedTotalCalories)
+    };
+
+    console.log("Frontend: FINAL PAYLOAD object prepared:");
+    console.log(payload);
+    console.log("--- Stringified Payload (for readability) ---");
+    console.log(JSON.stringify(payload, null, 2));
+    console.log("---------------------------------------------");
+
+    setIsSaving(true);
+    setError(null);
+
+    Alert.alert("Save WIP", "Payload assembled and logged! Checkpoint 5.4 complete!");
+
+    try {
+      console.log(`Frontend: Sending POST to /api/users/${userId}/save-day`);
+      const response = await axiosInstance.post(`/api/users/${userId}/save-day`, payload);
+
+      console.log("Frontend: Save successful!", response.data);
+      Alert.alert("Success!", "AI meal plan saved for today!");
+
+      fetchData(); // Call the function that loads weekMeals state
+      setMealPlan(null); // Clear the temporary AI plan display
+
+    } catch(err) {
+      console.error("Frontend: Error saving AI plan:", err);
+
+      let message = "Failed to save the plan.";
+      if (err.response?.data?.message) { // Use optional chaining and check for 'message' from backend
+        message = err.response.data.message;
+      } else if (err.message) {
+        message = err.message;
+      }
+
+      setError(message);
+      Alert.alert("Save Failed", message);
+
+    } finally {
+      setIsSaving(false);
+      console.log("Frontend: Finished save attempt.");
+    }
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -230,71 +368,135 @@ const HomeScreen = () => {
         <Text style={styles.discoverButtonText}>Discover more</Text>
       </TouchableOpacity>
 
-      {/* --- AI Button --- */}
+      {/* AI Generate Button */}
       <TouchableOpacity
-          style={localStyles.aiButton}
-          onPress={fetchAiMealPlan}
-          disabled={isLoading}
-      >
-          {/* Change text based on loading state */}
-          <Text style={localStyles.aiButtonText}>
-              {isLoading ? "Generating Plan..." : "✨ Generate AI Plan for Today ✨"}
-          </Text>
+        style={localStyles.aiButton}
+        onPress={fetchAiMealPlan}
+        disabled={isLoading && !mealPlan}
+       >
+        <Text style={localStyles.aiButtonText}>
+          {isLoading && !mealPlan ? "Generating Plan..." : "✨ Generate AI Plan for Today ✨"}
+        </Text>
       </TouchableOpacity>
-      {/* --- AI Button --- */}
 
-      {/* Meal Plan for Today */}
+       {/* Meal Plan Display Area */}
       <Text style={styles.sectionTitle}>Meal Plan for Today</Text>
 
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
-      ) : (
-        <View style={styles.mealPlanContainer}>
-          {/* Meals */}
-          {weekMeals[todayDateString]?.length > 0 ? (
-            weekMeals[todayDateString].map((meal, index) => (
+      <View style={styles.mealPlanContainer}>
+        {isLoading && !mealPlan ? (
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 20 }} />
+        ) : error ? (
+          <Text style={localStyles.errorText}>Error generating plan: {error}</Text>
+        ) : mealPlan ? (
+          <>
+          <View>
+            {Object.entries(mealPlan).map(([mealType, mealData]) => {
+              // --- Render AI plan meal card ---
+              let icon = mealType === 'breakfast' ? '☀️' : mealType === 'lunch' ? '🌤️' : '🌙';
+              return (
+                <View key={mealType}>
+                  <View style={styles.mealTypeHeader}>
+
+                    <Text style={styles.mealTypeText}>{mealType.charAt(0).toUpperCase() + mealType.slice(1)}</Text>
+                    <Text style={styles.mealTypeIcon}>{icon}</Text>
+
+                    </View>
+                      <View style={styles.mealItemCard}>
+                          {mealData.source === 'edamam' ? (
+                            <>
+                            <Image source={{ uri: mealData.imageUrl }} style={localStyles.mealImage} />
+                            <View style={styles.mealDetails}>
+                              <Text style={styles.mealRecipeName} numberOfLines={2}>{mealData.label}</Text>
+                              <Text style={styles.mealCalories}>~{mealData.calories} Calories / serving</Text>
+                              <Text style={localStyles.mealSource}>Source: Edamam</Text>
+                            </View>
+                            </>
+                          ) : (
+                            <View style={[styles.mealDetails, { flex: 1, marginLeft: 10 }]}>
+                              <Text style={styles.mealRecipeName} numberOfLines={3}>{mealData.suggestion}</Text>
+                              <Text style={localStyles.mealSource}>Source: AI Suggestion</Text>
+                            </View>
+                          )}
+                    </View>
+                  </View>
+              );
+            })} 
+          </View>
+
+          {/* --- Save / Cancel Buttons --- */}
+          <View style={localStyles.actionButtonsContainer}>
+            <TouchableOpacity
+              style={[localStyles.actionButton, localStyles.saveButton]}
+              onPress={handleSaveAiPlan}
+              disabled={isLoading || isSaving}
+            >
+
+              <Text style={localStyles.actionButtonText}>
+                {isSaving ? "Saving..." : "Save This Plan"}
+              </Text>
+
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[localStyles.actionButton, localStyles.cancelButton]}
+                onPress={() => {
+                  console.log("Cancel Pressed! Reverting display.");
+                  setMealPlan(null);
+                  setError(null);
+                }}
+                disabled={isLoading || isSaving}
+            >
+
+              <Text style={localStyles.actionButtonText}>Cancel</Text>
+
+            </TouchableOpacity>
+          </View>
+          </>
+
+          ) : (
+            // If mealPlan is null (and not loading/errored from AI), show the SAVED plan for today
+            <>
+            {loading ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{marginVertical: 10}}/>
+            ) : weekMeals[todayDateString]?.length > 0 ? (
+              // Display the saved meals using your existing map logic
+              weekMeals[todayDateString].map((meal, index) => (
+
               <TouchableOpacity key={index} style={styles.mealItemCard} onPress={() => handleMealPress(meal)}>
+
                 <TouchableOpacity
-                  style={[
-                    styles.checkCircle,
-                    completedMeals[todayDateString]?.[index] && { backgroundColor: '#1F508F', borderColor: '#1F508F' }
-                  ]}
-                  onPress={() => handleToggleComplete(todayDateString, index)}
+                    style={[styles.checkCircle, completedMeals[todayDateString]?.[index] && { backgroundColor: '#1F508F', borderColor: '#1F508F' }]}
+                    onPress={() => handleToggleComplete(todayDateString, index)}
                 >
-                  {completedMeals[todayDateString]?.[index] && (
-                    <Ionicons name="checkmark" size={16} color="#fff" />
-                  )}
+                  {completedMeals[todayDateString]?.[index] && <Ionicons name="checkmark" size={16} color="#fff" />}
                 </TouchableOpacity>
 
                 <Text style={styles.mealTime}>{meal.time}</Text>
 
                 <View style={styles.mealDetails}>
-                  <Text style={[
-                    styles.mealRecipeName,
-                    completedMeals[todayDateString]?.[index] && { textDecorationLine: 'line-through', color: 'gray' }
-                  ]}>
-                    {meal.recipeLabel}
-                  </Text>
-                  <Text style={styles.mealCalories}>
-                    {meal.calories ? `${Math.round(meal.calories)} Calories` : 'No calorie info'}
-                  </Text>
+                  <Text style={[styles.mealRecipeName, completedMeals[todayDateString]?.[index] && { textDecorationLine: 'line-through', color: 'gray' }]}>{meal.recipeLabel}</Text>
+                  <Text style={styles.mealCalories}>{meal.calories ? `${Math.round(meal.calories)} Calories` : 'No calorie info'}</Text>
                 </View>
 
                 <Ionicons name="arrow-forward" size={22} color="#333" />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <Text style={styles.noMealText}>No meals scheduled for today.</Text>
-          )}
 
-          {/* ✅ Total Calories */}
-          <View style={styles.totalCaloriesContainer}>
-            <Text style={styles.totalCaloriesText}>
-              Total Calories: {getTotalCaloriesLeft(weekMeals[todayDateString] || [], completedMeals[todayDateString])}
-            </Text>
-          </View>
-        </View>
-      )}
+              </TouchableOpacity>
+                  ))
+            ) : (
+              <Text style={localStyles.placeholderText}>No meals scheduled for today. Generate one?</Text>
+            )}
+
+            {/* Total Calories for saved plan */}
+            {!loading && weekMeals[todayDateString]?.length > 0 && (
+                  <View style={styles.totalCaloriesContainer}>
+                      <Text style={styles.totalCaloriesText}>
+                          Total Calories Left: {getTotalCaloriesLeft(weekMeals[todayDateString] || [], completedMeals[todayDateString])}
+                      </Text>
+                  </View>
+            )}
+          </>
+           )}
+       </View>
 
       {/* View Full Week Button */}
       <TouchableOpacity onPress={() => setShowWeekView(!showWeekView)} style={styles.viewWeekButton}>
@@ -376,7 +578,39 @@ const localStyles = StyleSheet.create({
         color: textcolors.grey,
         fontSize: 16,
         paddingHorizontal: 20,
-    }
+    },
+    actionButtonsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      marginTop: 20,
+      marginBottom: 10,
+    },
+    actionButton: {
+      paddingVertical: 10,
+      paddingHorizontal: 25,
+      borderRadius: 20,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+    },
+    saveButton: {
+      backgroundColor: colors.header,
+    },
+    cancelButton: {
+      backgroundColor: colors.grey,
+    },
+    actionButtonText: {
+      color: colors.white,
+      fontSize: 15,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    mealImage: { width: 60, height: 60, borderRadius: 8, marginRight: 15, backgroundColor: colors.lightgrey, },
+    mealSource: { fontSize: 11, color: textcolors.grey, fontStyle: 'italic', marginTop: 4, },
+    errorText: { color: 'red', textAlign: 'center', marginVertical: 20, paddingHorizontal: 15, fontSize: 16, },
+    placeholderText: { textAlign: 'center', marginVertical: 40, color: textcolors.grey, fontSize: 16, paddingHorizontal: 20, }
 });
 
 const styles_home = StyleSheet.create({
