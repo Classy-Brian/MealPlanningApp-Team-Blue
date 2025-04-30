@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "cae0013c-ad62-4bf6-866c-81243821220a"
+      }
+    },
+    "android": {
+      "package": "com.blueteam.byteme"
+    }
+  }
+}
