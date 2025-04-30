@@ -359,6 +359,10 @@ export const generateStructuredMealPlan = async (req, res) => {
           const totalCalories = Math.round(recipe.calories);
           const servings = recipe.yield || 1;
           const caloriesPerServing = Math.round(totalCalories / servings);
+          const ingredients = recipe.ingredientLines || [];
+          const nutrition = recipe.totalNutrients || {};
+          const dietLabels = recipe.dietLabels || [];
+          const healthLabels = recipe.healthLabels || [];
 
           // Log the extracted details for confirmation
           console.log(`  -> Found: ${label}`);
@@ -366,6 +370,8 @@ export const generateStructuredMealPlan = async (req, res) => {
           console.log(`     URL: ${url}`);
           console.log(`     Image: ${imageUrl}`);
           console.log(`     Cal/Serving: ${caloriesPerServing} (Total: ${totalCalories}, Yield: ${servings})`);
+          console.log("     Ingredients:", ingredients);
+          console.log("     Nutrition Keys:", Object.keys(nutrition));
 
           // Store the extracted Edamam data for this meal type
           processedMeals[mealType] = {
@@ -375,7 +381,11 @@ export const generateStructuredMealPlan = async (req, res) => {
             url: url,
             imageUrl: imageUrl,
             calories: caloriesPerServing,
-            servings: servings
+            servings: servings,
+            ingredientLines: ingredients,
+            totalNutrients: nutrition,
+            dietLabels: dietLabels,
+            healthLabels: healthLabels
           };
           
         } else {
