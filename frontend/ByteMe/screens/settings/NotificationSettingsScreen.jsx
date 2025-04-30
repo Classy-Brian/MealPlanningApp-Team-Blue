@@ -143,16 +143,15 @@ const NotificationSettingsScreen = () => {
             <View style={localStyles.section}>
                 <Text style={localStyles.sectionTitle}>Email Notifications</Text>
 
-                {/* Row for Save Confirmation Setting */}
                 <View style={localStyles.settingRow}>
                     <Text style={localStyles.settingLabel}>Confirm when meal plan is saved?</Text>
                     <Switch
-                        trackColor={{ false: "#767577", true: colors.primary || "#81b0ff" }} // Use your primary color
+                        trackColor={{ false: "#767577", true: colors.primary || "#81b0ff" }}
                         thumbColor={"#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={handleToggleSaveConfirm} // Attach handler
-                        value={isSaveConfirmEnabled} // Use state variable
-                        disabled={isLoading} // Disable while loading initial settings
+                        onValueChange={handleToggleSaveConfirm}
+                        value={isSaveConfirmEnabled}
+                        disabled={isLoading}
                     />
                 </View>
 
@@ -165,14 +164,10 @@ const NotificationSettingsScreen = () => {
                 {/* Add more notification toggles here later */}
             </View>
 
-             {/* You could add a save button, but toggles often save instantly */}
-             {/* <TouchableOpacity style={localStyles.saveButton} onPress={saveSettings}> ... </TouchableOpacity> */}
-
         </ScrollView>
     );
 };
 
-// --- Styles for this screen (Combine/Adapt as needed) ---
 const localStyles = StyleSheet.create({
      container: {
         flex: 1,
@@ -182,7 +177,7 @@ const localStyles = StyleSheet.create({
          fontSize: 26,
          fontWeight: 'bold',
          color: '#000',
-         marginTop: 10, // Reduced margin after adding back button
+         marginTop: 10,
          marginBottom: 25,
          paddingHorizontal: 20,
      },
@@ -199,15 +194,12 @@ const localStyles = StyleSheet.create({
          color: '#333',
          paddingTop: 15,
          paddingBottom: 5,
-         // Removed border for single item section
      },
      settingRow: {
          flexDirection: 'row',
          justifyContent: 'space-between',
          alignItems: 'center',
          paddingVertical: 15,
-         // borderTopWidth: 1, // Only add if multiple items in section
-         // borderTopColor: '#E5E5EA',
      },
      settingLabel: {
          fontSize: 16,
