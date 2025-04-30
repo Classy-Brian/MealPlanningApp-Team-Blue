@@ -1,104 +1,181 @@
-import OpenAI from 'openai';
-import User from '../models/user.model.js';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+  import OpenAI from 'openai';
+  import axios from 'axios';
+  import jwt from 'jsonwebtoken';
+  import dotenv from 'dotenv';
+  import User from '../models/user.model.js';
 
-dotenv.config();
+  dotenv.config();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
 
-const JWT_SECRET = process.env.JWT_SECRET;
+  // OpenAI Chatbot Controller
+  export const chatWithAI = async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'No token provided' });
 
-export const getMealPlanFromAI = async (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded._id).select('-password');
+      if (!user) return res.status(404).json({ error: 'User not found' });
 
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
+      const userMessage = req.body.message || '';
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const userId = decoded._id;
-    console.log("Decoded user ID:", userId);
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', 
+            content: "You are a friendly, intelligent AI assistant that helps users with meal planning, recipe suggestions, food information, and health tips. Always answer clearly, naturally, and helpfully, like a caring expert. If you don't know something exactly, make a helpful suggestion without guessing wrong information. Maintain a conversational and encouraging tone. Be concise but detailed when needed. Adapt to the user's style: casual if casual, formal if formal." },
+          { role: 'user', content: userMessage }
+        ],
+        max_tokens: 1000,
+        temperature: 0.7,
+      });
 
-    const user = await User.findById(userId).select('-password');
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      const reply = completion.choices[0]?.message?.content || 'No reply generated.';
+      return res.status(200).json({ reply });
+
+    } catch (error) {
+      console.error('Chatbot chat error:', error);
+      return res.status(500).json({ error: 'Failed to chat.' });
     }
+  };
 
-    const preferences = req.body.preferences || [];
-    const allergies = Array.isArray(user.allergies) ? user.allergies.join(', ') : 'none';
-    const calorieTarget = user.profile?.calories?.max || 2000;
 
-    const prompt = `
-You are a friendly and knowledgeable AI nutrition assistant. Your job is to help users stay healthy and enjoy their meals by creating a personalized and well-balanced 3-day meal plan based on their preferences, dietary needs, and any allergies they may have.
 
-Please take into account the following information:
+  export const getMealPlanFromEdamam = async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'No token provided' });
 
-Daily calorie limit: ${calorieTarget} kcal
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded._id).select('-password');
+      if (!user) return res.status(404).json({ error: 'User not found' });
 
-Allergies to avoid: ${allergies}
+      const allergies = user.allergies || [];
+      const dislikes = user.dislikes || [];
+      const cuisines = user.cuisines || [];
 
-User preferences: ${preferences.length > 0 ? preferences.join(', ') : 'None specified'}
+      let calorieMin = user.profile?.calories?.min || 1500;
+      let calorieMax = user.profile?.calories?.max || 2200;
+      calorieMin = Math.max(1000, Math.min(calorieMin, 3000));
+      calorieMax = Math.max(1200, Math.min(calorieMax, 4000));
+      if (calorieMin > calorieMax) [calorieMin, calorieMax] = [calorieMax, calorieMin];
 
-📝 Instructions for how to respond:
+      const mealPlanId = process.env.EDAMAM_MEAL_PLAN_ID;
+      const mealPlanKey = process.env.EDAMAM_MEAL_PLAN_KEY;
+      const accountUser = process.env.EDAMAM_ACCOUNT_USER;
+      const authBase64 = Buffer.from(`${mealPlanId}:${mealPlanKey}`).toString('base64');
 
-Create meals that are realistic, tasty, and easy to prepare, using everyday ingredients.
+      const acceptFilters = [];
 
-Be mindful of allergies and avoid any ingredients that may trigger them.
+      if (allergies.length > 0) {
+        acceptFilters.push({ health: allergies.map(a => a.replace(/-/g, '_').toUpperCase()) });
+      }
 
-Respect any dietary preferences (e.g., vegetarian, low carb, high protein).
+      if (cuisines.length > 0) {
+        acceptFilters.push({ cuisine: cuisines.map(c => c.toLowerCase()) });
+      }
 
-Each day should include:
+      const requestBody = {
+        size: 30,
+        plan: {
+          accept: { all: acceptFilters },
+          fit: {
+            ENERC_KCAL: { min: calorieMin, max: calorieMax },
+            "SUGAR.added": { max: 20 }
+          },
+          sections: {
+            Breakfast: {},
+            Lunch: {},
+            Dinner: {}
+          }
+        }
+      };
 
-Breakfast
+      if (dislikes.length > 0) {
+        requestBody.plan.exclude = dislikes.map(d => d.toLowerCase());
+      }
 
-Lunch
+      console.log('🛠 FINAL Request to Edamam:', JSON.stringify(requestBody, null, 2));
 
-Dinner
+      const edamamResponse = await axios.post(
+        `https://api.edamam.com/api/meal-planner/v1/${mealPlanId}/select?type=public`,
+        requestBody,
+        {
+          headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${authBase64}`,
+            'Edamam-Account-User': accountUser,
+          }
+        }
+      );
 
-Optional healthy snacks
+      const fullMealPlan = edamamResponse.data.selection || [];
+      if (fullMealPlan.length === 0) throw new Error('No meal plan generated.');
 
- Format your response like this:
+      // Helper to fetch calories from recipe URI
+      const fetchCaloriesFromUri = async (uri) => {
+        if (!uri) return 0;
+        const id = uri.split('#recipe_')[1];
+        const apiId = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
+        const apiKey = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
+        const response = await axios.get(`https://api.edamam.com/api/recipes/v2/${id}?type=public&app_id=${apiId}&app_key=${apiKey}`);
+        return response.data.recipe.calories || 0;
+      };
 
-Day 1
+      // Setup flexible calorie filtering
+      const targetCalories = (calorieMin + calorieMax) / 2;
+      const lowerBound = targetCalories * 0.8;
+      const upperBound = targetCalories * 1.2;
 
-Breakfast: ...
+      const filteredDays = [];
+      for (const dayObj of fullMealPlan) {
+        try {
+          const breakfastUri = dayObj.sections?.Breakfast?.assigned;
+          const lunchUri = dayObj.sections?.Lunch?.assigned;
+          const dinnerUri = dayObj.sections?.Dinner?.assigned;
 
-Lunch: ...
+          const [breakfastCals, lunchCals, dinnerCals] = await Promise.all([
+            fetchCaloriesFromUri(breakfastUri),
+            fetchCaloriesFromUri(lunchUri),
+            fetchCaloriesFromUri(dinnerUri),
+          ]);
 
-Dinner: ...
+          const totalCalories = breakfastCals + lunchCals + dinnerCals;
 
-Snacks: ...
+          if (totalCalories >= lowerBound && totalCalories <= upperBound) {
+            filteredDays.push(dayObj);
+          }
 
-Day 2
-...
+          if (filteredDays.length === 7) break;
+        } catch (err) {
+          console.error('Error fetching calories for a day:', err.message);
+        }
+      }
 
- Be conversational and helpful, like a friendly coach. Feel free to add a short comment after each day with a tip or encouraging message, like:
-"This day offers great variety and keeps you energized all day!"
+      // Fill randomly if needed
+      if (filteredDays.length < 7) {
+        const missing = 7 - filteredDays.length;
+        const additionalDays = fullMealPlan
+          .filter(day => !filteredDays.includes(day))
+          .sort(() => 0.5 - Math.random())
+          .slice(0, missing);
+        filteredDays.push(...additionalDays);
+      }
 
- Your goal is to help the user eat well, feel good, and stick to their goals with food that feels enjoyable and never restrictive.
-`;
+      return res.status(200).json({ mealPlan: filteredDays });
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 1000,
-      temperature: 0.7,
-    });
-
-    const plan = completion.choices[0]?.message?.content || 'No plan generated.';
-    return res.status(200).json({ plan });
-
-  } catch (error) {
-    console.error('AI generation error:', error);
-
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: 'Invalid token' });
+    } catch (error) {
+      console.error('Meal Plan Error:', {
+        message: error.message,
+        responseData: error.response?.data,
+        responseStatus: error.response?.status,
+        requestData: JSON.stringify(error.config?.data)
+      });
+      return res.status(500).json({ error: 'Failed to generate meal plan.' });
     }
+  };
 
-    return res.status(500).json({ error: 'Failed to generate meal plan.' });
-  }
-};

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto'
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -21,7 +22,16 @@ const userSchema = new mongoose.Schema({
     allergies: [{
         type: String
     }],
-  
+    portion: {
+        type: String
+    },
+    dislikes: [{
+        type: String
+    }],
+    cuisines: [{
+        type: String
+    }],
+    
     // Profile section
     profile: {
         calories: {
@@ -35,9 +45,47 @@ const userSchema = new mongoose.Schema({
       }
     },
 
+    savedDays: [
+        {
+          date: { type: String, required: true },
+          totalCalories: { type: Number, default: 0 }, 
+          meals: [
+            {
+              meal: { type: String, required: true },
+              recipeId: { type: String, required: true },
+              recipeLabel: { type: String },             
+              calories: { type: Number, default: 0 },   
+              time: { type: String, required: true }
+            }
+          ]
+        }
+      ],
+
     savedRecipes: [{
-        type: String 
-    }]
+      type: String, // Reference to Recipe model
+    }],
+
+    savedGrocery: [{
+        foodId: { type: String, required: true },
+        quantity: {type: Number, default: 1, min: 0 }
+    }],
+
+    savedPantry: [{
+        foodId: { type: String, required: true },
+        quantity: {type: Number, default: 1, min: 0 }
+    }],
+
+    isVerified: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
+
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+
     }, {
     timestamps: true
   });
@@ -67,6 +115,37 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
         return resizeBy.status(400).json({ message: "Invalid credentials"}); // <- Need to add a way to handle the error
     }
 };
+
+// ADD/VERIFY Method to Generate Email Verification Token
+userSchema.methods.getEmailVerificationToken = function() {
+    const verificationToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash the token before saving it to the database
+    this.emailVerificationToken = crypto
+        .createHash('sha256')
+        .update(verificationToken)
+        .digest('hex');
+
+    // Set token expiration time (e.g., 15 minutes)
+    this.emailVerificationExpires = Date.now() + 15 * 60 * 1000;
+
+    // Return the UNHASHED token (this goes in the email link)
+    return verificationToken;
+};
+
+userSchema.methods.getPasswordResetToken = function() {
+    const resetCode = Math.floor(10000 + Math.random() * 90000).toString();
+
+    // Hashes the token before saving
+    this.passwordResetToken = crypto
+        .createHash('sha256')
+        .update(resetCode)
+        .digest('hex');
+
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+    return resetCode;
+}
 
 const User = mongoose.model('User', userSchema);
 export default User;

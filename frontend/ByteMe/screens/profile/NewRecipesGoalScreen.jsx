@@ -1,39 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert
+  Alert,
+  Image,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useNavigation } from "@react-navigation/native";
+import { styles } from '@/components/Sheet';
+import backarrow from "@/assets/images/back_arrow_navigate.png";
+import getUserIdFromToken from '@/components/getUserIdFromToken';
+
+function BackButton() {
+  const navigation = useNavigation();
+  return (
+    <View style={{ flexDirection: 'row' }}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <View style={styles.greybutton}>
+          <Image style={{ marginRight: 10 }} source={backarrow} />
+          <Text style={styles.regularText}>Add Goals</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 export default function NewRecipesGoalScreen() {
-  const { userId } = useLocalSearchParams();
-  const router = useRouter();
-
+  const navigation = useNavigation();
+  const [userId, setUserId] = useState('');
   const [wantToTry, setWantToTry] = useState('5');
+
+  useEffect(() => {
+    async function fetchUserId() {
+      try {
+        const id = await getUserIdFromToken();
+        setUserId(id);
+      } catch (err) {
+        console.error('Failed to get user ID:', err);
+      }
+    }
+    fetchUserId();
+  }, []);
 
   const handleAddGoal = async () => {
     try {
+      if (!userId) {
+        console.warn('User ID not yet available.');
+        return;
+      }
+
       const parsedWantToTry = parseInt(wantToTry, 10) || 0;
 
-      await fetch(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userId}`, {
+      await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           profile: {
             recipes: {
               tried: 0,
-              wantToTry: parsedWantToTry
-            }
-          }
-        })
+              wantToTry: parsedWantToTry,
+            },
+          },
+        }),
       });
 
       Alert.alert('Success', 'New Recipes Tried Goal added!');
-      router.back();
+      navigation.navigate('add_goals', { userId });
     } catch (error) {
       console.error('Error setting recipes goal:', error);
       Alert.alert('Error', 'Could not set recipes goal.');
@@ -41,46 +75,46 @@ export default function NewRecipesGoalScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
+      <BackButton />
       <Text style={styles.title}>New Recipes Tried</Text>
 
       {/* Progress bar */}
-      <View style={styles.recipeBar}>
-        <View style={styles.recipeFill} />
+      <View style={det.recipeBar}>
+        <View style={[det.recipeFill, { flex: parseInt(wantToTry || '0', 10) / 10 }]} />
       </View>
-      <View style={styles.recipeLabels}>
+      <View style={det.recipeLabels}>
         <Text>0</Text>
         <Text>{wantToTry}</Text>
       </View>
 
-      <Text style={styles.question}>
+      <Text style={det.question}>
         How many new recipes would you like to try in a week?
       </Text>
       <TextInput
-        style={styles.input}
+        style={det.input}
         keyboardType="numeric"
         value={wantToTry}
         onChangeText={setWantToTry}
       />
 
-      <TouchableOpacity style={styles.addButton} onPress={handleAddGoal}>
-        <Text style={styles.addButtonText}>Add Goal</Text>
+      <TouchableOpacity
+        style={[det.addButton, !userId && { opacity: 0.5 }]}
+        onPress={handleAddGoal}
+        disabled={!userId}
+      >
+        <Text style={det.addButtonText}>Add Goal</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
     paddingTop: 60,
     paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
   },
   recipeBar: {
     flexDirection: 'row',
@@ -91,7 +125,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   recipeFill: {
-    flex: 0.3,
     backgroundColor: '#A9BCD0',
   },
   recipeLabels: {

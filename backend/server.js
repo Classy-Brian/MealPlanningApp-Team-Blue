@@ -8,6 +8,8 @@ import { connectDB } from './config/db.js';
 import recipeRoutes from './routes/recipe.route.js';
 import userRoutes from './routes/user.routes.js';
 import aiRoutes from './routes/AI.route.js'
+import ingredientRoutes from './routes/ingredient.routes.js';
+
 
 const app = express();
 const PORT = process.env.PORT;
@@ -19,6 +21,7 @@ app.use(cors());
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/ingredients', ingredientRoutes);
 
 app.listen(PORT, () => {
     connectDB(); // Connect to DB after starting server

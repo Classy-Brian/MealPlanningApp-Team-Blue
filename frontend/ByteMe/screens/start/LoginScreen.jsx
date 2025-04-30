@@ -18,7 +18,7 @@ function HeaderLogo() {
   )
 }
 
-const Login = () => {
+const Login = ({ navigation }) => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
@@ -56,12 +56,18 @@ const Login = () => {
       } else {
         console.error("Message:", err.message);
       }
+      if (err.response && err.response.status === 401) {
+        Alert.alert("Invalid email or password!", "Please try again.", [{text: "OK"}], {cancelable: true})
+      }
       if (err.response && err.response.status === 500) {
         Alert.alert("Error signing up. Please try again.", "", [{text: "OK"}], {cancelable: true});
       }
     }
   }
 
+  const forgetPassword = async () => {
+    navigation.navigate('forgotpassword');
+  };
 
   return (
     <View style={styles.whiteBackground}>
@@ -106,13 +112,15 @@ const Login = () => {
           </View>        
         </View>
 
-        <View style={styles.container}>
-          <Text style={styles.forgot} >Forgot Password? </Text>
-        </View>
+        <TouchableOpacity onPress={forgetPassword}>
+          <View style={[styles.container, {alignItems: 'flex-end'}]}>
+            <Text style={styles.forgot} >Forgot Password? </Text>
+          </View>
+        </TouchableOpacity>
         
         <TouchableOpacity onPress={handleLogin}>
           <View style={styles.buttonContainer}>
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={[styles.buttonText, {color: colors.white}]}>Login</Text>
           </View>
         </TouchableOpacity>
  

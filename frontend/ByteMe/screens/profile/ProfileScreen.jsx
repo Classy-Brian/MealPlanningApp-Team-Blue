@@ -1,3 +1,4 @@
+// ProfileScreen.jsx (fully updated with scrollable tab + fixed back button layout)
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -10,28 +11,35 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { styles } from '@/components/Sheet';
+import { colors } from '../../components/Colors';
+const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [userData, setUserData] = useState(null);
+  const navigation = useNavigation();
+  const route = useRoute();
 
-  // Fetch the authenticated user from backend using the token
   const fetchUser = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      if (!token) {
-        Alert.alert('Error', 'Not logged in.');
-        return;
-      }
-      const response = await fetch(
-        process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/profile/${token}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      if (!token) return Alert.alert('Error', 'Not logged in.');
+
+      await fetch(`http://localhost:5000/api/users/profile/updated/sync`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const response = await fetch(`http://localhost:5000/api/users/profile/${token}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       if (!response.ok) throw new Error('Failed to fetch profile');
+
       const data = await response.json();
       setUserData(data);
     } catch (error) {
@@ -43,17 +51,15 @@ export default function ProfileScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchUser();
-    }, [])
+    }, [route.params?.refresh])
   );
 
-  // Remove a specific goal (calories or recipes)
   const removeGoal = async (goalType) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) return;
 
       let updatedProfile = { ...userData.profile };
-
       if (goalType === 'calories') {
         updatedProfile.calories = { min: 0, max: 0, current: 0 };
       } else if (goalType === 'recipes') {
@@ -61,7 +67,7 @@ export default function ProfileScreen() {
       }
 
       const response = await fetch(
-        process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/${userData._id}`,
+        `http://localhost:5000/api/users/${userData._id}`,
         {
           method: 'PATCH',
           headers: {
@@ -82,104 +88,108 @@ export default function ProfileScreen() {
 
   if (!userData) {
     return (
-      <View style={styles.container}>
+      <View style={det.container}>
         <Text>Loading...</Text>
       </View>
     );
   }
 
-  // Decide what image to display: user avatar or local placeholder
   const avatarSource = userData.avatar
     ? { uri: userData.avatar }
     : require('../../assets/images/profile.png');
 
-  // Render the calorie intake goal card
   const renderCalorieGoalCard = () => {
     const { min, max, current } = userData.profile.calories;
-    // If both min and max are 0, assume no calorie goal
     if (min === 0 && max === 0) return null;
-
     const totalRange = max - min;
     const progress = totalRange > 0 ? ((current - min) / totalRange) * 100 : 0;
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
     return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Calorie Intake</Text>
-        <View style={styles.calorieBar}>
-          <View style={[styles.calorieFill, { width: `${clampedProgress}%` }]} />
+      <View style={det.card}>
+        <Text style={det.cardTitle}>Calorie Intake</Text>
+        <View style={det.calorieBar}>
+          <View style={[det.calorieFill, { width: `${clampedProgress}%` }]} />
         </View>
-        <View style={styles.calorieLabels}>
+        <View style={det.calorieLabels}>
           <Text>{min}</Text>
           <Text>{max}</Text>
         </View>
-        <Text style={styles.currentText}>Current: {current}</Text>
+        <Text style={[det.currentText, { color: progress > 100 ? 'orange' : 'black' }]}>  
+          {Math.round(progress)}% of goal ({Math.round(current)} kcal)
+        </Text>
         <TouchableOpacity
-          style={styles.removeButton}
+          style={det.removeButton}
           onPress={() => removeGoal('calories')}
         >
-          <Text style={styles.removeButtonText}>Remove Goal</Text>
+          <Text style={det.removeButtonText}>Remove Goal</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
-  // Render the new recipes tried goal card
   const renderRecipesGoalCard = () => {
     const { tried, wantToTry } = userData.profile.recipes;
     if (wantToTry === 0) return null;
-
-    // Calculate a rough percentage for tried in relation to wantToTry
     const progress = (tried / wantToTry) * 100;
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
     return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>New Recipes Tried</Text>
-        <View style={styles.recipeProgress}>
-          <View style={[styles.recipeFill, { width: `${clampedProgress}%` }]} />
+      <View style={det.card}>
+        <Text style={det.cardTitle}>New Recipes Tried</Text>
+        <View style={det.recipeProgress}>
+          <View style={[det.recipeFill, { width: `${clampedProgress}%` }]} />
         </View>
-        <View style={styles.recipeLabels}>
+        <View style={{ marginTop: 5 }}>
+          <Text style={[det.currentText, { color: progress > 100 ? 'orange' : 'black' }]}>  
+            {Math.round(progress)}% of goal ({tried} recipes)
+          </Text>
+        </View>
+        <View style={det.recipeLabels}>
           <Text>{tried}</Text>
           <Text>{wantToTry}</Text>
         </View>
-
         <TouchableOpacity
-          style={styles.removeButton}
+          style={det.removeButton}
           onPress={() => removeGoal('recipes')}
         >
-          <Text style={styles.removeButtonText}>Remove Goal</Text>
+          <Text style={det.removeButtonText}>Remove Goal</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      {/* Settings Button in the top-right */}
-      <TouchableOpacity
-        style={styles.settingsButton}
-        onPress={() => router.push('settings')}
-      >
-        <Ionicons name="settings-sharp" size={30} color="#333" />
-      </TouchableOpacity>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Profile Image */}
-        <Image source={avatarSource} style={styles.profileImage} />
-
-        {/* User Name */}
-        <Text style={styles.username}>{userData.name}</Text>
-
-        {/* Edit Profile Button */}
+    <View style={det.container}>
+      <View style={det.header}>
         <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => router.push(`editprofile?userId=${userData._id}`)}
+          style={det.homeButton}
+          onPress={() => navigation.goBack()}
         >
-          <Text style={styles.editButtonText}>Edit Profile</Text>
+          <Image style={{ marginRight: 10 }} source={backArrowImage} />
+          <Text style={det.homeText}>Back</Text>
         </TouchableOpacity>
 
-        <Text style={styles.sectionTitle}>Goals For the Week</Text>
+        <TouchableOpacity
+          style={det.settingsButton}
+          onPress={() => router.push('settings')}
+        >
+          <Ionicons name="settings-sharp" size={30} color="#333" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={det.scrollContent}>
+        <Image source={avatarSource} style={det.profileImage} />
+        <Text style={det.username}>{userData.name}</Text>
+
+        <TouchableOpacity
+          style={det.editButton}
+          onPress={() => navigation.navigate('edit_profile', { userId: userData._id })}
+        >
+          <Text style={det.editButtonText}>Edit Profile</Text>
+        </TouchableOpacity>
+
+        <Text style={det.sectionTitle}>Goals For the Week</Text>
         {userData.profile && (
           <>
             {renderCalorieGoalCard()}
@@ -188,42 +198,55 @@ export default function ProfileScreen() {
         )}
       </ScrollView>
 
-      {/* Floating Add Button -> navigates to AddGoals screen */}
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => router.push(`addgoals?userId=${userData._id}`)}
+        onPress={() => navigation.navigate('add_goals', { userId: userData._id })}
       >
-        <Text style={styles.addButtonText}>+</Text>
+        <Ionicons name="add" size={60} color="#d9d9d9" />
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
-  // Settings button positioned in the top-right
-  settingsButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 1, // ensure it appears above other elements
-    padding: 10,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 10,
   },
-  settingsButtonText: {
-    fontSize: 24
+  homeText: {
+    fontSize: 18,
+    color: '#000',
+  },
+  homeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.othergrey,
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    elevation: 2,
+    shadowColor: colors.black,
+  },
+  settingsButton: {
+    padding: 8,
   },
   scrollContent: {
     alignItems: 'center',
-    paddingVertical: 20,
-    paddingTop: 80, // add padding so content doesn't hide behind settings button
+    paddingBottom: 60,
   },
   profileImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
+    marginTop: 20,
     marginBottom: 10,
   },
   username: {
@@ -266,7 +289,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#A9BCD0'
+    borderColor: '#A9BCD0',
   },
   calorieFill: {
     height: '100%',
@@ -291,7 +314,7 @@ const styles = StyleSheet.create({
   },
   recipeFill: {
     height: '100%',
-    backgroundColor: '#A9BCD0'
+    backgroundColor: '#A9BCD0',
   },
   recipeLabels: {
     flexDirection: 'row',
@@ -310,20 +333,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  addButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#133E7C',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-  },
-  addButtonText: {
-    fontSize: 30,
-    color: '#fff',
-  }
 });

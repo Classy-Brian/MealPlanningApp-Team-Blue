@@ -178,12 +178,9 @@ const AddDayScreen = () => {
       });
 
       Alert.alert("Success", "Day saved successfully!");
-      navigation.push('(tabs)', {
-        screen: 'calendar',
-        params: {
+      navigation.navigate('calendar', {
           savedDate: selectedDate,
           savedMeals: meals,
-        }
       });
     } catch (err) {
       console.error("Error saving day:", err);
@@ -213,7 +210,7 @@ const AddDayScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.push('(tabs)', { screen: 'calendar' })}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Image source={Back_butt} style={styles.backIcon} />
         <Text style={styles.backText}>Calendar</Text>
       </TouchableOpacity>
@@ -386,7 +383,7 @@ const AddDayScreen = () => {
                 open={meal.openRecipe ?? false}
                 setOpen={(open) => updateExtraMeal(index, 'openRecipe', open)}
                 value={meal.recipeId ?? null}
-                setValue={(val) => updateExtraMeal(index, 'recipeId', val)}
+                setValue={(valFn) => updateExtraMeal(index, 'recipeId', valFn())}
                 placeholder="Pick a recipe"
                 style={styles.dropdown}
                 dropDownContainerStyle={styles.dropDownContainer}
@@ -406,7 +403,7 @@ const AddDayScreen = () => {
                 open={meal.openTime ?? false}
                 setOpen={(open) => updateExtraMeal(index, 'openTime', open)}
                 value={meal.time ?? null}
-                setValue={(val) => updateExtraMeal(index, 'time', val)}
+                setValue={(valFn) => updateExtraMeal(index, 'time', valFn())}
                 placeholder="Pick a time"
                 style={styles.dropdown}
                 dropDownContainerStyle={styles.dropDownContainer}

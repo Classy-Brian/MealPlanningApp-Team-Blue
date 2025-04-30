@@ -1,21 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
+// START OF FILE
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  Animated,
+} from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { Tooltip } from 'react-native-elements';
 import axios from 'axios';
-import Back_butt from '@/assets/images/backbutton.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import getUserIdFromToken from '@/components/getUserIdFromToken';
+import { colors } from '@/components/Colors';
+import backarrow from '@/assets/images/back_arrow_navigate.png';
 import heartIcon from '@/assets/images/heart.png';
 import emptyHeartIcon from '@/assets/images/empty-heart.png';
-import getUserIdFromToken from '@/components/getUserIdFromToken';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+function BackButton() {
+  const navigation = useNavigation();
+  return (
+    <View style={{ flexDirection: 'row', paddingLeft: 8 }}>
+      <TouchableOpacity onPress={() => navigation.navigate('savedrecipes')}>
+        <View style={det.greybutton}>
+          <Image style={{ marginRight: 10 }} source={backarrow} />
+          <Text style={det.regularText}>Recipes</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 const RecipeDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [userId, setUserId] = useState(null);
 
+  const heartScale = useRef(new Animated.Value(1)).current;
+  const triedScale = useRef(new Animated.Value(1)).current;
+
+  const animateIcon = (animRef) => {
+    Animated.sequence([
+      Animated.timing(animRef, {
+        toValue: 1.2,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animRef, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await getUserIdFromToken();
-      if (!id) console.warn("User ID not found");
       setUserId(id);
     };
     fetchUserId();
@@ -26,6 +71,8 @@ const RecipeDetailsScreen = () => {
     title = '',
     directions = 'No directions available.',
     imageUri = '',
+    isSaved = false,
+    calories = 0,
   } = route.params || {};
 
   const ingredients = typeof route.params['ingredients'] === 'string'
@@ -45,167 +92,173 @@ const RecipeDetailsScreen = () => {
   const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
   const saveRecipe = async () => {
-    if (!recipeId || !userId) return;
-
+    animateIcon(heartScale);
     try {
       const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/save-recipe`, {
         userId,
         recipeId,
       });
-
       if (response.status === 200) {
         setIsSavedRecipe(true);
-        Alert.alert("Success", "Recipe saved successfully!");
-      } else {
-        throw new Error("Failed to save recipe.");
+        Alert.alert('Success', 'Recipe saved successfully!');
       }
     } catch (err) {
-      console.error("Error saving recipe:", err);
-      Alert.alert("Error", "Could not save recipe. Please try again.");
+      console.error('Error saving recipe:', err);
+      Alert.alert('Error', 'Could not save recipe.');
     }
   };
 
   const unsaveRecipe = async () => {
-    if (!recipeId || !userId) return;
-
+    animateIcon(heartScale);
     try {
       const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/remove/remove-recipe`, {
         data: { userId, recipeId },
       });
-
       if (response.status === 200) {
         setIsSavedRecipe(false);
-        Alert.alert("Success", "Recipe unsaved successfully!");
-      } else {
-        throw new Error("Failed to unsave recipe.");
+        Alert.alert('Success', 'Recipe unsaved successfully!');
       }
     } catch (err) {
-      console.error("Error removing recipe:", err);
-      Alert.alert("Error", "Could not remove recipe. Please try again.");
+      console.error('Error unsaving recipe:', err);
+      Alert.alert('Error', 'Could not remove recipe.');
     }
   };
 
-  const renderSaveButton = () => (
-    <TouchableOpacity
-      style={styles.saveButton}
-      onPress={isSavedRecipe ? unsaveRecipe : saveRecipe}
-    >
-      <Image
-        source={isSavedRecipe ? heartIcon : emptyHeartIcon}
-        style={styles.heartIcon}
-      />
-    </TouchableOpacity>
+  const tryRecipe = async () => {
+    animateIcon(triedScale);
+  
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) throw new Error('Missing token');
+      const calories = nutrition?.ENERC_KCAL?.quantity || 0;
+
+  
+      const triedRes = await axios.post(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/recipe-tried`,
+        {
+          userId,
+          recipeId,
+          title,
+          calories
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      if (triedRes.status === 200) {
+        setTimeout(async () => {
+          const syncRes = await axios.get(
+            `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/profile/updated/sync`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+  
+          if (syncRes.status === 200) {
+            await AsyncStorage.setItem('syncedUser', JSON.stringify(syncRes.data));
+            console.log('Profile synced successfully');
+          }
+  
+          await unsaveRecipe();
+          Alert.alert('Great!', 'Marked as tried and goals updated!');
+          navigation.navigate('savedrecipes');
+        }, 500);
+      }
+    } catch (err) {
+      console.error('Error marking as tried:', err);
+      Alert.alert('Error', 'Could not update your goals.');
+    }
+  };
+  
+  
+
+  const renderActionButtons = () => (
+    <View style={det.actionButtonContainer}>
+      <Tooltip popover={<Text>Save Recipe</Text>}>
+        <TouchableOpacity
+          style={det.roundButton}
+          onPress={() => isSavedRecipe ? unsaveRecipe() : saveRecipe()}
+        >
+          <Animated.Image
+            source={isSavedRecipe ? heartIcon : emptyHeartIcon}
+            style={[det.heartIcon, { transform: [{ scale: heartScale }] }]}
+          />
+        </TouchableOpacity>
+      </Tooltip>
+
+      <Tooltip popover={<Text>Mark as Tried</Text>}>
+        <TouchableOpacity style={det.roundButton} onPress={tryRecipe}>
+          <Animated.View style={{ alignItems: 'center', justifyContent: 'center', transform: [{ scale: triedScale }] }}>
+            <MaterialCommunityIcons name="check-circle-outline" size={28} color="#1f508f" />
+            <Text style={det.roundButtonText}>Tried</Text>
+          </Animated.View>
+        </TouchableOpacity>
+      </Tooltip>
+    </View>
   );
 
-  if (!recipeId || !title || ingredients.length === 0 || !directions) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error: Recipe details not passed correctly!</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.push('(tabs)', { screen: 'savedrecipes' })}
-        >
-          <Image source={Back_butt} style={styles.backIcon} />
-          <Text style={styles.backText}>Back</Text>
-        </TouchableOpacity>
+    <View style={det.container}>
+      <View style={det.header}>
+        <BackButton />
       </View>
-
       {imageUri ? (
-        <View style={styles.recipeWrapper}>
-          <Image source={{ uri: imageUri }} style={styles.recipeImage} />
+        <View style={det.recipeWrapper}>
+          <Image source={{ uri: imageUri }} style={det.recipeImage} />
         </View>
       ) : (
-        <Text style={styles.errorText}>No image available</Text>
+        <Text style={det.errorText}>No image available</Text>
       )}
+      <Text style={det.title}>{title}</Text>
+      {renderActionButtons()}
 
-      <Text style={styles.title}>{title}</Text>
-      {renderSaveButton()}
-
-      <View style={styles.tabContainer}>
+      <View style={det.tabContainer}>
         {sections.map((section, index) => (
           <TouchableOpacity
             key={index}
-            style={[styles.tab, activeSection === index && styles.activeTab]}
+            style={[det.tab, activeSection === index && det.activeTab]}
             onPress={() => setActiveSection(index)}
           >
-            <Text style={[styles.tabText, activeSection === index && styles.activeTabText]}>
+            <Text style={[det.tabText, activeSection === index && det.activeTabText]}>
               {section}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.sectionContent}>
-          {activeSection === 0 && (
-            <>
-              <Text style={styles.sectionTitle}>Ingredients:</Text>
-              {ingredients.map((ingredient, index) => (
-                <Text key={index} style={styles.sectionText}>- {ingredient}</Text>
-              ))}
-            </>
-          )}
-          {activeSection === 1 && (
-            <>
-              <Text style={styles.sectionTitle}>Allergy Information:</Text>
-              {allergies.length > 0 ? (
-                allergies.map((allergy, index) => (
-                  <Text key={index} style={styles.sectionText}>- {allergy}</Text>
-                ))
-              ) : (
-                <Text style={styles.sectionText}>No allergy information available.</Text>
-              )}
-            </>
-          )}
+      <ScrollView contentContainerStyle={det.scrollContent}>
+        <View style={det.sectionContent}>
+          {activeSection === 0 && ingredients?.map((ing, idx) => (
+            <Text key={idx} style={det.sectionText}>- {ing}</Text>
+          ))}
+          {activeSection === 1 && allergies?.map((al, idx) => (
+            <Text key={idx} style={det.sectionText}>- {al}</Text>
+          ))}
           {activeSection === 2 && (
-            <>
-              <Text style={styles.sectionTitle}>Directions:</Text>
-              <Text style={styles.sectionText}>{directions}</Text>
-            </>
+            <Text style={det.sectionText}>{directions}</Text>
           )}
-          {activeSection === 3 && (
-            <>
-              <Text style={styles.sectionTitle}>Nutrition Facts:</Text>
-              {nutrition ? (
-                Object.keys(nutrition).map((key) => {
-                  const { label, quantity, unit } = nutrition[key] || {};
-                  return (
-                    <Text key={key} style={styles.sectionText}>
-                      {label}: {Math.round(quantity || 0)} {unit}
-                    </Text>
-                  );
-                })
-              ) : (
-                <Text style={styles.sectionText}>No nutrition data available.</Text>
-              )}
-            </>
-          )}
+          {activeSection === 3 && nutrition && Object.keys(nutrition).map((key) => {
+            const { label, quantity, unit } = nutrition[key];
+            return (
+              <Text key={key} style={det.sectionText}>
+                {label}: {Math.round(quantity || 0)} {unit}
+              </Text>
+            );
+          })}
         </View>
       </ScrollView>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
-  backButton: {
+const det = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: '#d7e2f1',
+    marginBottom: 15,
   },
-  backIcon: { width: 22, height: 22, marginRight: 8 },
-  backText: { fontSize: 16, fontWeight: '700', color: '#000' },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -213,17 +266,37 @@ const styles = StyleSheet.create({
     color: '#1f508f',
     textAlign: 'center',
   },
-  saveButton: {
+  actionButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 15,
+  },
+  roundButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#fff',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginBottom: 10,
-    alignSelf: 'center',
     borderColor: '#1f508f',
     borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+    overflow: 'hidden',
+    flexShrink: 0,
+    flexGrow: 0,
   },
-  heartIcon: { width: 32, height: 32 },
+  roundButtonText: {
+    fontSize: 10,
+    color: '#1f508f',
+    fontWeight: '600',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  heartIcon: {
+    width: 32,
+    height: 32,
+  },
   recipeWrapper: {
     width: '100%',
     height: 220,
@@ -253,14 +326,43 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     alignItems: 'center',
   },
-  tabText: { fontSize: 14, color: '#555' },
-  activeTab: { borderBottomWidth: 2, borderBottomColor: '#1f508f' },
-  activeTabText: { fontWeight: 'bold', color: '#1f508f' },
-  sectionContent: { paddingHorizontal: 10, marginTop: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 5 },
-  sectionText: { fontSize: 14, color: '#333', marginVertical: 2 },
-  scrollContent: { flexGrow: 1, justifyContent: 'flex-start' },
-  errorText: { fontSize: 16, textAlign: 'center', color: 'red', marginTop: 20 },
+  tabText: {
+    fontSize: 14,
+    color: '#555',
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#1f508f',
+  },
+  activeTabText: {
+    fontWeight: 'bold',
+    color: '#1f508f',
+  },
+  sectionContent: {
+    paddingHorizontal: 10,
+    marginTop: 10,
+  },
+  sectionText: {
+    fontSize: 14,
+    color: '#333',
+    marginVertical: 2,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+  },
+  greybutton: {
+    flexDirection: 'row',
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    backgroundColor: colors.othergrey,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    elevation: 2,
+    shadowColor: colors.black,
+  },
 });
 
 export default RecipeDetailsScreen;

@@ -15,13 +15,16 @@ import {
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
+import { useNavigation } from '@react-navigation/native';
+import { styles } from '@/components/Sheet';
+
 
 export default function Recipes() {
-  const router = useRouter();
+  const navigation = useNavigation();
   const [query, setQuery] = useState('');
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -115,23 +118,23 @@ export default function Recipes() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={det.container}>
       <Text style={styles.title}>Saved Recipes</Text>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.inputContainer}>
+      <View style={det.searchContainer}>
+        <View style={det.inputContainer}>
           <TextInput
             placeholder='Search through your recipes'
             placeholderTextColor={textcolors.lightgrey}
-            style={styles.inputText}
+            style={det.inputText}
             value={query}
             onChangeText={(text) => setQuery(text)}
           />
         </View>
 
-        <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
+        <TouchableOpacity style={det.filterButton} onPress={() => setFilterModalVisible(true)}>
           <MaterialIcons name="filter-list" size={24} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.filterButtonText}>Filter</Text>
+          <Text style={det.filterButtonText}>Filter</Text>
         </TouchableOpacity>
       </View>
 
@@ -140,36 +143,37 @@ export default function Recipes() {
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.recipeContainer}
-            onPress={() =>
-              router.push({
-                pathname: "../favoriterecipes",
-                params: {
-                  recipeId: item.uri,
-                  title: item.label,
-                  imageUri: item.image,
-                  ingredients: item.ingredients || [],
-                  directions: item.directions || "No directions available.",
-                  allergies: item.allergies || [],
-                  nutrition: JSON.stringify(item.nutrition),
-                },
-              })
-            }
+            style={det.recipeContainer}
+            onPress={() => {
+              navigation.navigate("favorite_recipe", {
+                recipeId: item.uri,
+                title: item.label,
+                imageUri: item.image,
+                ingredients: item.ingredients || [],
+                directions: item.directions || "No directions available.",
+                allergies: item.allergies || [],
+                nutrition: JSON.stringify(item.nutrition),
+              });
+            }}
           >
-            <View style={styles.rectangleView}>
-              <Image source={{ uri: item.image }} style={styles.recipeImage} />
-              <Text style={styles.recipeTitle}>{item.label}</Text>
+            <View style={det.rectangleView}>
+              <Image source={{ uri: item.image }} style={det.recipeImage} />
+              <Text style={det.recipeTitle}>{item.label}</Text>
             </View>
           </TouchableOpacity>
         )}
-        ListEmptyComponent={!loading && <Text style={styles.noRecipesText}>No recipes found.</Text>}
+        ListEmptyComponent={!loading && <Text style={det.noRecipesText}>No recipes found.</Text>}
       />
 
       <Modal visible={filterModalVisible} animationType='slide' transparent={true}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
+        <View style={det.modalBackground}>
+          <View style={det.modalContainer}>
+                  {/* Close Button */}
+                  <TouchableOpacity style={det.closeButton} onPress={() => setFilterModalVisible(false)}>
+                    <Ionicons name="close" size={24} color="#000" />
+                  </TouchableOpacity>
             <ScrollView>
-              <Text style={styles.modalTitle}>Filter Options</Text>
+              <Text style={det.modalTitle}>Filter Options</Text>
 
               {[
                 ['Category', 'category', availableFilters.categories],
@@ -179,43 +183,43 @@ export default function Recipes() {
                 ['Caution', 'caution', availableFilters.cautions],
               ].map(([label, key, options]) => (
                 <View key={key} style={{ marginBottom: 10 }}>
-                  <Text style={styles.modalLabel}>{label}</Text>
-                  <ScrollView horizontal style={styles.filterRow}>
+                  <Text style={det.modalLabel}>{label}</Text>
+                  <ScrollView horizontal style={det.filterRow}>
                     {options.map((val) => (
                       <TouchableOpacity
                         key={val}
-                        style={[styles.filterOption, filters[key] === val && styles.filterOptionSelected]}
+                        style={[det.filterOption, filters[key] === val && det.filterOptionSelected]}
                         onPress={() => toggleFilter(key, val)}
                       >
-                        <Text style={filters[key] === val ? styles.filterOptionTextSelected : styles.filterOptionText}>{val}</Text>
+                        <Text style={filters[key] === val ? det.filterOptionTextSelected : det.filterOptionText}>{val}</Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
                 </View>
               ))}
 
-              <Text style={styles.modalLabel}>Ingredient</Text>
+              <Text style={det.modalLabel}>Ingredient</Text>
               <TextInput
-                style={styles.modalInput}
+                style={det.modalInput}
                 placeholder='e.g. chicken'
                 value={filters.ingredient}
                 onChangeText={(text) => setFilters({ ...filters, ingredient: text })}
               />
 
-              <Text style={styles.modalLabel}>Max Calories</Text>
+              <Text style={det.modalLabel}>Max Calories</Text>
               <TextInput
-                style={styles.modalInput}
+                style={det.modalInput}
                 placeholder='e.g. 500'
                 keyboardType='numeric'
                 value={filters.maxCalories}
                 onChangeText={(text) => setFilters({ ...filters, maxCalories: text })}
               />
 
-              <View style={styles.modalActions}>
-                <TouchableOpacity onPress={resetFilters} style={styles.cancelButton}>
+              <View style={det.modalActions}>
+                <TouchableOpacity onPress={resetFilters} style={det.cancelButton}>
                   <Text style={{ color: 'black' }}>Reset</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={styles.applyButton}>
+                <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={det.applyButton}>
                   <Text style={{ color: 'white' }}>Apply Filters</Text>
                 </TouchableOpacity>
               </View>
@@ -225,16 +229,16 @@ export default function Recipes() {
       </Modal>
 
       {loading && <ActivityIndicator size="large" color={colors.primary} />}
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <Text style={det.error}>{error}</Text>}
 
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/explorerecipes')}>
-        <Text style={styles.addButtonText}>+</Text>
+      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('explore_recipe')}>
+        <Ionicons name="add" size={60} color="#d9d9d9" />
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
   title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: colors.primary },
   searchContainer: { marginBottom: 10 },
@@ -316,4 +320,11 @@ const styles = StyleSheet.create({
   },
   addButtonText: { fontSize: 30, color: '#fff' },
   error: { color: 'red', textAlign: 'center', marginBottom: 10 },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    padding: 8,
+  },
 });
