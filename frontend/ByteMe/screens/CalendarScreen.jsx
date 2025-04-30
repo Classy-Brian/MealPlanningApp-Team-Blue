@@ -15,15 +15,17 @@ const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [savedDays, setSavedDays] = useState([]);
 
-  const getLocalTodayString = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today.toISOString().split('T')[0];
+  // ✅ Use local date to avoid timezone shift
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    const date = new Date(year, month - 1, day); // local
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD
   };
 
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toISOString().split('T')[0];
+  const getLocalDateFromISO = (isoDate) => {
+    const [year, month, day] = isoDate.split('-');
+    return new Date(year, month - 1, day); // Force local midnight
   };
 
   useEffect(() => {
@@ -31,7 +33,7 @@ const CalendarScreen = () => {
       try {
         const userId = await getUserIdFromToken();
         const res = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/saved-days`);
-        setSavedDays(res.data.savedDays);
+        setSavedDays(res.data.savedDays || []);
       } catch (error) {
         console.error('Failed to load saved days:', error);
       }
@@ -53,6 +55,12 @@ const CalendarScreen = () => {
     }
   };
 
+  const getLocalTodayString = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.toISOString().split('T')[0];
+  };
+
   const markedDates = (() => {
     const today = getLocalTodayString();
 
@@ -70,19 +78,20 @@ const CalendarScreen = () => {
       return acc;
     }, {});
 
-    marks[today] = {
-      ...(marks[today] || {}),
-      customStyles: {
-        container: {
-          backgroundColor: '#1F508F',
-          borderRadius: 50,
-        },
-        text: {
-          color: '#fff',
-          fontWeight: 'bold',
-        },
-      }
-    };
+    if (!marks[today]) {
+      marks[today] = {
+        customStyles: {
+          container: {
+            backgroundColor: '#1F508F',
+            borderRadius: 50,
+          },
+          text: {
+            color: '#fff',
+            fontWeight: 'bold',
+          },
+        }
+      };
+    }
 
     return marks;
   })();
@@ -114,9 +123,9 @@ const CalendarScreen = () => {
 
       <ScrollView style={styles.cardsContainer}>
         {displayedDays.map((day, index) => {
-          const formatted = new Date(day.date);
-          const dayOfWeek = formatted.toLocaleDateString('en-US', { weekday: 'long' });
-          const monthDay = formatted.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+          const formattedDate = getLocalDateFromISO(day.date); // ✅ use local time
+          const dayOfWeek = formattedDate.toLocaleDateString('en-US', { weekday: 'long' });
+          const monthDay = formattedDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
 
           const mealList = day.meals.map((m, i) => (
             <View key={i} style={[styles.mealRow, i < day.meals.length - 1 && styles.mealRowBorder]}>
@@ -158,7 +167,7 @@ const CalendarScreen = () => {
 
                 {/* Trash Icon */}
                 <View style={styles.trashWrapper}>
-                  <TouchableOpacity onPress={() => deleteDay(day.date)}>
+                  <TouchableOpacity onPress={() => deleteDay(formatDate(day.date))}>
                     <Ionicons name="trash" size={24} color="#d00" />
                   </TouchableOpacity>
                 </View>

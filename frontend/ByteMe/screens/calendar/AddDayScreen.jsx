@@ -17,9 +17,14 @@ const AddDayScreen = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
-  const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedMeals, setSelectedMeals] = useState([]);
   const [timePickerIndex, setTimePickerIndex] = useState(null);
+
+  // ✅ Fix timezone bugs with this helper
+  const parseLocalDate = (dateString) => {
+    const [year, month, day] = dateString.split('-');
+    return new Date(year, month - 1, day);
+  };
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -42,15 +47,21 @@ const AddDayScreen = () => {
         nutrition: meal.nutrition || {},
         time: meal.time || null,
         timeRaw: meal.time ? new Date(`${route.params.existingDate} ${meal.time}`) : null,
-        date: new Date(route.params.existingDate).toDateString(),
+        date: parseLocalDate(route.params.existingDate).toDateString(), // ✅ Fix here
         servings: meal.servings || 1,
         meal: meal.meal || 'extra',
       }));
-  
+
       setSelectedMeals(loadedMeals);
-      setSelectedDate(new Date(route.params.existingDate));
+      setSelectedDate(parseLocalDate(route.params.existingDate)); // ✅ Fix here
     }
   }, [route.params?.editing]);
+
+  useEffect(() => {
+    if (!route.params?.editing && route.params?.selectedDate) {
+      setSelectedDate(new Date(route.params.selectedDate));
+    }
+  }, [route.params?.selectedDate, route.params?.editing]);
 
   useEffect(() => {
     if (route.params?.selectedRecipes) {
@@ -63,9 +74,9 @@ const AddDayScreen = () => {
         directions: recipe.directions || '',
         allergies: recipe.allergies || [],
         nutrition: recipe.nutrition || {},
-        time: null,         
-        timeRaw: null,      
-        date: new Date(recipe.selectedDate).toDateString(),
+        time: null,
+        timeRaw: null,
+        date: new Date(recipe.selectedDate || selectedDate).toDateString(),
         servings: 1,
         meal: 'extra',
       }));
@@ -80,28 +91,37 @@ const AddDayScreen = () => {
       return;
     }
 
-    const grouped = selectedMeals.reduce((acc, meal) => {
-      if (!acc[meal.date]) acc[meal.date] = [];
-      acc[meal.date].push({
-        recipeLabel: meal.label,
-        recipeId: meal.value,
-        imageUri: meal.image,
-        ingredients: meal.ingredients,
-        directions: meal.directions,
-        allergies: meal.allergies,
-        nutrition: meal.nutrition,
-        calories: meal.calories,
-        time: meal.time || 'Not selected',
-        servings: meal.servings,
-        meal: meal.meal,
-      });
-      return acc;
-    }, {});
-
     try {
+      const userId = await getUserIdFromToken();
+
+      // 🧼 Delete the old saved day if editing
+      if (route.params?.editing && route.params.existingDate) {
+        await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/delete-day`, {
+          data: { date: route.params.existingDate }
+        });
+      }
+
+      const grouped = selectedMeals.reduce((acc, meal) => {
+        if (!acc[meal.date]) acc[meal.date] = [];
+        acc[meal.date].push({
+          recipeLabel: meal.label,
+          recipeId: meal.value,
+          imageUri: meal.image,
+          ingredients: meal.ingredients,
+          directions: meal.directions,
+          allergies: meal.allergies,
+          nutrition: meal.nutrition,
+          calories: meal.calories,
+          time: meal.time || 'Not selected',
+          servings: meal.servings,
+          meal: meal.meal,
+        });
+        return acc;
+      }, {});
+
       await Promise.all(Object.entries(grouped).map(([date, meals]) =>
         axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`, {
-          date,
+          date: new Date(date).toISOString().split('T')[0], // 🔐 Force correct format
           meals,
           totalCalories: meals.reduce((sum, m) => sum + m.calories * m.servings, 0),
         })
@@ -143,7 +163,6 @@ const AddDayScreen = () => {
         updated[timePickerIndex].time = selected.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
         updated[timePickerIndex].timeRaw = selected;
 
-        // 🧠 After updating time, automatically sort meals inside the same date
         return updated.sort((a, b) => {
           if (a.date !== b.date) return 0;
           if (!a.timeRaw || !b.timeRaw) return 0;
@@ -163,7 +182,9 @@ const AddDayScreen = () => {
         <Text style={styles.backText}>Calendar</Text>
       </TouchableOpacity>
 
-      <Text style={styles.title}>Add Recipes to Calendar</Text>
+      <Text style={styles.title}>
+        {route.params?.editing ? 'Edit Recipes for Day' : 'Add Recipes to Calendar'}
+      </Text>
 
       {/* Pick Date */}
       <Text style={styles.label}>Pick Date</Text>
@@ -209,42 +230,41 @@ const AddDayScreen = () => {
         <View key={date} style={styles.groupBox}>
           <Text style={styles.groupDate}>{date}</Text>
 
-          {meals
-            .map((m, i) => {
-              const globalIndex = selectedMeals.findIndex(
-                sm => sm.label === m.label && sm.date === m.date && sm.value === m.value
-              );
+          {meals.map((m, i) => {
+            const globalIndex = selectedMeals.findIndex(
+              sm => sm.label === m.label && sm.date === m.date && sm.value === m.value
+            );
 
-              return (
-                <View key={`${m.value}-${i}`} style={styles.mealCard}>
-                  <Image source={{ uri: m.image }} style={styles.mealImage} />
-                  <View style={styles.mealDetails}>
-                    <Text style={styles.mealText}>{m.label}</Text>
+            return (
+              <View key={`${m.value}-${i}`} style={styles.mealCard}>
+                <Image source={{ uri: m.image }} style={styles.mealImage} />
+                <View style={styles.mealDetails}>
+                  <Text style={styles.mealText}>{m.label}</Text>
 
-                    <View style={styles.timeRow}>
-                      <Text style={styles.mealSubText}>
-                        {m.time ? `${m.time}` : 'No time selected'}
-                      </Text>
+                  <View style={styles.timeRow}>
+                    <Text style={styles.mealSubText}>
+                      {m.time ? `${m.time}` : 'No time selected'}
+                    </Text>
 
-                      <TouchableOpacity style={styles.pickTimeButton} onPress={() => openTimePicker(globalIndex)}>
-                        <Text style={styles.pickTimeButtonText}>Pick Time</Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    <TextInput
-                      style={styles.servingInput}
-                      keyboardType="numeric"
-                      value={String(m.servings)}
-                      onChangeText={(val) => updateServings(globalIndex, val)}
-                    />
+                    <TouchableOpacity style={styles.pickTimeButton} onPress={() => openTimePicker(globalIndex)}>
+                      <Text style={styles.pickTimeButtonText}>Pick Time</Text>
+                    </TouchableOpacity>
                   </View>
 
-                  <TouchableOpacity onPress={() => removeMeal(globalIndex)}>
-                    <Ionicons name="trash" size={22} color="#d00" />
-                  </TouchableOpacity>
+                  <TextInput
+                    style={styles.servingInput}
+                    keyboardType="numeric"
+                    value={String(m.servings)}
+                    onChangeText={(val) => updateServings(globalIndex, val)}
+                  />
                 </View>
-              );
-            })}
+
+                <TouchableOpacity onPress={() => removeMeal(globalIndex)}>
+                  <Ionicons name="trash" size={22} color="#d00" />
+                </TouchableOpacity>
+              </View>
+            );
+          })}
         </View>
       ))}
 
