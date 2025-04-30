@@ -216,7 +216,9 @@ const HomeScreen = () => {
     });
   };
 
-  const todayDateString = new Date().toDateString();
+  const today = new Date();
+  today.setDate(today.getDate() + 1); // ⏩ Shift forward one day
+  const todayDateString = today.toDateString();
 
   const getTotalCaloriesLeft = (meals, completed) => {
     const sum = meals.reduce((total, meal, idx) => {
@@ -262,7 +264,6 @@ const HomeScreen = () => {
         directions: '',
         allergies: [],
         nutrition: {},
-        url: null,
       };
 
       console.log(`    Initial mealObject created:`, mealObject);
@@ -272,21 +273,10 @@ const HomeScreen = () => {
         mealObject.recipeId = mealData.uri || `edamam_missing_uri_${mealType}`;
         mealObject.calories = mealData.calories || 0;
         mealObject.imageUri = mealData.imageUrl || null;
-        mealObject.directions = mealData.url || '';
-        mealObject.ingredients = mealData.ingredientLines || [];
-        mealObject.nutrition = mealData.totalNutrients || {};
-        mealObject.allergies = mealData.healthLabels || []; 
-        mealObject.url = mealData.url || null;
         console.log(`    -> Overwrote with Edamam data.`);
       } else {
         mealObject.recipeLabel = mealData.suggestion || `AI Suggestion for ${mealType}`;
-        console.log(`    -> Using AI suggestion fallback data.`);
-
-        mealObject.directions = '';
-        mealObject.ingredients = [];
-        mealObject.nutrition = {};
-        mealObject.allergies = [];
-        mealObject.url = null;
+         console.log(`    -> Using AI suggestion fallback data.`);
       }
 
       console.log(`    Final mealObject for ${mealType}:`, mealObject);

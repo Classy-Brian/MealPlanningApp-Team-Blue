@@ -15,17 +15,16 @@ const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [savedDays, setSavedDays] = useState([]);
 
-  // ✅ Use local date to avoid timezone shift
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const [year, month, day] = dateStr.split('-');
-    const date = new Date(year, month - 1, day); // local
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+    const date = new Date(year, month - 1, day);
+    return date.toISOString().split('T')[0];
   };
 
   const getLocalDateFromISO = (isoDate) => {
     const [year, month, day] = isoDate.split('-');
-    return new Date(year, month - 1, day); // Force local midnight
+    return new Date(year, month - 1, day);
   };
 
   useEffect(() => {
@@ -63,33 +62,37 @@ const CalendarScreen = () => {
 
   const markedDates = (() => {
     const today = getLocalTodayString();
+    const marks = {};
 
-    const marks = savedDays.reduce((acc, day) => {
+    savedDays.forEach(day => {
       const formatted = formatDate(day.date);
-      acc[formatted] = {
+      const isToday = formatted === today;
+
+      marks[formatted] = {
         marked: true,
         dotColor: '#4CAF50',
-        ...(selectedDate === formatted && {
+        ...(isToday && {
           selected: true,
-          selectedColor: '#133E7C',
+          selectedColor: '#1F508F',
           selectedTextColor: '#fff',
         }),
       };
-      return acc;
-    }, {});
+    });
 
     if (!marks[today]) {
       marks[today] = {
-        customStyles: {
-          container: {
-            backgroundColor: '#1F508F',
-            borderRadius: 50,
-          },
-          text: {
-            color: '#fff',
-            fontWeight: 'bold',
-          },
-        }
+        selected: true,
+        selectedColor: '#1F508F',
+        selectedTextColor: '#fff'
+      };
+    }
+
+    if (selectedDate && selectedDate !== today) {
+      marks[selectedDate] = {
+        ...marks[selectedDate],
+        selected: true,
+        selectedColor: '#133E7C',
+        selectedTextColor: '#fff'
       };
     }
 
@@ -123,7 +126,7 @@ const CalendarScreen = () => {
 
       <ScrollView style={styles.cardsContainer}>
         {displayedDays.map((day, index) => {
-          const formattedDate = getLocalDateFromISO(day.date); // ✅ use local time
+          const formattedDate = getLocalDateFromISO(day.date);
           const dayOfWeek = formattedDate.toLocaleDateString('en-US', { weekday: 'long' });
           const monthDay = formattedDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
 
@@ -140,7 +143,6 @@ const CalendarScreen = () => {
           return (
             <React.Fragment key={index}>
               <View style={styles.card}>
-                {/* Edit Button */}
                 <TouchableOpacity
                   style={styles.editIconWrapper}
                   onPress={() =>
@@ -165,7 +167,6 @@ const CalendarScreen = () => {
                   <View style={styles.cardContent}>{mealList}</View>
                 </View>
 
-                {/* Trash Icon */}
                 <View style={styles.trashWrapper}>
                   <TouchableOpacity onPress={() => deleteDay(formatDate(day.date))}>
                     <Ionicons name="trash" size={24} color="#d00" />
