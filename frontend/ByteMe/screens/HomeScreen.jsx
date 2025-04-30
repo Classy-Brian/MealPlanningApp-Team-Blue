@@ -63,7 +63,7 @@ const HomeScreen = () => {
   }, []); 
 
   const fetchAiMealPlan = async () => {
-      console.log("Frontend: Attempting to fetch AI meal plan...");
+      // console.log("Frontend: Attempting to fetch AI meal plan...");
       setIsLoading(true);
       setError(null);
       setMealPlan(null);
@@ -78,11 +78,11 @@ const HomeScreen = () => {
 
       try {
           const response = await axiosInstance.post('/api/ai/generate-structured-plan');
-          console.log("Frontend: AI Plan fetched successfully!", response.data);
+          // console.log("Frontend: AI Plan fetched successfully!", response.data);
 
           if (response.data && response.data.generatedPlan) {
               setMealPlan(response.data.generatedPlan);
-              console.log("Frontend: setMealPlan called with data:", response.data.generatedPlan);
+              // console.log("Frontend: setMealPlan called with data:", response.data.generatedPlan);
           } else {
               console.error("Frontend: Generated plan data missing in response:", response.data);
               throw new Error("Received plan data in unexpected format from server.");
@@ -101,7 +101,7 @@ const HomeScreen = () => {
           Alert.alert("Plan Generation Failed", message);
       } finally {
           setIsLoading(false);
-          console.log("Frontend: Finished fetching AI meal plan attempt.");
+          // console.log("Frontend: Finished fetching AI meal plan attempt.");
       }
   };
 
@@ -139,6 +139,8 @@ const HomeScreen = () => {
         // console.log(`Workspaceing saved days for user: ${fetchedUserId}`);
         const calendarRes = await axiosInstance.get(`/api/users/${fetchedUserId}/saved-days`);
         const savedDays = calendarRes.data.savedDays || [];
+        // console.log("fetchData - Raw savedDays from API:", JSON.stringify(savedDays, null, 2));
+
 
         const today = new Date();
         const weekMap = {};
@@ -201,6 +203,7 @@ const HomeScreen = () => {
   };
 
   const handleMealPress = (meal) => {
+    // console.log("handleMealPress - Received meal object:", JSON.stringify(meal, null, 2));
     router.push({
       pathname: '/homerecipedetails',
       params: {
@@ -229,13 +232,13 @@ const HomeScreen = () => {
   };
 
   const handleSaveAiPlan = async () => {
-    console.log("Frontend: 'Save This Plan' button pressed.");
+    // console.log("Frontend: 'Save This Plan' button pressed.");
 
     if (!mealPlan || !userId) {
       Alert.alert("Error", "Cannot save plan. Missing plan data or user session.");
       return;
     }
-    console.log("Using userId from state for saving:", userId);
+    // console.log("Using userId from state for saving:", userId);
 
     const today = new Date();
     const dateToSave = today.toDateString();
@@ -244,11 +247,11 @@ const HomeScreen = () => {
     let mealsToSave = [];
     let calculatedTotalCalories = 0;
 
-    console.log("Looping through mealPlan object...");
+    // console.log("Looping through mealPlan object...");
 
     for (const [mealType, mealData] of Object.entries(mealPlan)) {
-      console.log(` -> Processing mealType: ${mealType}`);
-      console.log(`    Data available:`, mealData);
+      // console.log(` -> Processing mealType: ${mealType}`);
+      // console.log(`    Data available:`, mealData);
 
       let mealObject = {
         meal: mealType.charAt(0).toUpperCase() + mealType.slice(1),
@@ -265,22 +268,25 @@ const HomeScreen = () => {
         url: null,
       };
 
-      console.log(`    Initial mealObject created:`, mealObject);
+      // console.log(`    Initial mealObject created:`, mealObject);
 
       if (mealData.source === 'edamam') {
         mealObject.recipeLabel = mealData.label || "Edamam Recipe"; 
         mealObject.recipeId = mealData.uri || `edamam_missing_uri_${mealType}`;
         mealObject.calories = mealData.calories || 0;
         mealObject.imageUri = mealData.imageUrl || null;
+
         mealObject.directions = mealData.url || '';
         mealObject.ingredients = mealData.ingredientLines || [];
         mealObject.nutrition = mealData.totalNutrients || {};
         mealObject.allergies = mealData.healthLabels || []; 
         mealObject.url = mealData.url || null;
-        console.log(`    -> Overwrote with Edamam data.`);
+
+        // console.log(`    -> Overwrote with Edamam data.`);
+
       } else {
         mealObject.recipeLabel = mealData.suggestion || `AI Suggestion for ${mealType}`;
-        console.log(`    -> Using AI suggestion fallback data.`);
+        // console.log(`    -> Using AI suggestion fallback data.`);
 
         mealObject.directions = '';
         mealObject.ingredients = [];
@@ -289,12 +295,12 @@ const HomeScreen = () => {
         mealObject.url = null;
       }
 
-      console.log(`    Final mealObject for ${mealType}:`, mealObject);
+      // console.log(`    Final mealObject for ${mealType}:`, mealObject);
       mealsToSave.push(mealObject);
     }
 
-    console.log("Finished looping through meals.");
-    console.log("Collected mealsToSave array:", mealsToSave);
+    // console.log("Finished looping through meals.");
+    // console.log("Collected mealsToSave array:", mealsToSave);
 
     calculatedTotalCalories = mealsToSave.reduce((sum, meal) => {
       const mealCalories = typeof meal.calories === 'number' ? meal.calories : 0;
@@ -302,7 +308,7 @@ const HomeScreen = () => {
       return sum + (mealCalories * mealServings);
     }, 0);
 
-    console.log(`Calculated Total Calories for payload: ${Math.round(calculatedTotalCalories)}`);
+    // console.log(`Calculated Total Calories for payload: ${Math.round(calculatedTotalCalories)}`);
 
     const payload = {
       date: dateToSave,
@@ -310,20 +316,20 @@ const HomeScreen = () => {
       totalCalories: Math.round(calculatedTotalCalories)
     };
 
-    console.log("Frontend: FINAL PAYLOAD object prepared:");
-    console.log(payload);
-    console.log("--- Stringified Payload (for readability) ---");
-    console.log(JSON.stringify(payload, null, 2));
-    console.log("---------------------------------------------");
+    // console.log("Frontend: FINAL PAYLOAD object prepared:");
+    // console.log(payload);
+    // console.log("--- Stringified Payload (for readability) ---");
+    // console.log(JSON.stringify(payload, null, 2));
+    // console.log("---------------------------------------------");
 
     setIsSaving(true);
     setError(null);
 
     try {
-      console.log(`Frontend: Sending POST to /api/users/${userId}/save-day`);
+      // console.log(`Frontend: Sending POST to /api/users/${userId}/save-day`);
       const response = await axiosInstance.post(`/api/users/${userId}/save-day`, payload);
 
-      console.log("Frontend: Save successful!", response.data);
+      // console.log("Frontend: Save successful!", response.data);
       Alert.alert("Success!", "AI meal plan saved for today!");
 
       fetchData();
@@ -344,9 +350,11 @@ const HomeScreen = () => {
 
     } finally {
       setIsSaving(false);
-      console.log("Frontend: Finished save attempt.");
+      // console.log("Frontend: Finished save attempt.");
     }
   };
+
+  // console.log("Rendering HomeScreen, checking today's weekMeals state:", weekMeals ? JSON.stringify(weekMeals[todayDateString], null, 2) : 'No weekMeals data');
 
   return (
     <ScrollView
@@ -451,7 +459,7 @@ const HomeScreen = () => {
             <TouchableOpacity
               style={[localStyles.actionButton, localStyles.cancelButton]}
                 onPress={() => {
-                  console.log("Cancel Pressed! Reverting display.");
+                  // console.log("Cancel Pressed! Reverting display.");
                   setMealPlan(null);
                   setError(null);
                 }}
