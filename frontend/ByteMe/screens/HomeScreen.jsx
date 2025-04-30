@@ -210,6 +210,7 @@ const HomeScreen = () => {
         imageUri: meal.imageUri || '',
         ingredients: JSON.stringify(meal.ingredients || []),
         allergies: JSON.stringify(meal.allergies || []),
+        directions: meal.directions || '',
         nutrition: JSON.stringify(meal.nutrition || {}),
       },
     });

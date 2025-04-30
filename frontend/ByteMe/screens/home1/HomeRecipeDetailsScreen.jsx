@@ -1,4 +1,3 @@
-// HomeRecipeDetailsScreen.jsx
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Image, TouchableOpacity
@@ -6,39 +5,48 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { colors } from '../../components/Colors';
-import { textcolors } from '../../components/TextColors';
-
 const HomeRecipeDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
   const {
-    recipeLabel,
-    time,
-    recipeId,
-    imageUri,
+    recipeLabel = '',
+    time = '',
+    imageUri = '',
     ingredients,
     allergies,
+    directions = '',
     nutrition,
   } = route.params || {};
+  
 
-  const parsedIngredients = JSON.parse(ingredients || '[]');
-  const parsedAllergies = JSON.parse(allergies || '[]');
-  const parsedNutrition = JSON.parse(nutrition || '{}');
+  // ✅ Robust safe parsing
+  const safeParse = (value, fallback) => {
+    try {
+      if (typeof value === 'string') return JSON.parse(value);
+      if (Array.isArray(value) || typeof value === 'object') return value;
+      return fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const parsedIngredients = safeParse(ingredients, []);
+  const parsedAllergies = safeParse(allergies, []);
+  const parsedNutrition = safeParse(nutrition, {});
 
   const [activeTab, setActiveTab] = useState(0);
-  const tabs = ['Ingredients', 'Allergies', 'Nutrition'];
+  const tabs = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
   return (
     <ScrollView style={styles.container}>
       {/* 🔙 Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="#1F508F" />
-        <Text style={styles.backButtonText}>Back</Text>
+        <Text style={styles.backButtonText}>Recipes</Text>
       </TouchableOpacity>
 
-      {/* 📸 Image */}
+      {/* 📸 Recipe Image */}
       {imageUri ? (
         <Image source={{ uri: imageUri }} style={styles.recipeImage} />
       ) : (
@@ -49,22 +57,28 @@ const HomeRecipeDetailsScreen = () => {
 
       {/* 🥘 Title */}
       <Text style={styles.title}>{recipeLabel}</Text>
-      <Text style={styles.timeText}>Scheduled at {time}</Text>
+
+      {/* ⏰ Time */}
+      {time ? (
+        <View style={styles.timeWrapper}>
+          <Text style={styles.timeText}>Scheduled at {time}</Text>
+        </View>
+      ) : null}
 
       {/* 🗂️ Tabs */}
       <View style={styles.tabContainer}>
-        {tabs.map((tab, index) => (
+        {tabs.map((tab, i) => (
           <TouchableOpacity
-            key={index}
-            style={[styles.tab, activeTab === index && styles.activeTab]}
-            onPress={() => setActiveTab(index)}
+            key={i}
+            style={[styles.tab, activeTab === i && styles.activeTab]}
+            onPress={() => setActiveTab(i)}
           >
-            <Text style={[styles.tabText, activeTab === index && styles.activeTabText]}>{tab}</Text>
+            <Text style={[styles.tabText, activeTab === i && styles.activeTabText]}>{tab}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* 📃 Section Content */}
+      {/* 📃 Content */}
       <View style={styles.content}>
         {activeTab === 0 && (
           <>
@@ -94,11 +108,18 @@ const HomeRecipeDetailsScreen = () => {
 
         {activeTab === 2 && (
           <>
+            <Text style={styles.sectionTitle}>Directions:</Text>
+            <Text style={styles.sectionItem}>{directions || 'No directions available.'}</Text>
+          </>
+        )}
+
+        {activeTab === 3 && (
+          <>
             <Text style={styles.sectionTitle}>Nutrition:</Text>
             {Object.keys(parsedNutrition).length > 0 ? (
-              Object.values(parsedNutrition).map((nutrient, i) => (
+              Object.values(parsedNutrition).map((item, i) => (
                 <Text key={i} style={styles.sectionItem}>
-                  {nutrient.label}: {Math.round(nutrient.quantity || 0)} {nutrient.unit}
+                  {item.label}: {Math.round(item.quantity || 0)} {item.unit}
                 </Text>
               ))
             ) : (
@@ -113,23 +134,31 @@ const HomeRecipeDetailsScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
-  backButton: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  backButtonText: { color: '#1F508F', fontWeight: 'bold', marginLeft: 5 },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#d7e2f1',
+    padding: 8,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  backButtonText: { marginLeft: 8, color: '#000', fontWeight: 'bold' },
   recipeImage: { width: '100%', height: 200, borderRadius: 10, marginBottom: 10 },
   recipeImagePlaceholder: {
     width: '100%', height: 200, borderRadius: 10, marginBottom: 10,
     backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center'
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#1F508F', textAlign: 'center', marginBottom: 5 },
-  timeText: { textAlign: 'center', color: '#555', marginBottom: 20 },
-  tabContainer: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
-  tab: { paddingVertical: 6, paddingHorizontal: 10 },
-  tabText: { fontSize: 16, color: '#555' },
+  title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: '#1F508F', marginBottom: 4 },
+  timeWrapper: { alignItems: 'center', marginBottom: 12 },
+  timeText: { color: '#555', fontSize: 14 },
+  tabContainer: { flexDirection: 'row', justifyContent: 'space-around', borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 10 },
+  tab: { paddingVertical: 6 },
+  tabText: { fontSize: 15, color: '#555' },
   activeTab: { borderBottomWidth: 2, borderBottomColor: '#1F508F' },
   activeTabText: { color: '#1F508F', fontWeight: 'bold' },
-  content: { paddingHorizontal: 10 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F508F', marginBottom: 10 },
-  sectionItem: { fontSize: 15, color: '#555', marginBottom: 6 },
+  content: { paddingTop: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  sectionItem: { fontSize: 14, color: '#333', marginBottom: 6 },
 });
 
 export default HomeRecipeDetailsScreen;

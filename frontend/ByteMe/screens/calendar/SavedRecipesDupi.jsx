@@ -9,8 +9,6 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 
-const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
 const SavedRecipesDupi = () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -20,7 +18,6 @@ const SavedRecipesDupi = () => {
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [selectedRecipes, setSelectedRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchSavedRecipes = async () => {
@@ -44,7 +41,21 @@ const SavedRecipesDupi = () => {
     if (exists) {
       setSelectedRecipes(prev => prev.filter(r => r.uri !== recipe.uri));
     } else {
-      setSelectedRecipes(prev => [...prev, { ...recipe, selectedDate, selectedTime }]);
+      setSelectedRecipes(prev => [
+        ...prev,
+        {
+          label: recipe.label,
+          uri: recipe.uri,
+          calories: recipe.calories || 0,
+          imageUri: recipe.image || '',
+          ingredients: recipe.ingredients || [],
+          directions: recipe.directions || '',
+          allergies: recipe.allergies || [],
+          nutrition: recipe.nutrition || {},
+          selectedDate,
+          selectedTime,
+        }
+      ]);
     }
   };
 
