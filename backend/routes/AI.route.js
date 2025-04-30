@@ -7,11 +7,6 @@ import { chatWithAI,
     // generateFromPantry,
 } from '../controllers/AI.controller.js';
 
-import { chatWithAI,
-    getMealPlanFromEdamam,
-    // generateFromPantry
- } from '../controllers/AI.controller.js';
-
 const router = express.Router();
 
 
