@@ -28,6 +28,7 @@ import {
   markMealCompleted,
   saveCalendarDayForUser,
   deleteCalendarDayForUser,
+  updateNotificationSettings,
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -108,5 +109,7 @@ router.get('/:userId/saved-days', getUserSavedDays);
 router.delete('/:userId/delete-day', deleteCalendarDayForUser);
 
 router.patch('/:userId/mark-meal-completed', markMealCompleted);
+
+router.patch('/settings/notifications', authenticateJWT, updateNotificationSettings);
 
 export default router;

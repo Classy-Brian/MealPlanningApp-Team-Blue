@@ -91,7 +91,9 @@ const SettingsScreen = () => {
                         <MaterialIcons name="keyboard-arrow-right" size={24} color="#000000" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles_settings.settingItem}>
+                    <TouchableOpacity 
+                        style={styles_settings.settingItem}
+                        onPress={() => navigation.navigate('notification_settings')}>
                         <MaterialIcons name="notifications" size={40} color="#000000" />
                         <View style={styles_settings.textContainer}>
                             <Text style={[styles_settings.settingTitleText, {fontWeight: 'bold'}]}>

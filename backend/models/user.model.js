@@ -91,6 +91,16 @@ const userSchema = new mongoose.Schema({
     passwordResetToken: String,
     passwordResetExpires: Date,
 
+    settings: {
+        emailNotifications: {
+            saveConfirmation: {
+                type: Boolean,
+                default: true
+            },
+            // dailyReminder: { type: Boolean, default: false },
+        }
+    },
+
     }, {
     timestamps: true
   });

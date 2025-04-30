@@ -417,7 +417,7 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email }); // Find the user by email
 
     if (user && (await user.matchPassword(password))) {
-      const token = generateToken(user._id, '7d'); // <- Error happens here
+      const token = generateToken(user._id, '7d');
       user.token = token;
       await user.save();
       return res.status(200).json({
@@ -1090,14 +1090,10 @@ export const saveCalendarDayForUser = async (req, res) => {
 
     console.log("Prepared emailOptions:", emailOptions);
 
-    // TODO: Check user notification preferences before sending
-    // This assumes the user wants the notification unless explicitly turned off.
-    // Replace this check when settings are implemented.
-    const sendThisEmail = true; // user.settings?.emailNotifications?.saveConfirmation !== false; // Example check
+    const sendThisEmail = user.settings?.emailNotifications?.saveConfirmation !== false;
     if (sendThisEmail) {
       try {
         console.log(`Attempting to send save confirmation to ${emailOptions.email}...`);
-
         const emailSent = await sendEmail(emailOptions);
 
         if (emailSent) {
@@ -1106,10 +1102,10 @@ export const saveCalendarDayForUser = async (req, res) => {
           console.error("sendEmail utility returned false, check its logs for details.");
         }
       } catch (emailError) {
-          console.error("Failed to send save confirmation email due to unexpected error:", emailError);
+        console.error("Failed to send save confirmation email due to unexpected error:", emailError);
       }
     } else {
-      console.log(`Skipping save confirmation email for ${user.email} based on settings.`);
+      console.log(`Skipping save confirmation email for ${user.email} based on user settings.`);
     }
 
   console.log("Save operation successful, sending response to client.");
@@ -1181,3 +1177,48 @@ export const markMealCompleted = async (req, res) => {
   }
 };
 
+export const updateNotificationSettings = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { saveConfirmation } = req.body;
+
+  if (typeof saveConfirmation !== 'boolean') {
+    res.status(400);
+    throw new Error("Invalid value provided for 'saveConfirmation' setting. A boolean (true/false) is required.");
+  }
+
+  console.log(`Attempting to update saveConfirmation for user ${userId} to: ${saveConfirmation}`);
+
+  try {
+    const updatePayload = {
+      $set: {
+        'settings.emailNotifications.saveConfirmation': saveConfirmation
+      }
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updatePayload,
+      {
+          new: true,
+          runValidators: true
+      }
+    ).select('settings email name');
+
+    if (!updatedUser) {
+      res.status(404);
+      throw new Error('User not found during settings update.');
+    }
+
+    console.log(`Settings updated successfully for user: ${updatedUser.email}`);
+
+    res.status(200).json({
+      message: 'Notification settings updated successfully.',
+      updatedSettings: updatedUser.settings
+    });
+
+} catch (error) {
+    console.error("Error updating notification settings:", error);
+    res.status(500); // Set status code
+    throw new Error(`Server error updating settings: ${error.message}`);
+}
+});
