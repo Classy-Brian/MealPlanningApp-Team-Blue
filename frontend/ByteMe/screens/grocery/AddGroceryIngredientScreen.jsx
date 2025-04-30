@@ -1,3 +1,6 @@
+// frontend/ByteMe/screens/grocery/AddGroceryIngredientScreen.jsx
+
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,248 +10,482 @@ import {
   FlatList,
   Image,
   Alert,
-  StyleSheet
-} from 'react-native';
-import React, { useState } from 'react';
-import axios from 'axios';
-import { colors } from '@/components/Colors';
-import { textcolors } from '@/components/TextColors';
-import { fonts } from '@/components/Fonts';
-import getUserIdFromToken from '@/components/getUserIdFromToken';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+  StyleSheet,
+  Modal,
+  ScrollView,
+  Pressable,
+} from "react-native";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+
+import { colors } from "@/components/Colors";
+import { textcolors } from "@/components/TextColors";
+import { fonts } from "@/components/Fonts";
+import { styles } from "@/components/Sheet";
+import getUserIdFromToken from "@/components/getUserIdFromToken";
 import backarrow from "@/assets/images/back_arrow_navigate.png";
-import { styles } from '@/components/Sheet';
 
+const STORAGE_KEY = "@recentGroceryQueries";
 
-function BackButton() {
+const BackButton = () => {
   const navigation = useNavigation();
   return (
-    <View style={{ flexDirection: 'row' }}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <View style={styles.greybutton}>
-          <Image style={{ marginRight: 10 }} source={backarrow} />
-          <Text style={styles.regularText}>Grocery</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity onPress={() => navigation.goBack()}>
+      <View style={styles.greybutton}>
+        <Image source={backarrow} style={{ marginRight: 10 }} />
+        <Text style={styles.regularText}>Grocery</Text>
+      </View>
+    </TouchableOpacity>
   );
-}
-
+};
 
 const AddGroceryIngredientScreen = () => {
   const navigation = useNavigation();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(false);
 
-  // Query the Edamam Food Database API for ingredients
-  const searchIngredients = async () => {
+  /* Core state */
+  const [searchQuery, setSearchQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+  /* Recent searches */
+  const [recent, setRecent] = useState([]);
+
+  /* Filter modal */
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [bounds, setBounds] = useState({
+    kcal: { mode: "max", value: "" },
+    protein: { mode: "max", value: "" },
+    fat: { mode: "max", value: "" },
+    carb: { mode: "max", value: "" },
+    fiber: { mode: "max", value: "" },
+  });
+
+  /* Load recent from storage */
+  useEffect(() => {
+    (async () => {
+      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      if (raw) setRecent(JSON.parse(raw));
+    })();
+  }, []);
+
+  const pushRecent = async (q) => {
+    if (!q.trim()) return;
+    const updated = [q, ...recent.filter((r) => r !== q)].slice(0, 5);
+    setRecent(updated);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  };
+
+  /* API search */
+  const searchIngredients = async (manual = true) => {
+    if (!searchQuery.trim()) return;
     setLoading(true);
     try {
       const API_ID = process.env.EXPO_PUBLIC_FOODDB_ID;
       const API_KEY = process.env.EXPO_PUBLIC_FOODDB_KEY;
-      if (!API_ID || !API_KEY) {
-        console.error("Missing API credentials");
-        setLoading(false);
-        return;
-      }
-      const response = await axios.get(
-        `https://api.edamam.com/api/food-database/v2/parser`,
+      const { data } = await axios.get(
+        "https://api.edamam.com/api/food-database/v2/parser",
         {
-          params: {
-            app_id: API_ID,
-            app_key: API_KEY,
-            ingr: searchQuery,
-          },
+          params: { app_id: API_ID, app_key: API_KEY, ingr: searchQuery },
           timeout: 10000,
         }
       );
-      const foodData = response.data.hints.map((hint) => {
-        const food = hint.food;
-        return {
-          foodId: food.foodId,
-          label: food.label,
-          category: food.category,
-          image: food.image || "https://via.placeholder.com/150",
-          nutrients: food.nutrients,
-        };
-      });
-      setResults(foodData);
+      const list = data.hints.map((h) => ({
+        foodId: h.food.foodId,
+        label: h.food.label,
+        category: h.food.category || "Other",
+        image: h.food.image || "https://via.placeholder.com/150",
+        nutrients: h.food.nutrients || {},
+      }));
+      setResults(list);
+      if (manual) pushRecent(searchQuery);
     } catch (err) {
-      console.error("Error searching ingredients:", err.message);
+      console.error("search", err);
       Alert.alert("Error", "Could not search for ingredients.");
     } finally {
       setLoading(false);
     }
   };
 
-  const addIngredient = async (ingredient) => {
+  /* Add ingredient */
+  const addIngredient = async (item) => {
     try {
       const userId = await getUserIdFromToken();
-      if (!userId) {
-        console.warn("User ID not found");
-        return;
-      }
-      const response = await axios.put(
+      await axios.put(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/update-grocery`,
-        {
-          foodId: ingredient.foodId,
-          quantity: quantity,
-        }
+        { foodId: item.foodId, quantity }
       );
-      if (response.status === 200) {
-        Alert.alert("Success!", "Ingredient added to your grocery list!");
-        navigation.navigate('grocery');
-      }
+      Alert.alert("Success", "Ingredient added to your grocery list!");
+      navigation.navigate("grocery");
     } catch (err) {
-      console.error("Error adding grocery ingredient:", err.message);
-      Alert.alert("Error", "Could not add the ingredient. Please try again.");
+      console.error("add", err);
+      Alert.alert("Error", "Could not add the ingredient.");
     }
   };
 
-  const renderResult = ({ item }) => (
+  /* Category list */
+  const allCategories = [...new Set(results.map((r) => r.category))];
+
+  /* Filtering */
+  const checkBound = (num, b) => {
+    const v = b.value.trim();
+    if (!v) return true;
+    if (isNaN(+v)) return false;
+    return b.mode === "max" ? num <= +v : num >= +v;
+  };
+
+  const filteredResults = results.filter((r) => {
+    const n = r.nutrients || {};
+    const catOk =
+      !selectedCategories.length || selectedCategories.includes(r.category);
+    const nutrOk =
+      checkBound(n.ENERC_KCAL || 0, bounds.kcal) &&
+      checkBound(n.PROCNT || 0, bounds.protein) &&
+      checkBound(n.FAT || 0, bounds.fat) &&
+      checkBound(n.CHOCDF || 0, bounds.carb) &&
+      checkBound(n.FIBTG || 0, bounds.fiber);
+    const textOk = r.label.toLowerCase().includes(searchQuery.toLowerCase());
+    return catOk && nutrOk && textOk;
+  });
+
+  /* Reset helper */
+  const resetFilters = () => {
+    setSelectedCategories([]);
+    setBounds({
+      kcal: { mode: "max", value: "" },
+      protein: { mode: "max", value: "" },
+      fat: { mode: "max", value: "" },
+      carb: { mode: "max", value: "" },
+      fiber: { mode: "max", value: "" },
+    });
+  };
+
+  /* Chip UI */
+  const Chip = ({ text }) => (
     <TouchableOpacity
-      style={addDet.resultItem}
-      onPress={() => addIngredient(item)}
+      onPress={() => {
+        setSearchQuery(text);
+        searchIngredients(false);
+      }}
+      style={ui.chip}
     >
-      <Image
-        source={{ uri: item.image }}
-        style={addDet.ingredientIcon}
-      />
-      <View style={addDet.resultTextContainer}>
-        <Text style={addDet.label}>{item.label}</Text>
-        <Text style={addDet.category}>{item.category}</Text>
-      </View>
-      <View style={addDet.quantityContainer}>
-        <Text style={addDet.quantityText}>x {quantity}</Text>
-      </View>
+      <Text style={ui.chipText}>{text}</Text>
     </TouchableOpacity>
   );
 
-  //just a back button to return to Grocery
-  const handleGoBack = () => {
-    navigation.navigate('grocery');
-  };
-
   return (
-    <View style={stylesContainer.container}>
+    <View style={ui.container}>
       <BackButton />
 
-      <TextInput
-        style={stylesContainer.searchInput}
-        placeholder="Search ingredient..."
-        placeholderTextColor={textcolors.darkgrey}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
+      {/* Search + Filter */}
+      <View style={ui.row}>
+        <TextInput
+          placeholder="Search ingredient..."
+          placeholderTextColor={textcolors.darkgrey}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={ui.input}
+        />
+        <TouchableOpacity
+          style={ui.filterBtn}
+          onPress={() => setFilterOpen(true)}
+        >
+          <MaterialIcons
+            name="filter-list"
+            size={24}
+            color={textcolors.darkgrey}
+            style={{ marginRight: 6 }}
+          />
+          <Text style={styles.regularText}>Filter</Text>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity
-        style={stylesContainer.searchButton}
-        onPress={searchIngredients}
+        style={ui.searchBtn}
+        onPress={() => searchIngredients()}
       >
-        <Text style={stylesContainer.buttonText}>Search</Text>
+        <Text style={ui.searchBtnText}>Search</Text>
       </TouchableOpacity>
+
+      {/* Recent */}
+      {recent.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={ui.chipsContainer}
+        >
+          {recent.map((q) => (
+            <Chip key={q} text={q} />
+          ))}
+        </ScrollView>
+      )}
+
       {loading && <ActivityIndicator size="large" color={colors.primary} />}
+
       <FlatList
-        data={results}
-        keyExtractor={(item) => item.foodId}
-        renderItem={renderResult}
+        contentContainerStyle={{ paddingTop: 12 }}
+        data={filteredResults}
+        keyExtractor={(i) => i.foodId}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={ui.resultItem}
+            onPress={() => addIngredient(item)}
+          >
+            <Image source={{ uri: item.image }} style={ui.image} />
+            <View style={{ flex: 1 }}>
+              <Text style={ui.label}>{item.label}</Text>
+              <Text style={ui.cat}>{item.category}</Text>
+            </View>
+            <Text style={ui.qty}>x {quantity}</Text>
+          </TouchableOpacity>
+        )}
         ListEmptyComponent={
-          !loading && (
-            <Text style={stylesContainer.noResultsText}>No ingredients found.</Text>
-          )
+          !loading && <Text style={ui.noRes}>No ingredients found.</Text>
         }
       />
+
+      {/* Filter Modal */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={filterOpen}
+        onRequestClose={() => setFilterOpen(false)}
+      >
+        <Pressable style={modal.backdrop} onPress={() => setFilterOpen(false)}>
+          <Pressable style={modal.sheet}>
+            <ScrollView>
+              <Text style={modal.title}>Filter Search Results</Text>
+
+              <Text style={modal.label}>Categories</Text>
+              {allCategories.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  style={modal.catRow}
+                  onPress={() =>
+                    setSelectedCategories((prev) =>
+                      prev.includes(c)
+                        ? prev.filter((x) => x !== c)
+                        : [...prev, c]
+                    )
+                  }
+                >
+                  <Ionicons
+                    name={
+                      selectedCategories.includes(c)
+                        ? "checkbox"
+                        : "square-outline"
+                    }
+                    size={22}
+                    color={colors.primary}
+                  />
+                  <Text style={modal.catText}>{c}</Text>
+                </TouchableOpacity>
+              ))}
+
+              <Text style={modal.label}>Nutrient Bounds (per 100 g)</Text>
+              {[
+                ["Calories (kcal)", "kcal"],
+                ["Protein (g)", "protein"],
+                ["Fat (g)", "fat"],
+                ["Carbs (g)", "carb"],
+                ["Fiber (g)", "fiber"],
+              ].map(([lbl, key]) => {
+                const b = bounds[key];
+                return (
+                  <View style={modal.row} key={key}>
+                    <View style={modal.toggleGroup}>
+                      {["min", "max"].map((m) => (
+                        <TouchableOpacity
+                          key={m}
+                          style={[
+                            modal.toggle,
+                            b.mode === m && modal.toggleSel,
+                          ]}
+                          onPress={() =>
+                            setBounds((p) => ({
+                              ...p,
+                              [key]: { ...p[key], mode: m },
+                            }))
+                          }
+                        >
+                          <Text
+                            style={
+                              b.mode === m
+                                ? modal.toggleTextSel
+                                : modal.toggleText
+                            }
+                          >
+                            {m.toUpperCase()}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                    <TextInput
+                      placeholder={lbl}
+                      placeholderTextColor={textcolors.lightgrey}
+                      keyboardType="numeric"
+                      value={b.value}
+                      onChangeText={(v) =>
+                        setBounds((p) => ({
+                          ...p,
+                          [key]: { ...p[key], value: v },
+                        }))
+                      }
+                      style={modal.input}
+                    />
+                  </View>
+                );
+              })}
+
+              <View style={modal.actions}>
+                <TouchableOpacity style={modal.resetBtn} onPress={resetFilters}>
+                  <Text style={styles.regularText}>Reset</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={modal.applyBtn}
+                  onPress={() => setFilterOpen(false)}
+                >
+                  <Text style={styles.regularText}>Apply</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
 
 export default AddGroceryIngredientScreen;
 
-const stylesContainer = StyleSheet.create({
-  container: {
+/* UI Styles */
+const ui = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.white, padding: 15 },
+  row: { flexDirection: "row", alignItems: "center" },
+  input: {
     flex: 1,
-    backgroundColor: colors.white,
-    padding: 15,
+    borderWidth: 1,
+    borderColor: textcolors.lightgrey,
+    borderRadius: 8,
+    padding: 10,
+    color: textcolors.darkgrey,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
+  filterBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 20,
+    backgroundColor: "#d7d9ed",
+    marginLeft: 10,
   },
-  backButton: {
-    marginRight: 10,
+  searchBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: 10,
+    alignItems: "center",
+    marginVertical: 15,
   },
-  title: {
-    fontSize: 24,
-    fontFamily: fonts.semiBold,
-    color: colors.primary,
+  searchBtnText: {
+    color: colors.white,
+    fontFamily: fonts.medium,
+    fontSize: 16,
   },
-  searchInput: {
+  chipsContainer: {
+    height: 40,
+    alignItems: "center",
+    paddingRight: 10,
+    marginBottom: 10,
+  },
+  chip: {
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: colors.othergrey,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  chipText: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 18 },
+  resultItem: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: textcolors.lightgrey,
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
-    color: textcolors.darkgrey,
   },
-  searchButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    padding: 10,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: colors.white,
-    fontFamily: fonts.medium,
-    fontSize: 16,
-  },
-  noResultsText: {
+  image: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
+  label: { fontSize: 18, fontFamily: fonts.medium },
+  cat: { fontSize: 14, color: textcolors.darkgrey },
+  qty: { fontSize: 16, fontFamily: fonts.bold },
+  noRes: {
     fontSize: 20,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 20,
     color: textcolors.lightgrey,
     fontFamily: fonts.semiBold,
   },
 });
 
-const addDet = StyleSheet.create({
-  resultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+/* Modal Styles */
+const modal = StyleSheet.create({
+  backdrop: { flex: 1, backgroundColor: "#0006", justifyContent: "flex-end" },
+  sheet: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: "85%",
+  },
+  title: { fontFamily: fonts.semiBold, fontSize: 22, marginBottom: 10 },
+  label: { fontFamily: fonts.medium, fontSize: 16, marginVertical: 10 },
+  catRow: { flexDirection: "row", alignItems: "center", paddingVertical: 6 },
+  catText: { marginLeft: 10, fontFamily: fonts.regular, fontSize: 15 },
+  row: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  toggleGroup: { flexDirection: "row", marginRight: 12 },
+  toggle: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    marginRight: 6,
+  },
+  toggleSel: { backgroundColor: colors.primary },
+  toggleText: {
+    fontSize: 12,
+    color: colors.primary,
+    fontFamily: fonts.regular,
+  },
+  toggleTextSel: { fontSize: 12, color: colors.white, fontFamily: fonts.bold },
+  input: {
+    flex: 1,
     borderWidth: 1,
     borderColor: textcolors.lightgrey,
     borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
+    padding: 8,
+    fontFamily: fonts.regular,
   },
-  ingredientIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 15,
   },
-  resultTextContainer: {
-    flex: 1,
+  resetBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: colors.othergrey,
   },
-  label: {
-    fontSize: 18,
-    fontFamily: fonts.medium,
-  },
-  category: {
-    fontSize: 14,
-    color: textcolors.darkgrey,
-  },
-  quantityContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-  },
-  quantityText: {
-    fontSize: 16,
-    fontFamily: fonts.bold,
+  applyBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
   },
 });
