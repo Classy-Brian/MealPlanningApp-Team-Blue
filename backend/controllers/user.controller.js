@@ -177,7 +177,7 @@ export const getUserById = async (req, res) => {
     // .populate('recipes')
     const user = await User.findById(id)
     .select('-password')
-    .populate('savedRecipes')
+    .populate('recipes')
     ;
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -1223,43 +1223,3 @@ export const updateNotificationSettings = asyncHandler(async (req, res) => {
     throw new Error(`Server error updating settings: ${error.message}`);
 }
 });
-
-export const tryNewRecipe = async (req, res) => {
-  const { userId, recipeId, title, calories } = req.body;
-
-  try {
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    const today = new Date().toISOString().split('T')[0];
-
-    const mealEntry = {
-      meal: 'Tried Recipe',
-      recipeId,
-      recipeLabel: title || 'Untitled',
-      calories: Number(calories) || 0,
-      time: new Date().toISOString(),
-    };
-
-    let todayEntry = user.savedDays.find(day => day.date === today);
-
-    if (todayEntry) {
-      todayEntry.meals.push(mealEntry);
-      todayEntry.totalCalories = Number(todayEntry.totalCalories || 0) + Number(calories || 0);
-    } else {
-      user.savedDays.push({
-        date: today,
-        totalCalories: Number(calories) || 0,
-        meals: [mealEntry],
-      });
-    }
-
-    user.markModified('savedDays');
-
-    await user.save();
-    return res.status(200).json({ message: 'Recipe logged successfully' });
-  } catch (err) {
-    console.error('[tryNewRecipe] Error:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-};

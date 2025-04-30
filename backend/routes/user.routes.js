@@ -29,8 +29,6 @@ import {
   saveCalendarDayForUser,
   deleteCalendarDayForUser,
   updateNotificationSettings,
-  tryNewRecipe,
-  getUpdatedProfile
 } from '../controllers/user.controller.js';
 import authenticateJWT from './authMiddleware.js';
 
@@ -114,27 +112,4 @@ router.patch('/:userId/mark-meal-completed', markMealCompleted);
 
 router.patch('/settings/notifications', authenticateJWT, updateNotificationSettings);
 
-router.put('/:userId/update-pantry', addIngredientToPantry);
-
-router.delete('/:userId/remove-pantry', removeIngredientPantry);
-
-router.put('/:userId/update-grocery', addIngredientToGrocery);
-
-router.get("/:id/get-saved-grocery", getSavedGrocery);
-
-router.delete('/:userId/batch-remove-grocery', batchRemoveIngredientGrocery);
-
-router.delete('/:userId/remove-grocery', removeIngredientGrocery)
-//Save calendar day for a user
-router.post('/:userId/save-day', saveCalendarDayForUser);
-
-// GET saved-days
-router.get('/:userId/saved-days', getUserSavedDays);
-
-//Markmeal as complete
-router.post('/meal-completed', markMealComplete)
-//Mark new recipe tried
-router.post('/recipe-tried', tryNewRecipe)
-
-router.get('/profile/updated/sync', authenticateJWT, getUpdatedProfile);
 export default router;

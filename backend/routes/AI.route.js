@@ -1,4 +1,5 @@
 import express from 'express';
+<<<<<<< HEAD
 import { chatWithAI, 
     getMealPlanFromEdamam, 
     getMealPlanFromAI, 
@@ -7,12 +8,12 @@ import { chatWithAI,
     // generateFromPantry,
 } from '../controllers/AI.controller.js';
 
+=======
+import { getMealPlanFromAI, generateStructuredMealPlan, getPantrySuggestions } from '../controllers/AI.controller.js';
+>>>>>>> parent of 9689476 (Merge branch 'TrungLe' into Brian)
 const router = express.Router();
 
-
-router.post('/chat', chatWithAI);
-router.post('/generate-plan', getMealPlanFromEdamam);
-// router.post('/generate-from-pantry', generateFromPantry);
+router.post('/generate-plan/', getMealPlanFromAI);
 
 router.post('/generate-structured-plan/', generateStructuredMealPlan);
 router.post('/:userId/generate-pantry-suggestions/', getPantrySuggestions);

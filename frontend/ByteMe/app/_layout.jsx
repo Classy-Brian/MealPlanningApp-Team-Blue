@@ -1,9 +1,10 @@
-import { Image, View, StyleSheet, TouchableOpacity } from 'react-native';
-import React, { useState, useCallback } from 'react';
+import { Image, View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import React from 'react';
 import { Stack, useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { colors } from "../components/Colors";
+// import { createStackNavigator } from '@react-navigation/stack'
+// import SavedRecipesScreen from "@/screens/recipe/SavedRecipesScreen"; // This will be handled by the router
+
 
 function HeaderLogo() {
   return (
@@ -18,36 +19,11 @@ function HeaderLogo() {
 
 function ProfileIcon() {
   const router = useRouter();
-  const [avatar, setAvatar] = useState(null);
-
-  const fetchUserAvatar = async () => {
-    try {
-      const userId = await getUserIdFromToken();
-      if (!userId) return;
-
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}`);
-      if (!response.ok) {
-        console.warn('Failed to fetch avatar:', await response.text());
-        return;
-      }
-
-      const data = await response.json();
-      setAvatar(data.avatar || null);
-    } catch (err) {
-      console.error('Failed to fetch user avatar:', err.message);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchUserAvatar();
-    }, [])
-  );
 
   return (
     <TouchableOpacity onPress={() => router.push('/(profile)/profile')}>
       <Image
-        source={avatar ? { uri: avatar } : require('../assets/images/profile.png')}
+        source={require('../assets/images/profile.png')}
         style={styles.profileImage}
       />
     </TouchableOpacity>
@@ -123,6 +99,7 @@ const _layout = () => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -139,7 +116,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
+    marginRight: 10, // optional, to space it nicely from the edge
     borderWidth: 1,
     borderColor: colors.white,
   },
