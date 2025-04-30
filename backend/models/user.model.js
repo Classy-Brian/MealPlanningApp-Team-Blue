@@ -60,7 +60,35 @@ const userSchema = new mongoose.Schema({
               calories: { type: Number, default: 0 },   // total calories for that recipe
               servings: { type: Number, default: 1 },   // added for calories per serving
               time: { type: String, required: true },
-              completed: { type: Boolean, default: false }
+              completed: { type: Boolean, default: false },
+
+                imageUri: { 
+                    type: String
+                },
+                ingredients: {
+                    type: [String],
+                    default: []
+                },
+                directions: {
+                    type: String,
+                    default: ''
+                },
+                nutrition: {
+                    type: mongoose.Schema.Types.Mixed,
+                    default: {}
+                },
+                allergies: {
+                    type: [String],
+                    default: []
+                },
+                url: {
+                    type: String
+                },
+            // // Optional but helpful: Track where the recipe came from
+            // source: {
+            //     type: String,
+            //     default: 'manual' // Could be 'edamam', 'ai', 'manual' etc.
+            // }
             }
           ]
         }
