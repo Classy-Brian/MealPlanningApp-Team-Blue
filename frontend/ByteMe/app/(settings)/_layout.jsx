@@ -10,6 +10,7 @@ import PreferenceSettingsScreen from './preference';
 import SettingsScreen from './settings';
 import UpdatePasswordScreen from './updatepassword';
 import VerifyPasswordScreen from './verifypassdelete';
+import NotificationSettingsScreen from './notification';
 import { createStackNavigator } from '@react-navigation/stack'
 
 
@@ -51,6 +52,9 @@ const SettingsLayout = () => {
           <Stack.Screen 
             name="verify_pass" 
             component={VerifyPasswordScreen} />
+          <Stack.Screen 
+            name="notification_settings" 
+            component={NotificationSettingsScreen} />
       </Stack.Navigator>
   )
 }

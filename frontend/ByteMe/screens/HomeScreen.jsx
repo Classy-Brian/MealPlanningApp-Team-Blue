@@ -128,7 +128,7 @@ const HomeScreen = () => {
         fetchedUserId = userRes.data._id;
         
         setUserId(fetchedUserId);
-        console.log("Stored userId from profile fetch:", fetchedUserId);
+        // console.log("Stored userId from profile fetch:", fetchedUserId);
 
         if (userRes.data?.name) {
           setUserName(userRes.data.name);
@@ -136,7 +136,7 @@ const HomeScreen = () => {
           setUserName(null);
         }
 
-        console.log(`Workspaceing saved days for user: ${fetchedUserId}`);
+        // console.log(`Workspaceing saved days for user: ${fetchedUserId}`);
         const calendarRes = await axiosInstance.get(`/api/users/${fetchedUserId}/saved-days`);
         const savedDays = calendarRes.data.savedDays || [];
 
