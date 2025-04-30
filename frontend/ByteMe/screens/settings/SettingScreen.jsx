@@ -31,7 +31,10 @@ const SettingsScreen = () => {
 
     const handleLogout = async () => {
         try {
-            await AsyncStorage.removeItem('authToken');
+            // await AsyncStorage.removeItem('authToken');
+            // await AsyncStorage.removeItem('lastPantry')
+            // await AsyncStorage.removeItem('lastRecipes')
+            await AsyncStorage.clear()
             router.replace('/(start)/login')
         } catch (error) {
             console.error("Error logging out:", error)

@@ -95,6 +95,7 @@ const AddGroceryIngredientScreen = () => {
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/update-grocery`,
         {
           foodId: ingredient.foodId,
+          label: ingredient.label,
           quantity: quantity,
         }
       );

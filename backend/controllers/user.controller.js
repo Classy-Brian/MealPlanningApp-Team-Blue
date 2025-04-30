@@ -600,8 +600,8 @@ export const getRecieById = async (req, res) => {
 export const getSavedPantry = async (req, res) => {
   try {
     // Find the user by ID and populate saved pantry ingredients
-    const user = await User.findById(req.params.id);
-
+    const { userId } = req.params;
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -675,9 +675,9 @@ export const getSavedPantry = async (req, res) => {
 export const addIngredientToPantry = async (req, res) => {
     try {
       const { userId } = req.params;
-        const { foodId, quantity } = req.body;
+        const { foodId, label, quantity } = req.body;
 
-        if (!foodId || quantity === undefined ) {
+        if (!foodId || !label || quantity === undefined ) {
           return res.status(400).json({message: "Food id and quantity are missing"});
         }
 
@@ -694,7 +694,7 @@ export const addIngredientToPantry = async (req, res) => {
         console.log("Ingredient added or updated successfully");
         return res.status(200).json({message: "Pantry updated successfully!"});
       } else {
-        user.savedPantry.push({ foodId, quantity});
+        user.savedPantry.push({ foodId, label, quantity});
         await user.save();
         console.log("Ingredient added or updated successfully");
         return res.status(200).json({message: "Pantry updated successfully!"});
@@ -737,9 +737,10 @@ export const removeIngredientPantry = async (req, res) => {
 export const addIngredientToGrocery = async (req, res) => {
   try {
     const { userId } = req.params;
-      const { foodId, quantity } = req.body;
+      const { foodId, label, quantity } = req.body;
+      // console.log(req.body);
 
-      if (!foodId || quantity === undefined ) {
+      if (!foodId || !label || quantity === undefined ) {
         return res.status(400).json({message: "Food id and quantity are missing"});
       }
 
@@ -756,7 +757,7 @@ export const addIngredientToGrocery = async (req, res) => {
       console.log("Ingredient added or updated successfully");
       return res.status(200).json({message: "Grocery updated successfully!"});
     } else {
-      user.savedGrocery.push({ foodId, quantity});
+      user.savedGrocery.push({ foodId, label, quantity});
       await user.save();
       console.log("Ingredient added or updated successfully");
       return res.status(200).json({message: "Grocery updated successfully!"});

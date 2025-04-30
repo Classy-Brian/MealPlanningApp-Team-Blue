@@ -108,7 +108,7 @@ const AddingGroceryToPantry = () => {
       );
       
       if (!response.data || !response.data.savedGrocery || response.data.savedGrocery.length === 0) {
-        console.warn("No saved pantry ingredients found.");
+        console.warn("No saved grocery ingredients found.");
         setSavedGrocery([]);
         setLoading(false);
         return;
@@ -192,6 +192,7 @@ const AddingGroceryToPantry = () => {
 
       const ingredientsToAdd = selectedIngredients.map(ingredient => ({
         foodId: ingredient.foodId,
+        label: ingredient.label,
         quantity: ingredient.quantity
       }))
 

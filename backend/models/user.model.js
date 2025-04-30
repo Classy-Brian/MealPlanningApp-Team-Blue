@@ -100,11 +100,13 @@ const userSchema = new mongoose.Schema({
 
     savedGrocery: [{
         foodId: { type: String, required: true },
+        label: { type: String },
         quantity: {type: Number, default: 1, min: 0 }
     }],
 
     savedPantry: [{
         foodId: { type: String, required: true },
+        label: { type: String },
         quantity: {type: Number, default: 1, min: 0 }
     }],
 

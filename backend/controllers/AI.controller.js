@@ -425,3 +425,66 @@ export const generateStructuredMealPlan = async (req, res) => {
     return res.status(500).json({ error: "Failed inside new structured plan generator." });
   }
 };
+export const getPantrySuggestions = async (req, res) => {
+  try {    
+    const {userId} = req.params;
+    console.log("user retrieved: ", userId);
+    const { ingrLabels } = req.body;
+    if (!ingrLabels ) {
+      return res.status(400).json({message: "No pantry ingredients are currently saved."});
+    }
+    console.log("Retrieved the following pantry ingredients: ", ingrLabels.join(', '));
+    
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const allergies = Array.isArray(user.allergies) ? user.allergies.join(', ') : 'none';
+    const dislikedIngredients = Array.isArray(user.dislikes) ? user.dislikes.join(', ') : 'none';
+    // const calorieTarget = user.profile?.calories?.max || 2000;
+
+    const prompt = `Given the following pantry list of ingredients from a user's pantry: ${ingrLabels.join(', ')}
+          Suggest 3 recipe ideas that could use at least some of these ingredeints. Please keep the ideas short like the following examples:
+          1. Truffle Potato
+          2. Teriyaki Chicken
+          3. Chocolate Chip
+          4. Spinach Pizza
+
+          Please take into account the following information:
+
+          Allergies to avoid: ${allergies}
+
+          The user's disliked ingredients that may be replaced with substitute ingredients: ${dislikedIngredients}
+
+          Make sure the recipe names are realistic and actually use 2 ingredients from the user's pantry list.
+    `;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{role: 'system', content: 'You are a recipe suggestion bot.'},
+        { role: 'user', content: prompt }],
+      max_tokens: 1000,
+      temperature: 0.7,
+    });
+    return res.status(200).json({
+      choices: [
+        {
+          message: {
+            content: completion.choices[0]?.message?.content || 'No plan generated.'
+          }
+        }
+      ]
+    });
+
+  } catch (error) {
+    console.error('AI generation error:', error);
+
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    return res.status(500).json({ error: 'Failed to generate meal plan.' });
+  }
+};

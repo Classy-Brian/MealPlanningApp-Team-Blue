@@ -1,4 +1,4 @@
-import { Image, Text, View, TextInput, TouchableOpacity, Alert, StyleSheet, Dimensions } from 'react-native'
+import { Image, Text, View, TextInput, TouchableOpacity, Alert, StyleSheet, Dimensions, KeyboardAvoidingView, Platform } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
@@ -139,99 +139,106 @@ const SignUp = () => {
   }
 
   return (
-    <View style={styles.whiteBackground}>
-      <View style={[styles.screenContainer, {marginTop: 20}]}>
-        <View >
-          <Text style={[styles.title, {fontSize: 36}]}>Create an account</Text>
-          <HeaderLogo/>
-          <View>
-            <View style={[logo.circle, {width: 70, height: 70, transform: [{translateY: 420}]}]}/>
-            <View style={[logo.circle, {width: 450, height: 450, transform: [{translateX: -100}, {translateY: -30}]}]}/>
-            <View style={[logo.circle, {width: 200, height: 200, transform: [{translateX: 180}, {translateY: 40}]}]}/>
-            <View style={[logo.circle, {width: 100, height: 100, transform: [{translateX: 300}, {translateY: -250}]}]}/>
-          </View>
-        </View>
-        
-        <View style={styles.container}>
-            <Text style={styles.heading}>Username </Text>
-            <View >          
-              <TextInput
-                placeholder='Enter a username'
-                placeholderTextColor={textcolors.lightgrey}
-                onChangeText={setUserName}
-                value={name}
-                style={isFocused}
-                onFocus={() => setFocused(styles.focusedinput)}
-                onBlur={() => setFocused(styles.inputContainer)}
-              />
+    <View style={{flex: 1}}>
+      <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
+        <View style={styles.whiteBackground}>
+        <View style={[styles.screenContainer, {marginTop: 20}]}>
+          <View >
+            <Text style={[styles.title, {fontSize: 36}]}>Create an account</Text>
+            <HeaderLogo/>
+            <View>
+              <View style={[logo.circle, {width: 70, height: 70, transform: [{translateY: 420}]}]}/>
+              <View style={[logo.circle, {width: 450, height: 450, transform: [{translateX: -100}, {translateY: -30}]}]}/>
+              <View style={[logo.circle, {width: 200, height: 200, transform: [{translateX: 180}, {translateY: 40}]}]}/>
+              <View style={[logo.circle, {width: 100, height: 100, transform: [{translateX: 300}, {translateY: -250}]}]}/>
             </View>
+          </View>
           
-        </View>
+          <View style={styles.container}>
+              <Text style={styles.heading}>Username </Text>
+              <View >          
+                <TextInput
+                  placeholder='Enter a username'
+                  placeholderTextColor={textcolors.lightgrey}
+                  onChangeText={setUserName}
+                  value={name}
+                  style={isFocused}
+                  onFocus={() => setFocused(styles.focusedinput)}
+                  onBlur={() => setFocused(styles.inputContainer)}
+                />
+              </View>
+            
+          </View>
 
-        <View style={styles.container}>
-          <Text style={styles.heading}>Email </Text>
-          <View>          
-            <TextInput
-              placeholder='Enter your email'
-              placeholderTextColor={textcolors.lightgrey}
-              onChangeText={setEmail}
-              value={email}
-              style={isFocused2} 
-              onFocus={() => setFocused2(styles.focusedinput)}
-              onBlur={() => setFocused2(styles.inputContainer)}
-              />
+          <View style={styles.container}>
+            <Text style={styles.heading}>Email </Text>
+            <View>          
+              <TextInput
+                placeholder='Enter your email'
+                placeholderTextColor={textcolors.lightgrey}
+                onChangeText={setEmail}
+                value={email}
+                style={isFocused2} 
+                onFocus={() => setFocused2(styles.focusedinput)}
+                onBlur={() => setFocused2(styles.inputContainer)}
+                />
+            </View>
+          </View>
+          
+          <View style={styles.container}>
+            <Text style={styles.heading}>Password </Text>
+            <View>          
+              <TextInput
+                placeholder='Enter your password'
+                secureTextEntry
+                placeholderTextColor={textcolors.lightgrey}
+                onChangeText={setPass}
+                value={password}
+                style={isFocused3}
+                onFocus={() => setFocused3(styles.focusedinput)}
+                onBlur={() => setFocused3(styles.inputContainer)}
+                />
+            </View>
+          </View> 
+
+          <View style={styles.container}>
+            <Text style={styles.heading}>Confirm Password </Text>
+            <View>          
+              <TextInput
+                placeholder='Confirm your password'
+                secureTextEntry
+                placeholderTextColor={textcolors.lightgrey}
+                onChangeText={setConfPass}
+                value={confpassword}
+                style={isFocused4}
+                onFocus={() => setFocused4(styles.focusedinput)}
+                onBlur={() => setFocused4(styles.inputContainer)}
+                />
+            </View>
+          </View> 
+
+          <TouchableOpacity onPress={handleChange}>
+            <View style={styles.buttonContainer}>
+              <Text style={[styles.buttonText, {color: colors.white}]}>Sign Up</Text>
+            </View>
+          </TouchableOpacity>
+
+          <View style={[styles.littlenote, {bottom: -90}]}>
+            <Text style={styles.regularText}>Have an account already? </Text>
+            <Link href={"/(start)/login"} asChild>
+              <Text style={styles.createacc}>Log in</Text>
+            </Link>            
           </View>
         </View>
         
-        <View style={styles.container}>
-          <Text style={styles.heading}>Password </Text>
-          <View>          
-            <TextInput
-              placeholder='Enter your password'
-              secureTextEntry
-              placeholderTextColor={textcolors.lightgrey}
-              onChangeText={setPass}
-              value={password}
-              style={isFocused3}
-              onFocus={() => setFocused3(styles.focusedinput)}
-              onBlur={() => setFocused3(styles.inputContainer)}
-              />
-          </View>
-        </View> 
-
-        <View style={styles.container}>
-          <Text style={styles.heading}>Confirm Password </Text>
-          <View>          
-            <TextInput
-              placeholder='Confirm your password'
-              secureTextEntry
-              placeholderTextColor={textcolors.lightgrey}
-              onChangeText={setConfPass}
-              value={confpassword}
-              style={isFocused4}
-              onFocus={() => setFocused4(styles.focusedinput)}
-              onBlur={() => setFocused4(styles.inputContainer)}
-              />
-          </View>
-        </View> 
-
-        <TouchableOpacity onPress={handleChange}>
-          <View style={styles.buttonContainer}>
-            <Text style={[styles.buttonText, {color: colors.white}]}>Sign Up</Text>
-          </View>
-        </TouchableOpacity>
-
-        <View style={[styles.littlenote, {bottom: -90}]}>
-          <Text style={styles.regularText}>Have an account already? </Text>
-          <Link href={"/(start)/login"} asChild>
-            <Text style={styles.createacc}>Log in</Text>
-          </Link>            
-        </View>
+        
+        
       </View>
-      
+      </KeyboardAvoidingView>
+        
       <View style={[logo.bluebar, {width: window.width}]}/>
-      
     </View>
+    
   )
 }
 
