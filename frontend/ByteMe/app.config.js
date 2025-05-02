@@ -4,7 +4,7 @@ export default {
   expo: {
     name: "byteme",
     slug: "byteme",
-    version: "1.0.0",
+    version: "1.1.0",
     orientation: "portrait",
     scheme: "myapp",
     userInterfaceStyle: "automatic",
@@ -13,7 +13,8 @@ export default {
       supportsTablet: true
     },
     android: {
-      
+      package: "com.blueteam.byteme",
+      versionCode: 1,
     },
     web: {
       bundler: "metro",
