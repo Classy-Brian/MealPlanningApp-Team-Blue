@@ -116,7 +116,7 @@ const AddGroceryIngredientScreen = () => {
       const userId = await getUserIdFromToken();
       await axios.put(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/update-grocery`,
-        { foodId: item.foodId, quantity }
+        { foodId: item.foodId, label: item.label, quantity }
       );
       Alert.alert("Success", "Ingredient added to your grocery list!");
       navigation.navigate("grocery");

@@ -740,6 +740,9 @@ export const addIngredientToGrocery = async (req, res) => {
       const { foodId, label, quantity } = req.body;
       // console.log(req.body);
 
+      console.log("foodId:", foodId);
+      console.log("label:", label);
+
       if (!foodId || !label || quantity === undefined ) {
         return res.status(400).json({message: "Food id and quantity are missing"});
       }
