@@ -6,19 +6,23 @@ import { fonts } from '@/components/Fonts';
 export const filterModal = StyleSheet.create({
     modalBackground: {
         flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: '#00000088',
+        // justifyContent: 'center', 
+        // alignItems: 'center', 
+        backgroundColor: '#0006',
+        justifyContent: "flex-end"
     },
     modalContainer: {
-        backgroundColor: 'white', 
-        borderRadius: 10, 
+        backgroundColor: colors.white, 
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        // borderRadius: 10, 
         padding: 20, 
-        width: '90%'
+        // width: '90%',
+        maxHeight: "85%"
     },
     modalTitle: {
         fontSize: 28, 
-        fontFamily: fonts.bold, 
+        fontFamily: fonts.semiBold, 
     },
     modalLabel: {
         fontSize: 20,

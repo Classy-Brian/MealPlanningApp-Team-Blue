@@ -26,6 +26,7 @@ import { fonts } from "@/components/Fonts";
 import maglass from "@/assets/images/magnifyingglass.png";
 import chright from "@/assets/images/chevron_right.png";
 import getUserIdFromToken from "@/components/getUserIdFromToken";
+import { filterModal } from "@/components/Filter";
 
 const GroceryScreen = () => {
   const navigation = useNavigation();
@@ -49,33 +50,43 @@ const GroceryScreen = () => {
   });
 
   /* Fetch grocery on focus */
-  const fetchSavedGrocery = async () => {
-    setLoading(true);
-    try {
-      const userId = await getUserIdFromToken();
-      if (!userId) return;
-      const res = await axios.get(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/get-saved-grocery`
-      );
-      const list = res.data.savedGrocery || [];
-      setSaved(list);
-      const g = list.reduce((acc, ing) => {
-        const cat = ing.category || "Other";
-        (acc[cat] = acc[cat] || []).push(ing);
-        return acc;
-      }, {});
-      setGrouped(g);
-    } catch (e) {
-      console.error("fetch grocery", e);
-    } finally {
-      setLoading(false);
+  
+  useFocusEffect(useCallback(() => {
+    let isActive = true;
+
+    const fetchSavedGrocery = async () => {
+      if (!isActive) return;
+      setLoading(true);
+      try {
+        const userId = await getUserIdFromToken();
+        if (!userId) return;
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/get-saved-grocery`
+        );
+        const list = res.data.savedGrocery || [];
+        setSaved(list);
+        const g = list.reduce((acc, ing) => {
+          const cat = ing.category || "Other";
+          (acc[cat] = acc[cat] || []).push(ing);
+          return acc;
+        }, {});
+        setGrouped(g);
+      } catch (e) {
+        console.error("fetch grocery", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSavedGrocery();
+
+    return () => {
+      isActive = false;
     }
-  };
-  useFocusEffect(useCallback(fetchSavedGrocery, []));
+  }, []));
 
   /* Category list */
   const allCategories = [
-    "Other",
+    "All",
     ...new Set(saved.map((i) => i.category || "Other")),
   ];
 
@@ -85,6 +96,12 @@ const GroceryScreen = () => {
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
     );
   };
+
+  const toggleFilter = (key, value) => {
+    if (!value || typeof value !== 'string') return;
+    setBounds((prev) => ({ ...prev, [key]: prev[key] === value ? 'All' : value }));
+  };
+
   const resetFilters = () => {
     setSelectedCategories([]);
     setBounds({
@@ -181,18 +198,21 @@ const GroceryScreen = () => {
           />
         </View>
         {/* Pantry-style Filter Button */}
-        <TouchableOpacity
-          style={det.filterButton}
-          onPress={() => setFilterOpen(true)}
-        >
-          <MaterialIcons
-            name="filter-list"
-            size={24}
-            color={textcolors.darkgrey}
-            style={{ marginRight: 8 }}
-          />
-          <Text style={styles.regularText}>Filter</Text>
-        </TouchableOpacity>
+        <View style={{marginBottom: 10}}>
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setFilterOpen(true)}
+          >
+            <MaterialIcons
+              name="filter-list"
+              size={24}
+              color={textcolors.darkgrey}
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.regularText}>Filter</Text>
+          </TouchableOpacity>
+        </View>
+        
         <Divider />
         {loading && <ActivityIndicator size="large" color={colors.primary} />}
       </View>
@@ -206,7 +226,7 @@ const GroceryScreen = () => {
         )}
         ListEmptyComponent={
           !loading && (
-            <Text style={det.noData}>No items match your filter.</Text>
+            <Text style={det.noData}>No groceries found.</Text>
           )
         }
       />
@@ -232,7 +252,30 @@ const GroceryScreen = () => {
               <Text style={modal.title}>Filter Grocery</Text>
 
               {/* Categories */}
-              <Text style={modal.label}>Categories</Text>
+              {[
+                ['Category', 'category', allCategories],
+                // ['Calories', 'calories', calories],
+                // ['Protein', 'proteins', dietLabels],
+                // ['Total Fat', 'fat', healthLabels],
+                // ['Total Carbohydrates', 'carbs', cautions],
+                // ['Fiber ', 'fiber', cautions]
+              ].map(([label, key, list]) => (
+                <View key={key} style={{ marginBottom: 10 }}>
+                  <Text style={filterModal.modalLabel}>{label}</Text>
+                  <ScrollView horizontal style={filterModal.filterRow} contentContainerStyle={{flexGrow: 1 }}>
+                    {list.map((item) => (
+                      <TouchableOpacity
+                        key={item}
+                        onPress={() => toggleFilter(key, item)}
+                        style={[filterModal.filterOption, bounds[key] === item && filterModal.filterOptionSelected]}
+                      >
+                        <Text style={bounds[key] === item ? filterModal.filterOptionTextSelected : filterModal.filterOptionText }>{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              ))}
+              {/* <Text style={modal.label}>Categories</Text>
               {allCategories.map((c) => (
                 <TouchableOpacity
                   key={c}
@@ -250,7 +293,7 @@ const GroceryScreen = () => {
                   />
                   <Text style={modal.catText}>{c}</Text>
                 </TouchableOpacity>
-              ))}
+              ))} */}
 
               {/* Nutrient & Quantity bounds */}
               {[
@@ -311,12 +354,12 @@ const GroceryScreen = () => {
               })}
 
               {/* Actions */}
-              <View style={modal.actions}>
-                <TouchableOpacity style={modal.resetBtn} onPress={resetFilters}>
+              <View style={filterModal.modalActions}>
+                <TouchableOpacity style={filterModal.cancelButton} onPress={resetFilters}>
                   <Text style={styles.regularText}>Reset</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={modal.applyBtn}
+                  style={filterModal.applyButton}
                   onPress={() => setFilterOpen(false)}
                 >
                   <Text style={styles.regularText}>Apply</Text>
@@ -338,9 +381,16 @@ const det = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 6,
+    backgroundColor: colors.lightgrey,
+    borderRadius: 10,
+    borderColor: textcolors.lightgrey,
+    borderWidth: 1,
+    paddingRight: 10,
+    paddingVertical: 5,
+    marginBottom: 10,
   },
   rowLeft: { flexDirection: "row", alignItems: "center" },
-  image: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
+  image: { width: 50, height: 50, borderRadius: 25, marginHorizontal: 10 },
   magIcon: { width: 30, height: 30, marginHorizontal: 15 },
   noData: {
     textAlign: "center",
@@ -356,9 +406,10 @@ const det = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: "#d7d9ed",
+    backgroundColor: colors.othergrey,
     marginVertical: 10,
-    elevation: 2,
+    elevation: 1,
+    borderColor: textcolors.lightgrey,
   },
 });
 
@@ -377,12 +428,12 @@ const modal = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.semiBold,
-    fontSize: 22,
+    fontSize: 28,
     marginBottom: 10,
   },
   label: {
     fontFamily: fonts.medium,
-    fontSize: 16,
+    fontSize: 20,
     marginTop: 15,
     marginBottom: 5,
   },
@@ -393,7 +444,7 @@ const modal = StyleSheet.create({
   },
   catText: {
     marginLeft: 10,
-    fontSize: 15,
+    fontSize: 20,
     fontFamily: fonts.regular,
   },
   row: {
