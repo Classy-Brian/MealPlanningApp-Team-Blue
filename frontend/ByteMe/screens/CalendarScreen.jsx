@@ -15,18 +15,6 @@ const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [savedDays, setSavedDays] = useState([]);
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
-    const date = new Date(year, month - 1, day);
-    return date.toISOString().split('T')[0];
-  };
-
-  const getLocalDateFromISO = (isoDate) => {
-    const [year, month, day] = isoDate.split('-');
-    return new Date(year, month - 1, day);
-  };
-
   useEffect(() => {
     const fetchSavedDays = async () => {
       try {
@@ -61,46 +49,82 @@ const CalendarScreen = () => {
   };
 
   const markedDates = (() => {
-    const today = getLocalTodayString();
+    const todayObj = new Date();
+    todayObj.setHours(0, 0, 0, 0); 
+    const todayStrYYYYMMDD = todayObj.toISOString().split('T')[0];
+
     const marks = {};
 
     savedDays.forEach(day => {
-      const formatted = formatDate(day.date);
-      const isToday = formatted === today;
-
-      marks[formatted] = {
-        marked: true,
-        dotColor: '#4CAF50',
-        ...(isToday && {
-          selected: true,
-          selectedColor: '#1F508F',
-          selectedTextColor: '#fff',
-        }),
-      };
+      try {
+          const dateObj = new Date(day.date);
+          if (isNaN(dateObj.getTime())) {
+             console.warn(`Could not parse date for marking: ${day.date}`);
+             return;
+          }
+          const formattedYYYYMMDD = dateObj.toISOString().split('T')[0];
+          marks[formattedYYYYMMDD] = {
+            marked: true,
+            dotColor: '#4CAF50',
+          };
+      } catch (e) {
+          console.error(`Error processing date ${day.date} for markedDates:`, e);
+      }
     });
 
-    if (!marks[today]) {
-      marks[today] = {
-        selected: true,
-        selectedColor: '#1F508F',
-        selectedTextColor: '#fff'
-      };
-    }
+     const todayMarking = marks[todayStrYYYYMMDD] || {};
+     marks[todayStrYYYYMMDD] = {
+          ...todayMarking,
+          customStyles: {
+              container: {
+                  backgroundColor: '#D7E2F1',
+                  borderRadius: 16,
+                  // borderWidth: 1, borderColor: '#1F508F' // Optional border
+               },
+              text: {
+                  color: '#1F508F',
+                  fontWeight: 'bold',
+              },
+          }
+     };
 
-    if (selectedDate && selectedDate !== today) {
-      marks[selectedDate] = {
-        ...marks[selectedDate],
-        selected: true,
-        selectedColor: '#133E7C',
-        selectedTextColor: '#fff'
-      };
-    }
+     if (selectedDate) {
+          const selectedMarking = marks[selectedDate] || {};
+          marks[selectedDate] = {
+              ...selectedMarking,
+              selected: true,
+              selectedColor: '#133E7C',
+              // selectedTextColor: '#FFFFFF', // Usually handled by selectedColor, but can force if needed
+              customStyles: {
+                 ...(selectedMarking.customStyles || {}),
+                 text: {
+                     ...(selectedMarking.customStyles?.text || {}),
+                     color: '#FFFFFF'
+                 }
+              }
+          };
+          if (selectedDate === todayStrYYYYMMDD && marks[selectedDate].customStyles) {
+               marks[selectedDate].customStyles.container = {
+                 ...(marks[selectedDate].customStyles.container || {}),
+                  backgroundColor: '#133E7C'
+               };
+          }
+     }
 
+    // console.log('Final markedDates object:', JSON.stringify(marks, null, 2));
     return marks;
   })();
 
+
   const displayedDays = selectedDate
-    ? savedDays.filter(d => formatDate(d.date) === selectedDate)
+    ? savedDays.filter(d => {
+        try {
+            return new Date(d.date).toISOString().split('T')[0] === selectedDate;
+        } catch (e) {
+            console.error(`Error parsing date for displayedDays filter: ${d.date}`);
+            return false;
+        }
+      })
     : savedDays;
 
   return (
@@ -108,7 +132,18 @@ const CalendarScreen = () => {
       <Text style={styles.title}>Calendar</Text>
 
       <Calendar
-        onDayPress={(day) => setSelectedDate(day.dateString)}
+        onDayPress={(day) => {
+          // console.log('Calendar day pressed:', day);
+          setSelectedDate(prevSelectedDate => {
+              if (prevSelectedDate === day.dateString) {
+                  // console.log('Deselecting date:', day.dateString);
+                  return null;
+              } else {
+                  // console.log('Selecting date:', day.dateString);
+                  return day.dateString;
+              }
+          });
+        }}
         markedDates={markedDates}
         markingType="custom"
         theme={{
@@ -126,9 +161,11 @@ const CalendarScreen = () => {
 
       <ScrollView style={styles.cardsContainer}>
         {displayedDays.map((day, index) => {
-          const formattedDate = getLocalDateFromISO(day.date);
-          const dayOfWeek = formattedDate.toLocaleDateString('en-US', { weekday: 'long' });
-          const monthDay = formattedDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+          const dateObject = new Date(day.date);
+
+          const dayOfWeek = dateObject.toLocaleDateString('en-US', { weekday: 'long' });
+          const monthDay = dateObject.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+          const yyyyMMdd = dateObject.toISOString().split('T')[0];
 
           const mealList = day.meals.map((m, i) => (
             <View key={i} style={[styles.mealRow, i < day.meals.length - 1 && styles.mealRowBorder]}>
@@ -148,7 +185,7 @@ const CalendarScreen = () => {
                   onPress={() =>
                     navigation.navigate('addday', {
                       editing: true,
-                      existingDate: formatDate(day.date),
+                      existingDate: yyyyMMdd,
                       existingMeals: day.meals,
                     })
                   }
@@ -168,7 +205,7 @@ const CalendarScreen = () => {
                 </View>
 
                 <View style={styles.trashWrapper}>
-                  <TouchableOpacity onPress={() => deleteDay(formatDate(day.date))}>
+                  <TouchableOpacity onPress={() => deleteDay(yyyyMMdd)}>
                     <Ionicons name="trash" size={24} color="#d00" />
                   </TouchableOpacity>
                 </View>
