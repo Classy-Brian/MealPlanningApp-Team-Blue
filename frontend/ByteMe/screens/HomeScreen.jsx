@@ -13,6 +13,8 @@ import { fonts } from '../components/Fonts';
 const forwardButton = require('../assets/images/forwardbutton.png');
 const foodImgExample = require('../assets/images/food_example.jpg');
 
+const getYYYYMMDD = (date) => date.toISOString().split('T')[0];
+
 const HomeScreen = () => {
   const router = useRouter();
   const [userName, setUserName] = useState(null);
@@ -29,6 +31,9 @@ const HomeScreen = () => {
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [todayYYYYMMDD, setTodayYYYYMMDD] = useState(getYYYYMMDD(new Date()));
+
 
   // console.log("--- Rendering HomeScreen ---");
   // console.log("Current mealPlan state:", mealPlan);
@@ -141,22 +146,22 @@ const HomeScreen = () => {
         const savedDays = calendarRes.data.savedDays || [];
         // console.log("fetchData - Raw savedDays from API:", JSON.stringify(savedDays, null, 2));
 
-
-        const today = new Date();
+        const todayObj = new Date();
         const weekMap = {};
         for (let i = 0; i < 7; i++) {
-          const date = new Date(today);
-          date.setDate(today.getDate() + i);
-          weekMap[date.toDateString()] = [];
+          const date = new Date(todayObj);
+          date.setDate(todayObj.getDate() + i);
+          weekMap[getYYYYMMDD(date)] = [];
         }
 
         savedDays.forEach((day) => {
-          const formatted = new Date(day.date).toDateString();
-          if (weekMap.hasOwnProperty(formatted)) {
-            weekMap[formatted] = day.meals || [];
+          const formattedKeyYYYYMMDD = day.date;
+          if (weekMap.hasOwnProperty(formattedKeyYYYYMMDD)) {
+            weekMap[formattedKeyYYYYMMDD] = day.meals || [];
           }
         });
 
+        console.log(`WorkspaceDATA setting weekMeals on HomeScreen:`, weekMap);
         setWeekMeals(weekMap);
       } else {
         console.error("User ID (_id) not found in profile response. Cannot load user-specific data.");
@@ -220,7 +225,6 @@ const HomeScreen = () => {
   };
 
   const today = new Date();
-  today.setDate(today.getDate() + 1); // ⏩ Shift forward one day
   const todayDateString = today.toDateString();
 
   const getTotalCaloriesLeft = (meals, completed) => {
@@ -230,7 +234,7 @@ const HomeScreen = () => {
       }
       return total;
     }, 0);
-    return Math.round(sum); // ✅ round total calories
+    return Math.round(sum);
   };
 
   const handleSaveAiPlan = async () => {
@@ -243,7 +247,7 @@ const HomeScreen = () => {
     // console.log("Using userId from state for saving:", userId);
 
     const today = new Date();
-    const dateToSave = today.toDateString();
+    const dateToSave = today.toISOString().split('T')[0];
     const defaultTimes = { breakfast: "08:00 AM", lunch: "12:00 PM", dinner: "06:00 PM" };
     const servingsToSave = 1;
     let mealsToSave = [];
@@ -333,9 +337,12 @@ const HomeScreen = () => {
       // console.log("Frontend: Save successful!", response.data);
       Alert.alert("Success!", "AI meal plan saved for today!");
 
-      fetchData();
+      // fetchData();
+      // setMealPlan(null);
+      console.log("Save successful, calling fetchData to refresh...");
+      await fetchData();
+      console.log("fetchData completed after save.");
       setMealPlan(null);
-
     } catch(err) {
       console.error("Frontend: Error saving AI plan:", err);
 
@@ -355,7 +362,7 @@ const HomeScreen = () => {
     }
   };
 
-  // console.log("Rendering HomeScreen, checking today's weekMeals state:", weekMeals ? JSON.stringify(weekMeals[todayDateString], null, 2) : 'No weekMeals data');
+  console.log("HomeScreen RENDER - todayDateString used for display:", todayDateString);
 
   return (
     <ScrollView
@@ -474,27 +481,25 @@ const HomeScreen = () => {
           </>
 
           ) : (
-            // If mealPlan is null (and not loading/errored from AI), show the SAVED plan for today
             <>
             {loading ? (
               <ActivityIndicator size="small" color={colors.primary} style={{marginVertical: 10}}/>
-            ) : weekMeals[todayDateString]?.length > 0 ? (
-              // Display the saved meals using your existing map logic
-              weekMeals[todayDateString].map((meal, index) => (
+            ) : weekMeals[todayYYYYMMDD]?.length > 0 ? (
+              weekMeals[todayYYYYMMDD].map((meal, index) => (
 
               <TouchableOpacity key={index} style={styles.mealItemCard} onPress={() => handleMealPress(meal)}>
 
                 <TouchableOpacity
-                    style={[styles.checkCircle, completedMeals[todayDateString]?.[index] && { backgroundColor: '#1F508F', borderColor: '#1F508F' }]}
-                    onPress={() => handleToggleComplete(todayDateString, index)}
+                    style={[styles.checkCircle, completedMeals[todayYYYYMMDD]?.[index] && { backgroundColor: '#1F508F', borderColor: '#1F508F' }]}
+                    onPress={() => handleToggleComplete(todayYYYYMMDD, index)}
                 >
-                  {completedMeals[todayDateString]?.[index] && <Ionicons name="checkmark" size={16} color="#fff" />}
+                  {completedMeals[todayYYYYMMDD]?.[index] && <Ionicons name="checkmark" size={16} color="#fff" />}
                 </TouchableOpacity>
 
                 <Text style={styles.mealTime}>{meal.time}</Text>
 
                 <View style={styles.mealDetails}>
-                  <Text style={[styles.mealRecipeName, completedMeals[todayDateString]?.[index] && { textDecorationLine: 'line-through', color: 'gray' }]}>{meal.recipeLabel}</Text>
+                  <Text style={[styles.mealRecipeName, completedMeals[todayYYYYMMDD]?.[index] && { textDecorationLine: 'line-through', color: 'gray' }]}>{meal.recipeLabel}</Text>
                   <Text style={styles.mealCalories}>{meal.calories ? `${Math.round(meal.calories)} Calories` : 'No calorie info'}</Text>
                 </View>
 
@@ -507,10 +512,10 @@ const HomeScreen = () => {
             )}
 
             {/* Total Calories for saved plan */}
-            {!loading && weekMeals[todayDateString]?.length > 0 && (
+            {!loading && weekMeals[todayYYYYMMDD]?.length > 0 && (
                   <View style={styles.totalCaloriesContainer}>
                       <Text style={styles.totalCaloriesText}>
-                          Total Calories Left: {getTotalCaloriesLeft(weekMeals[todayDateString] || [], completedMeals[todayDateString])}
+                          Total Calories Left: {getTotalCaloriesLeft(weekMeals[todayYYYYMMDD] || [], completedMeals[todayYYYYMMDD])}
                       </Text>
                   </View>
             )}
@@ -526,7 +531,7 @@ const HomeScreen = () => {
       {/* Full Week View */}
       {showWeekView && (
         Object.entries(weekMeals)
-          .filter(([day, meals]) => meals.length > 0 && day !== todayDateString)
+          .filter(([day, meals]) => meals.length > 0 && day !== todayYYYYMMDD)
           .map(([day, meals]) => (
             <View key={day} style={styles.mealPlanContainer}>
               <Text style={styles.dayTitle}>{day}</Text>
