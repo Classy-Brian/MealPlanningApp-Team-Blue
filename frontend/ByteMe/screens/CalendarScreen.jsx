@@ -28,13 +28,15 @@ const CalendarScreen = () => {
     fetchSavedDays();
   }, []);
 
-  const deleteDay = async (dateToDelete) => {
+  const deleteDay = async (dateStringToDelete) => {
     try {
       const userId = await getUserIdFromToken();
       await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/delete-day`, {
-        data: { date: dateToDelete }
+        data: { date: dateStringToDelete }
       });
-      setSavedDays(prev => prev.filter(day => formatDate(day.date) !== formatDate(dateToDelete)));
+      setSavedDays(prevSavedDays =>
+        prevSavedDays.filter(day => day.date !== dateStringToDelete)
+      );
       Alert.alert("Deleted", "Day removed from calendar.");
     } catch (err) {
       console.error("Delete error:", err);
@@ -205,7 +207,7 @@ const CalendarScreen = () => {
                 </View>
 
                 <View style={styles.trashWrapper}>
-                  <TouchableOpacity onPress={() => deleteDay(yyyyMMdd)}>
+                  <TouchableOpacity onPress={() => deleteDay(day.date)}>
                     <Ionicons name="trash" size={24} color="#d00" />
                   </TouchableOpacity>
                 </View>
