@@ -10,6 +10,7 @@ import { usePantry } from '@/components/PantryContext';
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
 import { fonts } from '../components/Fonts';
+import { useNavigation } from '@react-navigation/native'
 
 const forwardButton = require('../assets/images/forwardbutton.png');
 const foodImgExample = require('../assets/images/food_example.jpg');
@@ -32,6 +33,8 @@ const HomeScreen = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const { suggestions: pantrySuggestions, loading: pantryLoading, reloadSuggestions } = usePantry();
+  const navigation = useNavigation();
+  
 
   useEffect(() => {
     const getTokenAndSetupAxios = async () => {
@@ -403,8 +406,8 @@ const HomeScreen = () => {
                 key={index}
                 style={styles.recipeCard}
                 onPress={() =>
-                  router.push({
-                    pathname: '/homerecipedetails',
+                  navigation.navigate({
+                    pathname: 'pantry_recipe_details',
                     params: {
                       recipeLabel: recipe.label,
                       recipeId: recipe.uri,
