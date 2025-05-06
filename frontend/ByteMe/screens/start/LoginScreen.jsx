@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, KeyboardAvoidingView } from 'react-native'
+import { Platform, StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, KeyboardAvoidingView } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'

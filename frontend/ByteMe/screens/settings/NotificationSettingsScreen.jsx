@@ -136,44 +136,40 @@ const NotificationSettingsScreen = () => {
     };
 
     return (
-        <SafeAreaView>
-            <ScrollView style={localStyles.container}>
-                <BackButton />
+        <SafeAreaView style={styles.whiteBackground}>
+            <View style={styles.screenContainer}>
 
-                <Text style={localStyles.title}>Notification Settings</Text>
+            <BackButton />
 
-                <View style={localStyles.section}>
-                    <Text style={localStyles.sectionTitle}>Email Notifications</Text>
+            <Text style={[styles.title, {marginTop: 10}]}>Notification Settings</Text>
+            <Text style={localStyles.normalText}>Adjust your notification settings</Text>
 
-                    <View style={localStyles.settingRow}>
-                        <Text style={localStyles.settingLabel}>Confirm when meal plan is saved?</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: colors.primary || "#81b0ff" }}
-                            thumbColor={"#f4f3f4"}
-                            ios_backgroundColor="#3e3e3e"
-                            onValueChange={handleToggleSaveConfirm}
-                            value={isSaveConfirmEnabled}
-                            disabled={isLoading}
-                        />
-                    </View>
+            <View style={localStyles.settingRow}>
+                <Text style={localStyles.settingLabel}>Confirm when meal plan is saved?</Text>
+                <Switch
+                    trackColor={{ false: "#767577", true: colors.primary || "#81b0ff" }}
+                    thumbColor={"#f4f3f4"}
+                    ios_backgroundColor="#3e3e3e"
+                    onValueChange={handleToggleSaveConfirm}
+                    value={isSaveConfirmEnabled}
+                    disabled={isLoading}
+                />
+            </View>
 
-                    {/* Add indicator while fetching initial settings */}
-                    {isLoading && <ActivityIndicator style={{marginTop: 10}} />}
-                    {/* Display fetch error */}
-                    {error && <Text style={localStyles.errorText}>{error}</Text>}
+            {isLoading && <ActivityIndicator style={{marginTop: 10}} />}
+            {error && <Text style={localStyles.errorText}>{error}</Text>}
 
-
-                    {/* Add more notification toggles here later */}
-                </View>
-
-            </ScrollView>
+            </View>
         </SafeAreaView>
-        
     );
 };
 
 const localStyles = StyleSheet.create({
-     container: {
+    normalText: {
+        fontSize: 16,
+        marginBottom: 20,
+    }, 
+    container: {
         flex: 1,
         backgroundColor: '#F2F2F7',
      },
@@ -200,10 +196,13 @@ const localStyles = StyleSheet.create({
          paddingBottom: 5,
      },
      settingRow: {
-         flexDirection: 'row',
-         justifyContent: 'space-between',
-         alignItems: 'center',
-         paddingVertical: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 15,
+        paddingHorizontal: 15,
+        backgroundColor: colors.lightgrey,
+        borderRadius: 10,
      },
      settingLabel: {
          fontSize: 16,
