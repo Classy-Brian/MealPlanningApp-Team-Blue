@@ -12,7 +12,7 @@ function BackButton() {
     const navigation = useNavigation();
     return (
         <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.navigate('explore_recipe')}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
                 <View style={[det.greybutton, ]}>
                     <Image style={{marginRight:10}} source={backarrow}/>
                     <Text style={det.regularText}>Search Recipes</Text>
