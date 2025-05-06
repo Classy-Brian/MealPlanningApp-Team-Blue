@@ -93,49 +93,6 @@ const HomeScreen = () => {
     getTokenAndSetupAxios();
   }, []);
 
-  const fetchAiMealPlan = async () => {
-      // console.log("Frontend: Attempting to fetch AI meal plan...");
-      setIsLoading(true);
-      setError(null);
-      setMealPlan(null);
-
-      if (!axiosInstance) {
-          console.error("Frontend: Axios instance not ready.");
-          setError("Session data is not ready. Please try again shortly.");
-          setIsLoading(false);
-          Alert.alert("Error", "Session data is not ready. Please try again shortly.");
-          return;
-      }
-
-      try {
-          const response = await axiosInstance.post('/api/ai/generate-structured-plan');
-          // console.log("Frontend: AI Plan fetched successfully!", response.data);
-
-          if (response.data && response.data.generatedPlan) {
-              setMealPlan(response.data.generatedPlan);
-              // console.log("Frontend: setMealPlan called with data:", response.data.generatedPlan);
-          } else {
-              console.error("Frontend: Generated plan data missing in response:", response.data);
-              throw new Error("Received plan data in unexpected format from server.");
-          }
-
-      } catch (err) {
-          console.error("Frontend: Error fetching AI plan:", err);
-          let message = "An error occurred while generating the plan.";
-          if (err.response && err.response.data && err.response.data.error) {
-              message = err.response.data.error;
-          } else if (err.message) {
-              message = err.message;
-          }
-          setError(message);
-          setMealPlan(null);
-          Alert.alert("Plan Generation Failed", message);
-      } finally {
-          setIsLoading(false);
-          // console.log("Frontend: Finished fetching AI meal plan attempt.");
-      }
-  };
-
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -187,7 +144,7 @@ const HomeScreen = () => {
           }
         });
 
-        console.log(`WorkspaceDATA setting weekMeals on HomeScreen:`, weekMap);
+        // console.log(`WorkspaceDATA setting weekMeals on HomeScreen:`, weekMap);
         setWeekMeals(weekMap);
       } else {
         console.error("User ID (_id) not found in profile response. Cannot load user-specific data.");
@@ -234,6 +191,79 @@ const HomeScreen = () => {
   const onRefresh = () => {
     setRefreshing(true);
     fetchData();
+  };
+
+  const fetchAiMealPlan = async () => {
+    // console.log("Frontend: Attempting to fetch AI meal plan...");
+    setIsLoading(true);
+    setError(null);
+    setMealPlan(null);
+
+    // if (!axiosInstance) {
+    //     console.error("Frontend: Axios instance not ready.");
+    //     setError("Session data is not ready. Please try again shortly.");
+    //     setIsLoading(false);
+    //     Alert.alert("Error", "Session data is not ready. Please try again shortly.");
+    //     return;
+    // }
+
+    if (!token) {
+      console.error("Frontend: Token not available for AI call (global axios test).");
+      setError("Session not fully loaded. Please wait or try reloading.");
+      setIsLoading(false);
+      Alert.alert("Error", "Session token not found. Cannot generate plan.");
+      return;
+    }
+
+    const fullApiUrl = `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai/generate-structured-plan`;
+    console.log("Frontend: Attempting POST to:", fullApiUrl, "using global axios with token from state.");
+
+    try {
+        // const response = await axiosInstance.post('/api/ai/generate-structured-plan');
+        // // console.log("Frontend: AI Plan fetched successfully!", response.data);
+
+        // if (response.data && response.data.generatedPlan) {
+        //     setMealPlan(response.data.generatedPlan);
+        //     // console.log("Frontend: setMealPlan called with data:", response.data.generatedPlan);
+        // } else {
+        //     console.error("Frontend: Generated plan data missing in response:", response.data);
+        //     throw new Error("Received plan data in unexpected format from server.");
+        // }
+
+        const response = await axios.post(
+          fullApiUrl,
+          {},
+          {
+              headers: {
+                  Authorization: `Bearer ${token}`
+              }
+          }
+      );
+
+      console.log("Frontend: AI Plan fetched successfully (using global axios)!", response.data);
+      if (response.data && response.data.generatedPlan) {
+          setMealPlan(response.data.generatedPlan);
+          // console.log("Frontend: setMealPlan called with data (global axios test):", response.data.generatedPlan);
+      } else {
+          console.error("Frontend: Generated plan data missing in response (global axios test):", response.data);
+          throw new Error("Received plan data in unexpected format from server.");
+      }
+
+    } catch (err) {
+        console.error("Frontend: Error fetching AI plan:", err);
+        let message = "An error occurred while generating the plan.";
+        if (err.response && err.response.data && err.response.data.error) {
+            message = err.response.data.error;
+        } else if (err.message) {
+            message = err.message;
+        }
+        setError(message);
+        setMealPlan(null);
+        Alert.alert("Plan Generation Failed", message);
+    } finally {
+        setIsLoading(false);
+        // console.log("Frontend: Finished fetching AI meal plan attempt.");
+    }
   };
 
   const handleToggleComplete = (day, index) => {
@@ -379,9 +409,24 @@ const HomeScreen = () => {
     setIsSaving(true);
     setError(null);
 
+    const fullSaveUrl = `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/save-day`;
+    console.log("Frontend: Attempting POST to:", fullSaveUrl, "using global axios.");
+
     try {
       // console.log(`Frontend: Sending POST to /api/users/${userId}/save-day`);
-      const response = await axiosInstance.post(`/api/users/${userId}/save-day`, payload);
+      // const response = await axiosInstance.post(`/api/users/${userId}/save-day`, payload);
+
+      const response = await axios.post( // Use global axios
+        fullSaveUrl,
+        payload, 
+        { // Config object for headers
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+      );
+
+      console.log("Frontend: Save successful (using global axios)!", response.data);
 
       // console.log("Frontend: Save successful!", response.data);
       Alert.alert("Success!", "AI meal plan saved for today!");
@@ -411,7 +456,7 @@ const HomeScreen = () => {
     }
   };
 
-  console.log("HomeScreen RENDER - todayDateString used for display:", todayDateString);
+  // console.log("HomeScreen RENDER - todayDateString used for display:", todayDateString);
 
   return (
     <ScrollView
