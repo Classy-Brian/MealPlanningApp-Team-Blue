@@ -42,7 +42,7 @@ const Login = ({ navigation }) => {
         setTimeout(() => {
           Alert.alert("Success", "You're signed in now!", [{text: "OK"}], {cancelable: true});
         }, 100);
-        router.replace('/(tabs)/home');
+        router.replace('/(tabs)');
       }
     }
     catch (err) {

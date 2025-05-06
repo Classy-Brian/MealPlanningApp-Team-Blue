@@ -7,6 +7,8 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { colors } from '@/components/Colors';
 import { styles } from '@/components/Sheet';
 import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { useRouter } from 'expo-router';
+import { usePantry } from '@/components/PantryContext';
 
 function BackButton() {
     const navigation = useNavigation();
@@ -24,7 +26,9 @@ function BackButton() {
 
 const PantryRecipeDetailsScreen = () => {
   const route = useRoute();
+  const router = useRouter();
   const navigation = useNavigation();
+  const { removeSuggestion } = usePantry();
 
   const [userId, setUserId] = useState(null);
   
@@ -86,12 +90,11 @@ const PantryRecipeDetailsScreen = () => {
       if (response.status === 200) {
         setIsSavedRecipe(true); // Update the saved state
         Alert.alert("Success", "Recipe saved successfully!");
+
+        removeSuggestion(recipeId);
   
         // Navigate to savedrecipes screen and pass the saved recipe info
-        navigation.navigate('savedrecipes', {
-            recipe: { title, imageUri, recipeId, isSaved: true },
-          },
-        );
+        navigation.goBack();
       } else {
         throw new Error("Failed to save recipe.");
       }

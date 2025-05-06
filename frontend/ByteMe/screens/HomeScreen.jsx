@@ -5,10 +5,12 @@ import axios from 'axios';
 import { useRouter, useFocusEffect } from 'expo-router';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { Ionicons } from '@expo/vector-icons';
+import { usePantry } from '@/components/PantryContext';
 
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
 import { fonts } from '../components/Fonts';
+import { useNavigation } from '@react-navigation/native';
 
 const forwardButton = require('../assets/images/forwardbutton.png');
 const foodImgExample = require('../assets/images/food_example.jpg');
@@ -17,6 +19,7 @@ const getYYYYMMDD = (date) => date.toISOString().split('T')[0];
 
 const HomeScreen = () => {
   const router = useRouter();
+  const navigation = useNavigation();
   const [userName, setUserName] = useState(null);
   const [weekMeals, setWeekMeals] = useState({});
   const [completedMeals, setCompletedMeals] = useState({});
@@ -32,40 +35,63 @@ const HomeScreen = () => {
   const [userId, setUserId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [todayYYYYMMDD, setTodayYYYYMMDD] = useState(getYYYYMMDD(new Date()));
+  // const [todayYYYYMMDD, setTodayYYYYMMDD] = useState(getYYYYMMDD(new Date()));
 
 
   // console.log("--- Rendering HomeScreen ---");
   // console.log("Current mealPlan state:", mealPlan);
   // console.log("Current isLoading state:", isLoading);
   // console.log("Current error state:", error);
+  const { suggestions: pantrySuggestions, loading: pantryLoading, reloadSuggestions } = usePantry();
 
   useEffect(() => {
-      const getTokenAndSetupAxios = async () => {
-          let storedToken = null;
-          try {
-              storedToken = await AsyncStorage.getItem('authToken');
-              if (storedToken) {
-                  setToken(storedToken);
-                  setAxiosInstance(() => axios.create({
-                      baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
-                      headers: {
-                          Authorization: `Bearer ${storedToken}`,
-                      },
-                  }));
-              } else {
-                  console.log("No token found on home screen.");
-                  setUserName(null);
-                  router.replace('/(start)/login');
-              }
-          } catch (error) {
-              console.error("Error getting token:", error);
-              setError("Failed to load session."); 
-              Alert.alert("Error", "Failed to load authentication token.");
+    const getTokenAndSetupAxios = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('authToken');
+        if (!storedToken) {
+          setUserName(null);
+          router.replace('/(start)/login');
+          return;
+        }
+        setToken(storedToken);
+        const axiosInst = axios.create({
+          baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
+          headers: { Authorization: `Bearer ${storedToken}` },
+        });
+        setAxiosInstance(axiosInst);
+
+        const userId = await getUserIdFromToken(storedToken);
+        setUserId(userId);
+
+        const userRes = await axiosInst.get(`/api/users/profile/${storedToken}`);
+        setUserName(userRes.data?.name || null);
+
+        const calendarRes = await axiosInst.get(`/api/users/${userId}/saved-days`);
+        const savedDays = calendarRes.data.savedDays || [];
+        const today = new Date();
+        const weekMap = {};
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() + i);
+          weekMap[date.toDateString()] = [];
+        }
+        savedDays.forEach((day) => {
+          const formatted = new Date(day.date).toDateString();
+          if (weekMap.hasOwnProperty(formatted)) {
+            weekMap[formatted] = day.meals || [];
           }
-      };
-      getTokenAndSetupAxios();
-  }, []); 
+        });
+        setWeekMeals(weekMap);
+        await reloadSuggestions();
+      } catch (error) {
+        console.error("Error setting up token and axios:", error);
+        Alert.alert("Error", "Failed to load data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    getTokenAndSetupAxios();
+  }, []);
 
   const fetchAiMealPlan = async () => {
       // console.log("Frontend: Attempting to fetch AI meal plan...");
@@ -133,7 +159,7 @@ const HomeScreen = () => {
         fetchedUserId = userRes.data._id;
         
         setUserId(fetchedUserId);
-        // console.log("Stored userId from profile fetch:", fetchedUserId);
+        // console.log("Stored userId farom profile fetch:", fetchedUserId);
 
         if (userRes.data?.name) {
           setUserName(userRes.data.name);
@@ -188,7 +214,20 @@ const HomeScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchData();
+      let isActive = true;
+
+      const runEffects = async () => {
+        await fetchData();
+        await reloadSuggestions();
+      }
+
+      if (isActive) {
+        runEffects()
+      }
+
+      return () => {
+        isActive = false;
+      }
     }, [])
   );
 
@@ -209,19 +248,29 @@ const HomeScreen = () => {
 
   const handleMealPress = (meal) => {
     // console.log("handleMealPress - Received meal object:", JSON.stringify(meal, null, 2));
-    router.push({
-      pathname: '/homerecipedetails',
-      params: {
-        recipeLabel: meal.recipeLabel,
-        recipeId: meal.recipeId,
-        time: meal.time,
-        imageUri: meal.imageUri || '',
-        ingredients: JSON.stringify(meal.ingredients || []),
-        allergies: JSON.stringify(meal.allergies || []),
-        directions: meal.directions || '',
-        nutrition: JSON.stringify(meal.nutrition || {}),
-      },
-    });
+    // router.push({
+    //   pathname: '/homerecipedetails',
+    //   params: {
+    //     recipeLabel: meal.recipeLabel,
+    //     recipeId: meal.recipeId,
+    //     time: meal.time,
+    //     imageUri: meal.imageUri || '',
+    //     ingredients: JSON.stringify(meal.ingredients || []),
+    //     allergies: JSON.stringify(meal.allergies || []),
+    //     directions: meal.directions || '',
+    //     nutrition: JSON.stringify(meal.nutrition || {}),
+    //   },
+    // });
+    navigation.navigate('homerecipedetails', {
+      recipeLabel: meal.recipeLabel,
+      recipeId: meal.recipeId,
+      time: meal.time,
+      imageUri: meal.imageUri || '',
+      ingredients: JSON.stringify(meal.ingredients || []),
+      allergies: JSON.stringify(meal.allergies || []),
+      directions: meal.directions || '',
+      nutrition: JSON.stringify(meal.nutrition || {}),
+    })
   };
 
   const today = new Date();
@@ -367,7 +416,7 @@ const HomeScreen = () => {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); reloadSuggestions().finally(() => setRefreshing(false)); }} />}
     >
       {/* Welcome */}
       <View style={[styles.welcomeContainer, { borderBottomWidth: 1, borderBottomColor: 'gray' }]}>
@@ -376,24 +425,47 @@ const HomeScreen = () => {
         </Text>
       </View>
 
-      {/* Recipes You May Like */}
+      {/* Pantry Suggestions */}
       <Text style={styles.sectionTitle}>Recipes you may like</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalRecipeList}>
-        {[1, 2, 3, 4].map((id) => (
-          <TouchableOpacity key={id} style={styles.recipeCard}>
-            <ImageBackground source={foodImgExample} style={styles.cardImage} imageStyle={styles.cardImageStyle}>
-              <View style={styles.cardTextOverlay}>
-                <Text style={styles.cardTitle}>Example Recipe {id}</Text>
-              </View>
-            </ImageBackground>
-          </TouchableOpacity>
-        ))}
+        {pantryLoading ? (
+          <ActivityIndicator size="small" color={colors.primary} />
+        ) : pantrySuggestions.length > 0 ? (
+          pantrySuggestions.map((item, index) => {
+            const recipe = item.recipe;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={styles.recipeCard}
+                onPress={() =>
+                  navigation.navigate('pantrysuggestiondetails', {
+                      recipeLabel: recipe.label,
+                      recipeId: recipe.uri,
+                      imageUri: recipe.image,
+                      title: recipe.label,
+                      ingredients: JSON.stringify(recipe.ingredientLines || []),
+                      directions: recipe.url,
+                      allergies: JSON.stringify(recipe.healthLabels || []),
+                      nutrition: JSON.stringify(recipe.totalNutrients || {}),
+                    }
+                  )
+                }
+              >
+                <ImageBackground source={{ uri: recipe.image || foodImgExample }} style={styles.cardImage} imageStyle={styles.cardImageStyle}>
+                  <View style={styles.cardTextOverlay}>
+                    <Text style={styles.cardTitle} numberOfLines={2}>{recipe.label}</Text>
+                  </View>
+                </ImageBackground>
+              </TouchableOpacity>
+            );
+          })
+        ) : (
+          <Text style={{ paddingHorizontal: 20, color: textcolors.grey }}>
+            No pantry suggestions available.
+          </Text>
+        )}
       </ScrollView>
 
-      {/* Discover More */}
-      <TouchableOpacity style={styles.discoverButton} onPress={() => router.push('/explorerecipes')}>
-        <Text style={styles.discoverButtonText}>Discover more</Text>
-      </TouchableOpacity>
 
       {/* AI Generate Button */}
       <TouchableOpacity

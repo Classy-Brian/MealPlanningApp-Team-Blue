@@ -18,7 +18,8 @@ import GroceryB from "@/assets/images/grocery_black.png";
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 
-import Homepage from './home';
+import Homepage from '../(home)/home';
+import HomeLayout from '../(home)/_layout';
 import CalendarLayout from '../(calendar)/_layout';
 import GroceryLayout from '../(grocery)/_layout';
 import PantryLayout from '../(pantry)/_layout';
@@ -105,7 +106,7 @@ export default function TabLayout() {
       >
         <Tab.Screen 
           name="home" 
-          component={Homepage} 
+          component={HomeLayout} 
           options={{ title: 'Home', headerShown: false }} />
         <Tab.Screen 
           name="calendar" 
