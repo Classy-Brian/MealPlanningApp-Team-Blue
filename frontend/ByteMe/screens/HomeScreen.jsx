@@ -205,7 +205,7 @@ const HomeScreen = () => {
     useCallback(() => {
       fetchData();
       reloadSuggestions();
-    }, [])
+    }, [router])
   );
 
   const onRefresh = () => {
@@ -404,11 +404,12 @@ const HomeScreen = () => {
                 style={styles.recipeCard}
                 onPress={() =>
                   router.push({
-                    pathname: '/homerecipedetails',
+                    pathname: '/pantrysuggestiondetails',
                     params: {
                       recipeLabel: recipe.label,
                       recipeId: recipe.uri,
                       imageUri: recipe.image,
+                      title: recipe.label,
                       ingredients: JSON.stringify(recipe.ingredientLines || []),
                       directions: recipe.url,
                       allergies: JSON.stringify(recipe.healthLabels || []),
