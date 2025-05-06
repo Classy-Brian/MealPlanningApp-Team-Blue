@@ -10,12 +10,14 @@ import { usePantry } from '@/components/PantryContext';
 import { colors } from '../components/Colors';
 import { textcolors } from '../components/TextColors';
 import { fonts } from '../components/Fonts';
+import { useNavigation } from '@react-navigation/native';
 
 const forwardButton = require('../assets/images/forwardbutton.png');
 const foodImgExample = require('../assets/images/food_example.jpg');
 
 const HomeScreen = () => {
   const router = useRouter();
+  const navigation = useNavigation();
   const [userName, setUserName] = useState(null);
   const [weekMeals, setWeekMeals] = useState({});
   const [completedMeals, setCompletedMeals] = useState({});
@@ -203,9 +205,21 @@ const HomeScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchData();
-      reloadSuggestions();
-    }, [router])
+      let isActive = true;
+
+      const runEffects = async () => {
+        await fetchData();
+        await reloadSuggestions();
+      }
+
+      if (isActive) {
+        runEffects()
+      }
+
+      return () => {
+        isActive = false;
+      }
+    }, [])
   );
 
   const onRefresh = () => {
@@ -225,19 +239,29 @@ const HomeScreen = () => {
 
   const handleMealPress = (meal) => {
     // console.log("handleMealPress - Received meal object:", JSON.stringify(meal, null, 2));
-    router.push({
-      pathname: '/homerecipedetails',
-      params: {
-        recipeLabel: meal.recipeLabel,
-        recipeId: meal.recipeId,
-        time: meal.time,
-        imageUri: meal.imageUri || '',
-        ingredients: JSON.stringify(meal.ingredients || []),
-        allergies: JSON.stringify(meal.allergies || []),
-        directions: meal.directions || '',
-        nutrition: JSON.stringify(meal.nutrition || {}),
-      },
-    });
+    // router.push({
+    //   pathname: '/homerecipedetails',
+    //   params: {
+    //     recipeLabel: meal.recipeLabel,
+    //     recipeId: meal.recipeId,
+    //     time: meal.time,
+    //     imageUri: meal.imageUri || '',
+    //     ingredients: JSON.stringify(meal.ingredients || []),
+    //     allergies: JSON.stringify(meal.allergies || []),
+    //     directions: meal.directions || '',
+    //     nutrition: JSON.stringify(meal.nutrition || {}),
+    //   },
+    // });
+    navigation.navigate('homerecipedetails', {
+      recipeLabel: meal.recipeLabel,
+      recipeId: meal.recipeId,
+      time: meal.time,
+      imageUri: meal.imageUri || '',
+      ingredients: JSON.stringify(meal.ingredients || []),
+      allergies: JSON.stringify(meal.allergies || []),
+      directions: meal.directions || '',
+      nutrition: JSON.stringify(meal.nutrition || {}),
+    })
   };
 
   const today = new Date();
@@ -403,9 +427,7 @@ const HomeScreen = () => {
                 key={index}
                 style={styles.recipeCard}
                 onPress={() =>
-                  router.push({
-                    pathname: '/pantrysuggestiondetails',
-                    params: {
+                  navigation.navigate('pantrysuggestiondetails', {
                       recipeLabel: recipe.label,
                       recipeId: recipe.uri,
                       imageUri: recipe.image,
@@ -414,9 +436,8 @@ const HomeScreen = () => {
                       directions: recipe.url,
                       allergies: JSON.stringify(recipe.healthLabels || []),
                       nutrition: JSON.stringify(recipe.totalNutrients || {}),
-                      time: 'N/A',
-                    },
-                  })
+                    }
+                  )
                 }
               >
                 <ImageBackground source={{ uri: recipe.image || foodImgExample }} style={styles.cardImage} imageStyle={styles.cardImageStyle}>

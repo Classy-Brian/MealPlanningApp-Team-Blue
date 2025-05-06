@@ -25,6 +25,7 @@ import { fonts } from '@/components/Fonts';
 import { Divider } from 'react-native-paper';
 import maglass from "@/assets/images/magnifyingglass.png"
 import { filterModal } from '@/components/Filter';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 
@@ -123,7 +124,7 @@ export default function Recipes() {
   };
 
   return (
-    <View style={styles.whiteBackground}>
+    <SafeAreaView style={styles.whiteBackground}>
       <View style={styles.screenContainer}>
           <Text style={styles.title}>Saved Recipes</Text>
 
@@ -152,6 +153,7 @@ export default function Recipes() {
 
         <FlatList
           data={filteredRecipes}
+          contentContainerStyle={{ paddingBottom: 260}}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -244,7 +246,7 @@ export default function Recipes() {
       <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('explore_recipe')}>
         <Ionicons name="add" size={60} color="#d9d9d9" />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -7,6 +7,7 @@ import Back_butt from '@/assets/images/backbutton.png';
 import backarrow from "@/assets/images/back_arrow_navigate.png";
 import { colors } from '@/components/Colors';
 import { styles } from '@/components/Sheet';
+import { usePantry } from '@/components/PantryContext';
 
 function BackButton() {
   const navigation = useNavigation();
@@ -25,6 +26,7 @@ function BackButton() {
 const PantrySuggestionDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  const { removeSuggestion } = usePantry();
 
   const [userId, setUserId] = useState(null);
   const [activeSection, setActiveSection] = useState(0);
@@ -70,7 +72,10 @@ const PantrySuggestionDetailsScreen = () => {
             if (response.status === 200) {
                 setIsSavedRecipe(true);
                 Alert.alert("Success", "Recipe saved successfully!");
-                navigation.navigate('(home)');
+
+                removeSuggestion(recipeId);
+
+                navigation.goBack();
             } else {
                 throw new Error("Failed to save recipe.");
             }

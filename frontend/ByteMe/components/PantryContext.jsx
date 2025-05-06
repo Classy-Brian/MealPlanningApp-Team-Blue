@@ -62,12 +62,27 @@ export const PantryProvider = ({ children }) => {
             setLoading(false)
         }
     }
+
+    const removeSuggestion = (recipeId) => {
+        console.log("Removing recipeId:", recipeId)
+        setSuggestions(prev => {
+            const filtered = prev.filter(recipe => {
+                console.log("Checking recipe.id:", recipe.id)
+                return recipe.id !== recipeId;
+            })
+            console.log("Filtered suggestions:", filtered)
+            return filtered
+        })
+    }
+
+
     useEffect(() => {
         loadSuggestions()
     }, [])
 
     return (
-        <PantryContext.Provider value={{ suggestions, loading, reloadSuggestions: loadSuggestions}}>
+        <PantryContext.Provider value={{ suggestions, loading, reloadSuggestions: loadSuggestions,
+             removeSuggestion}}>
             {children}
         </PantryContext.Provider>
     )

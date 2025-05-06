@@ -10,14 +10,14 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { styles } from '@/components/Sheet'
 import { useRouter } from 'expo-router'
 import { colors } from '@/components/Colors'
 import { textcolors } from '@/components/TextColors'
 import { Divider } from 'react-native-paper'
 import backarrow from "@/assets/images/back_arrow_navigate.png"
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios'
 import { filterModal } from '@/components/Filter'
@@ -63,11 +63,13 @@ const PantrySuggestions = ( { route } ) => {
     setFilters({ category: 'All', cuisine: 'All', ingredient: '', maxCalories: '', dietLabel: '', healthLabel: '', caution: '' });
   };
 
-  useEffect(() => {
-    if (ingrLabels?.length > 0) {
-      reloadSuggestions(ingrLabels)
-    }
-  }, [JSON.stringify(ingrLabels)])
+  useFocusEffect(
+    useCallback(() => {
+      if (ingrLabels?.length > 0) {
+        reloadSuggestions(ingrLabels)
+      }
+    }, [JSON.stringify(ingrLabels)])
+  )
 
   const categories = ['All', ...new Set(recipes.flatMap(r => r.recipe.mealType || []))];
   const cuisines = ['All', ...new Set(recipes.flatMap(r => r.recipe.cuisineType || []).map(c => c.charAt(0).toUpperCase() + c.slice(1)))];
