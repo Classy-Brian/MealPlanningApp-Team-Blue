@@ -1,4 +1,4 @@
-import { Image, Text, View, TouchableOpacity } from 'react-native'
+import { Image, Text, View, TouchableOpacity, SafeAreaView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Checkbox } from 'react-native-paper'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -65,6 +65,7 @@ const SurveyAllergies = ({ navigation }) => {
   };
 
   return (
+    <SafeAreaView style={styles.whiteBackground}>
     <View style={styles.whiteBackground}>
       <View style={styles.screenContainer}>
 
@@ -116,6 +117,7 @@ const SurveyAllergies = ({ navigation }) => {
       </TouchableOpacity>
       
     </View>
+    </SafeAreaView>
     
   );
 };

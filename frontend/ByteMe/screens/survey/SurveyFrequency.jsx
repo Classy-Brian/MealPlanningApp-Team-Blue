@@ -1,6 +1,6 @@
 import {
     Text, View, Alert, ScrollView, TouchableOpacity,
-    TextInput, ActivityIndicator, Image, Keyboard
+    TextInput, ActivityIndicator, Image, Keyboard, SafeAreaView
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { RadioButton } from 'react-native-paper'
@@ -97,6 +97,7 @@ const SurveyFrequency = ({ navigation }) => {
     };
 
     return (
+        <SafeAreaView style={styles.whiteBackground}>
         <View style={styles.whiteBackground}>
             <View style={styles.screenContainer}>
 
@@ -155,6 +156,7 @@ const SurveyFrequency = ({ navigation }) => {
 
             </View>
         </View>
+        </SafeAreaView>
     );
 
 };

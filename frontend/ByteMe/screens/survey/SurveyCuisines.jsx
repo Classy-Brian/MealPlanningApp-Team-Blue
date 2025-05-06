@@ -1,4 +1,4 @@
-import { Image, Text, View, TouchableOpacity, Alert } from 'react-native'
+import { Image, Text, View, TouchableOpacity, Alert, SafeAreaView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Checkbox } from 'react-native-paper'
@@ -76,6 +76,7 @@ const SurveyCuisines = ({ navigation }) => {
   };
 
   return (
+    <SafeAreaView style={styles.whiteBackground}>
     <View style={styles.whiteBackground}>
       <View style={styles.screenContainer}>
 
@@ -125,6 +126,7 @@ const SurveyCuisines = ({ navigation }) => {
         </TouchableOpacity>
         
     </View>
+    </SafeAreaView>
   
   );
 };

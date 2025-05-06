@@ -1,6 +1,6 @@
 import {
     Text, View, Alert, ScrollView, TouchableOpacity,
-    TextInput, Image
+    TextInput, Image, SafeAreaView
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -115,6 +115,7 @@ const SurveyCalories = ({ navigation }) => {
     };
 
     return (
+        <SafeAreaView style={styles.whiteBackground}>
         <View style={styles.whiteBackground}>
             <View style={styles.screenContainer}>
                 
@@ -187,6 +188,7 @@ const SurveyCalories = ({ navigation }) => {
                 </View>
             </TouchableOpacity>
         </View>
+        </SafeAreaView>
     );
 
 };

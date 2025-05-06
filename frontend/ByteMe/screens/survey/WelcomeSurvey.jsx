@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { Image, StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
@@ -37,6 +37,7 @@ const WelcomeSurvey = ( { navigation, route } ) => {
   }, []);
 
   return (
+    <SafeAreaView style={styles.whiteBackground}>
     <View style={styles.whiteBackground}>
       <View style={[styles.screenContainer, ]}>
         <View>
@@ -64,6 +65,7 @@ const WelcomeSurvey = ( { navigation, route } ) => {
         </TouchableOpacity>
       </View>
     </View>
+    </SafeAreaView>
     )
 }
 
