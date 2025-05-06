@@ -13,6 +13,7 @@ import getUserIdFromToken from '@/components/getUserIdFromToken'
 import axios from 'axios'
 import { useNavigation } from '@react-navigation/native'
 import { filterModal } from '@/components/Filter'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const SingleIngredient = ({ ingredient }) => {
   // console.log("Single ingredient being passed:", ingredient);  // checks what data is passed as ingredient
@@ -307,7 +308,7 @@ const Pantry = () => {
   }, {})
 
   return (
-    <View style={styles.whiteBackground}>
+    <SafeAreaView style={styles.whiteBackground}>
       <FlatList
         ListHeaderComponent={
           <View style={styles.screenContainer}>
@@ -535,7 +536,7 @@ const Pantry = () => {
         </TouchableOpacity>
       </Animated.View>
 
-    </View>    
+    </SafeAreaView>    
   )
 }
 

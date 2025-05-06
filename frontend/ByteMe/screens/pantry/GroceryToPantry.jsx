@@ -11,6 +11,7 @@ import axios from 'axios'
 import { useNavigation } from '@react-navigation/native'
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { Checkbox } from 'react-native-paper'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 
 function BackButton() {
@@ -242,7 +243,7 @@ const AddingGroceryToPantry = () => {
   }, {})
 
   return (
-    <View style={styles.whiteBackground}>
+    <SafeAreaView style={styles.whiteBackground}>
       <FlatList
         ListHeaderComponent={
           <View style={styles.screenContainer}>
@@ -293,7 +294,7 @@ const AddingGroceryToPantry = () => {
             </TouchableOpacity>
         </View>
         
-    </View>    
+    </SafeAreaView>    
   )
 }
 

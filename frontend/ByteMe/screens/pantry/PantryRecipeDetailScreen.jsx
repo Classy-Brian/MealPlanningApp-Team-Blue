@@ -9,6 +9,7 @@ import { styles } from '@/components/Sheet';
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { useRouter } from 'expo-router';
 import { usePantry } from '@/components/PantryContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function BackButton() {
     const navigation = useNavigation();
@@ -118,7 +119,7 @@ const PantryRecipeDetailsScreen = () => {
   };
 
   return (
-    <View style={det.container}>
+    <SafeAreaView style={det.container}>
       {/* Header with Back Button */}
       <View style={det.header}>
         <BackButton />
@@ -208,7 +209,7 @@ const PantryRecipeDetailsScreen = () => {
 
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

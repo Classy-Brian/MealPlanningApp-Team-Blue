@@ -12,6 +12,7 @@ import axios from 'axios'
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { ScreenContainer } from 'react-native-screens'
 import { useNavigation } from '@react-navigation/native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 function MinusButton({ onPress }) {
     return (
@@ -136,7 +137,7 @@ const EditPantryIngredient = ( { route } ) => {
     }
 
   return (
-    <View style={styles.whiteBackground}>
+    <SafeAreaView style={styles.whiteBackground}>
         <View style={styles.screenContainer}>
             <BackButton />
             <Text style={styles.title}>Edit Ingredient</Text>
@@ -173,7 +174,7 @@ const EditPantryIngredient = ( { route } ) => {
             </View>
             
         </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

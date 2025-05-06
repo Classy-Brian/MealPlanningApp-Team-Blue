@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { styles } from '@/components/Sheet';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 function BackButton(userId) {
@@ -66,7 +67,7 @@ export default function CalorieGoalScreen() {
   };
 
   return (
-    <View style={det.container}>
+    <SafeAreaView style={det.container}>
       <BackButton userId={userId}/>
       <Text style={styles.title}>Calorie Intake Goal</Text>
 
@@ -104,7 +105,7 @@ export default function CalorieGoalScreen() {
       <TouchableOpacity style={det.addButton} onPress={handleAddGoal}>
         <Text style={det.addButtonText}>Add Goal</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

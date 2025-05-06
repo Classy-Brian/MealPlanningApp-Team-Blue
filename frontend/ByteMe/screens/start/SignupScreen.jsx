@@ -6,6 +6,7 @@ import { Link, useRouter } from "expo-router"
 import axios from "axios"
 import { styles } from '@/components/Sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 function HeaderLogo() {
   return (
@@ -139,8 +140,8 @@ const SignUp = () => {
   }
 
   return (
-    <View style={{flex: 1}}>
-      <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
+    <SafeAreaView style={{flex: 1}}>
+      <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.whiteBackground}>
         <View style={[styles.screenContainer, {marginTop: 20}]}>
           <View >
@@ -237,7 +238,7 @@ const SignUp = () => {
       </KeyboardAvoidingView>
         
       <View style={[logo.bluebar, {width: window.width}]}/>
-    </View>
+    </SafeAreaView>
     
   )
 }

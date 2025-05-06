@@ -26,18 +26,25 @@ import { fonts } from "@/components/Fonts";
 import { styles } from "@/components/Sheet";
 import getUserIdFromToken from "@/components/getUserIdFromToken";
 import backarrow from "@/assets/images/back_arrow_navigate.png";
+import maglass from "@/assets/images/magnifyingglass.png";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Divider } from "react-native-paper";
+
 
 const STORAGE_KEY = "@recentGroceryQueries";
 
 const BackButton = () => {
   const navigation = useNavigation();
   return (
-    <TouchableOpacity onPress={() => navigation.goBack()}>
-      <View style={styles.greybutton}>
-        <Image source={backarrow} style={{ marginRight: 10 }} />
-        <Text style={styles.regularText}>Grocery</Text>
-      </View>
-    </TouchableOpacity>
+    <View style={{flexDirection: 'row'}}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <View style={styles.greybutton}>
+          <Image source={backarrow} style={{ marginRight: 10 }} />
+          <Text style={styles.regularText}>Grocery</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+    
   );
 };
 
@@ -177,11 +184,36 @@ const AddGroceryIngredientScreen = () => {
   );
 
   return (
-    <View style={ui.container}>
-      <BackButton />
+    <SafeAreaView style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <BackButton />
+        <Text style={styles.title}>Search Groceries</Text>
+        
+        {/* Search box  */}
+        <View style={{marginBottom: 10}}>
+          <View style={[styles.searchInput]}>
+            <Image 
+              style={ui.magnifyingGlassIcon} 
+              source={maglass} />          
+            <TextInput
+              placeholder='Search for groceries'
+              placeholderTextColor={textcolors.darkgrey}
+              onChangeText={(text) => setSearchQuery(text)}
+              value={searchQuery}
+              style={styles.regularText}
+              onSubmitEditing={() => searchIngredients()} />
+          </View>
+
+          <TouchableOpacity style={styles.filterButton} onPress={() => setFilterOpen(true)}>
+            <MaterialIcons name="filter-list" size={24} color={textcolors.darkgrey} style={{ marginRight: 8 }} />
+            <Text style={styles.regularText}>Filter</Text>
+          </TouchableOpacity>
+        </View>
+        <Divider />
+      
 
       {/* Search + Filter */}
-      <View style={ui.row}>
+      {/* <View style={ui.row}>
         <TextInput
           placeholder="Search ingredient..."
           placeholderTextColor={textcolors.darkgrey}
@@ -208,7 +240,7 @@ const AddGroceryIngredientScreen = () => {
         onPress={() => searchIngredients()}
       >
         <Text style={ui.searchBtnText}>Search</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Recent */}
       {recent.length > 0 && (
@@ -356,6 +388,8 @@ const AddGroceryIngredientScreen = () => {
         </Pressable>
       </Modal>
     </View>
+    </SafeAreaView>
+    
   );
 };
 
@@ -429,6 +463,11 @@ const ui = StyleSheet.create({
     marginTop: 20,
     color: textcolors.lightgrey,
     fontFamily: fonts.semiBold,
+  },
+  magnifyingGlassIcon: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 15
   },
 });
 

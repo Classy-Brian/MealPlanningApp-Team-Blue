@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const HomeRecipeDetailsScreen = () => {
   const route = useRoute();
@@ -39,96 +40,99 @@ const HomeRecipeDetailsScreen = () => {
   const tabs = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
   return (
-    <ScrollView style={styles.container}>
-      {/* 🔙 Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={24} color="#1F508F" />
-        <Text style={styles.backButtonText}>Recipes</Text>
-      </TouchableOpacity>
+    <SafeAreaView>
+        <ScrollView style={styles.container}>
+        {/* 🔙 Back Button */}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1F508F" />
+          <Text style={styles.backButtonText}>Recipes</Text>
+        </TouchableOpacity>
 
-      {/* 📸 Recipe Image */}
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={styles.recipeImage} />
-      ) : (
-        <View style={styles.recipeImagePlaceholder}>
-          <Text style={{ color: '#777' }}>No Image Available</Text>
+        {/* 📸 Recipe Image */}
+        {imageUri ? (
+          <Image source={{ uri: imageUri }} style={styles.recipeImage} />
+        ) : (
+          <View style={styles.recipeImagePlaceholder}>
+            <Text style={{ color: '#777' }}>No Image Available</Text>
+          </View>
+        )}
+
+        {/* 🥘 Title */}
+        <Text style={styles.title}>{recipeLabel}</Text>
+
+        {/* ⏰ Time */}
+        {time ? (
+          <View style={styles.timeWrapper}>
+            <Text style={styles.timeText}>Scheduled at {time}</Text>
+          </View>
+        ) : null}
+
+        {/* 🗂️ Tabs */}
+        <View style={styles.tabContainer}>
+          {tabs.map((tab, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[styles.tab, activeTab === i && styles.activeTab]}
+              onPress={() => setActiveTab(i)}
+            >
+              <Text style={[styles.tabText, activeTab === i && styles.activeTabText]}>{tab}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
-      )}
 
-      {/* 🥘 Title */}
-      <Text style={styles.title}>{recipeLabel}</Text>
+        {/* 📃 Content */}
+        <View style={styles.content}>
+          {activeTab === 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Ingredients:</Text>
+              {parsedIngredients.length > 0 ? (
+                parsedIngredients.map((item, i) => (
+                  <Text key={i} style={styles.sectionItem}>- {item}</Text>
+                ))
+              ) : (
+                <Text style={styles.sectionItem}>No ingredients available.</Text>
+              )}
+            </>
+          )}
 
-      {/* ⏰ Time */}
-      {time ? (
-        <View style={styles.timeWrapper}>
-          <Text style={styles.timeText}>Scheduled at {time}</Text>
+          {activeTab === 1 && (
+            <>
+              <Text style={styles.sectionTitle}>Allergies:</Text>
+              {parsedAllergies.length > 0 ? (
+                parsedAllergies.map((item, i) => (
+                  <Text key={i} style={styles.sectionItem}>- {item}</Text>
+                ))
+              ) : (
+                <Text style={styles.sectionItem}>No allergy info available.</Text>
+              )}
+            </>
+          )}
+
+          {activeTab === 2 && (
+            <>
+              <Text style={styles.sectionTitle}>Directions:</Text>
+              <Text style={styles.sectionItem}>{directions || 'No directions available.'}</Text>
+            </>
+          )}
+
+          {activeTab === 3 && (
+            <>
+              <Text style={styles.sectionTitle}>Nutrition:</Text>
+              {Object.keys(parsedNutrition).length > 0 ? (
+                Object.values(parsedNutrition).map((item, i) => (
+                  <Text key={i} style={styles.sectionItem}>
+                    {item.label}: {Math.round(item.quantity || 0)} {item.unit}
+                  </Text>
+                ))
+              ) : (
+                <Text style={styles.sectionItem}>No nutrition data available.</Text>
+              )}
+            </>
+          )}
         </View>
-      ) : null}
-
-      {/* 🗂️ Tabs */}
-      <View style={styles.tabContainer}>
-        {tabs.map((tab, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[styles.tab, activeTab === i && styles.activeTab]}
-            onPress={() => setActiveTab(i)}
-          >
-            <Text style={[styles.tabText, activeTab === i && styles.activeTabText]}>{tab}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* 📃 Content */}
-      <View style={styles.content}>
-        {activeTab === 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Ingredients:</Text>
-            {parsedIngredients.length > 0 ? (
-              parsedIngredients.map((item, i) => (
-                <Text key={i} style={styles.sectionItem}>- {item}</Text>
-              ))
-            ) : (
-              <Text style={styles.sectionItem}>No ingredients available.</Text>
-            )}
-          </>
-        )}
-
-        {activeTab === 1 && (
-          <>
-            <Text style={styles.sectionTitle}>Allergies:</Text>
-            {parsedAllergies.length > 0 ? (
-              parsedAllergies.map((item, i) => (
-                <Text key={i} style={styles.sectionItem}>- {item}</Text>
-              ))
-            ) : (
-              <Text style={styles.sectionItem}>No allergy info available.</Text>
-            )}
-          </>
-        )}
-
-        {activeTab === 2 && (
-          <>
-            <Text style={styles.sectionTitle}>Directions:</Text>
-            <Text style={styles.sectionItem}>{directions || 'No directions available.'}</Text>
-          </>
-        )}
-
-        {activeTab === 3 && (
-          <>
-            <Text style={styles.sectionTitle}>Nutrition:</Text>
-            {Object.keys(parsedNutrition).length > 0 ? (
-              Object.values(parsedNutrition).map((item, i) => (
-                <Text key={i} style={styles.sectionItem}>
-                  {item.label}: {Math.round(item.quantity || 0)} {item.unit}
-                </Text>
-              ))
-            ) : (
-              <Text style={styles.sectionItem}>No nutrition data available.</Text>
-            )}
-          </>
-        )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
+    
   );
 };
 

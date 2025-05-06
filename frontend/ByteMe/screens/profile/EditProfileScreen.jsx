@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { styles } from '@/components/Sheet';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function BackButton() {
     const navigation = useNavigation();
@@ -74,7 +75,7 @@ export default function EditProfile() {
   // };
 
   return (
-    <View style={det.container}>
+    <SafeAreaView style={det.container}>
     {/* A back arrow*/}
       <BackButton />
 
@@ -120,7 +121,7 @@ export default function EditProfile() {
           <Text style={det.saveButtonText}>Save Changes</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

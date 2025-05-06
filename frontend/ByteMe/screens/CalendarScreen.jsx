@@ -9,6 +9,7 @@ import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import EditIcon from '@/assets/images/edit.png';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CalendarScreen = () => {
   const navigation = useNavigation();
@@ -125,7 +126,7 @@ const CalendarScreen = () => {
     : savedDays;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Calendar</Text>
 
       <Calendar
@@ -241,7 +242,7 @@ const CalendarScreen = () => {
       >
         <Ionicons name="add" size={60} color="#d9d9d9" />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -23,6 +23,7 @@ import { styles } from '@/components/Sheet';
 import backarrow from "@/assets/images/back_arrow_navigate.png";
 import { Divider } from 'react-native-paper';
 import { filterModal } from '@/components/Filter';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function BackButton() {
   const navigation = useNavigation();
@@ -94,7 +95,7 @@ const RecipeSearch = () => {
   
 
   return (
-    <View style={det.container}>
+    <SafeAreaView style={det.container}>
       <View style={det.searchSection}>
         <BackButton />
         <Text style={styles.title}>Search Recipes</Text>
@@ -211,7 +212,7 @@ const RecipeSearch = () => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 

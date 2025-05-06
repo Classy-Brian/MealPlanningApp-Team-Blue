@@ -9,6 +9,7 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { styles } from '@/components/Sheet';
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { colors } from '@/components/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
 const PORT = process.env.PORT;
@@ -143,7 +144,7 @@ const renderSaveButton = () => {
 
 
   return (
-    <View style={det.container}>
+    <SafeAreaView style={det.container}>
       {/* Header with Back Button */}
       <View style={det.header}>
         <BackButton />
@@ -232,7 +233,7 @@ const renderSaveButton = () => {
           )}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

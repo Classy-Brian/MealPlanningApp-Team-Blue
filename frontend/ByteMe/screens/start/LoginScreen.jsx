@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions } from 'react-native'
+import { StyleSheet, Image, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, KeyboardAvoidingView } from 'react-native'
 import React, { useState } from 'react'
 import { colors } from '../../components/Colors'
 import { textcolors} from '../../components/TextColors'
@@ -6,6 +6,7 @@ import { Link, useRouter } from "expo-router"
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { styles } from '@/components/Sheet'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 
 function HeaderLogo() {
@@ -70,70 +71,73 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.whiteBackground}>
-      <View style={[styles.screenContainer, {marginTop: 20}]}>          
-        <View >
-          <Text style={[styles.title, {fontSize: 36}]}>Sign in</Text>
-          <HeaderLogo/>
-          <View>
-            <View style={[logo.circle, {width: 70, height: 70, transform: [{translateY: 420}]}]}/>
-            <View style={[logo.circle, {width: 450, height: 450, transform: [{translateX: -100}, {translateY: -30}]}]}/>
-            <View style={[logo.circle, {width: 200, height: 200, transform: [{translateX: 180}, {translateY: 40}]}]}/>
-            <View style={[logo.circle, {width: 100, height: 100, transform: [{translateX: 300}, {translateY: -250}]}]}/>
+    <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <SafeAreaView style={styles.whiteBackground}>
+        <View style={[styles.screenContainer, {marginTop: 20}]}>          
+          <View >
+            <Text style={[styles.title, {fontSize: 36}]}>Sign in</Text>
+            <HeaderLogo/>
+            <View>
+              <View style={[logo.circle, {width: 70, height: 70, transform: [{translateY: 420}]}]}/>
+              <View style={[logo.circle, {width: 450, height: 450, transform: [{translateX: -100}, {translateY: -30}]}]}/>
+              <View style={[logo.circle, {width: 200, height: 200, transform: [{translateX: 180}, {translateY: 40}]}]}/>
+              <View style={[logo.circle, {width: 100, height: 100, transform: [{translateX: 300}, {translateY: -250}]}]}/>
+            </View>
           </View>
+
+          <View style={styles.container}>        
+            <Text style={styles.heading}>Email </Text>
+            <View>          
+              <TextInput
+                placeholder='Enter your email'
+                onChangeText={setEmail}
+                placeholderTextColor={textcolors.lightgrey}
+                style={isFocused} 
+                onFocus={() => setFocused(styles.focusedinput)}
+                onBlur={() => setFocused(styles.inputContainer)}
+                />
+            </View>
+          </View>
+          
+          <View style={styles.container}>
+            <Text style={styles.heading}>Password </Text>
+            <View >          
+              <TextInput
+                placeholder='Enter your password'
+                secureTextEntry
+                onChangeText={setPass}
+                placeholderTextColor={textcolors.lightgrey}
+                style={isFocused1}
+                onFocus={() => setFocused1(styles.focusedinput)}
+                onBlur={() => setFocused1(styles.inputContainer)}
+                />          
+            </View>        
+          </View>
+
+          <TouchableOpacity onPress={forgetPassword}>
+            <View style={[styles.container, {alignItems: 'flex-end'}]}>
+              <Text style={styles.forgot} >Forgot Password? </Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity onPress={handleLogin}>
+            <View style={styles.buttonContainer}>
+              <Text style={[styles.buttonText, {color: colors.white}]}>Login</Text>
+            </View>
+          </TouchableOpacity>
+  
+          <View style={[styles.littlenote, {bottom: -241}]}>
+            <Text style={styles.regularText}>Don't have an account yet? </Text>
+            <Link href={"/(start)/signup"} asChild>
+              <Text style={styles.createacc}>Register for free</Text>
+            </Link>
+          </View>   
         </View>
 
-        <View style={styles.container}>        
-          <Text style={styles.heading}>Email </Text>
-          <View>          
-            <TextInput
-              placeholder='Enter your email'
-              onChangeText={setEmail}
-              placeholderTextColor={textcolors.lightgrey}
-              style={isFocused} 
-              onFocus={() => setFocused(styles.focusedinput)}
-              onBlur={() => setFocused(styles.inputContainer)}
-              />
-          </View>
-        </View>
-        
-        <View style={styles.container}>
-          <Text style={styles.heading}>Password </Text>
-          <View >          
-            <TextInput
-              placeholder='Enter your password'
-              secureTextEntry
-              onChangeText={setPass}
-              placeholderTextColor={textcolors.lightgrey}
-              style={isFocused1}
-              onFocus={() => setFocused1(styles.focusedinput)}
-              onBlur={() => setFocused1(styles.inputContainer)}
-              />          
-          </View>        
-        </View>
-
-        <TouchableOpacity onPress={forgetPassword}>
-          <View style={[styles.container, {alignItems: 'flex-end'}]}>
-            <Text style={styles.forgot} >Forgot Password? </Text>
-          </View>
-        </TouchableOpacity>
-        
-        <TouchableOpacity onPress={handleLogin}>
-          <View style={styles.buttonContainer}>
-            <Text style={[styles.buttonText, {color: colors.white}]}>Login</Text>
-          </View>
-        </TouchableOpacity>
- 
-        <View style={[styles.littlenote, {bottom: -241}]}>
-          <Text style={styles.regularText}>Don't have an account yet? </Text>
-          <Link href={"/(start)/signup"} asChild>
-            <Text style={styles.createacc}>Register for free</Text>
-          </Link>
-        </View>   
-      </View>
-
-      <View style={[logo.bluebar, {width: window.width}]}/>
-    </View> 
+        <View style={[logo.bluebar, {width: window.width}]}/>
+      </SafeAreaView> 
+    </KeyboardAvoidingView>
+    
   )
 }
 

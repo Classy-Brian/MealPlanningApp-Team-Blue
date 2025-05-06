@@ -14,6 +14,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '@/components/Sheet';
 import { colors } from '../../components/Colors'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const backArrowImage = require('../../assets/images/back_arrow_navigate.png');
 
@@ -160,7 +161,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={det.container}>
+    <SafeAreaView style={det.container}>
 
       <View style={det.header}>
           <TouchableOpacity
@@ -214,7 +215,7 @@ export default function ProfileScreen() {
       >
         <Ionicons name="add" size={60} color='#d9d9d9' />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -17,6 +17,7 @@ import axios from 'axios';
 import backarrow from "@/assets/images/back_arrow_navigate.png";
 import { colors } from '@/components/Colors';
 import { Divider } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function MinusButton({ onPress }) {
   return (
@@ -129,7 +130,7 @@ const EditGroceryIngredientScreen = ({ route }) => {
   };
 
   return (
-    <View style={styles.whiteBackground}>
+    <SafeAreaView style={styles.whiteBackground}>
       <View style={styles.screenContainer}>
         <BackButton />
         <Text style={styles.title}>Edit Grocery Ingredient</Text>
@@ -153,7 +154,7 @@ const EditGroceryIngredientScreen = ({ route }) => {
           <DeleteIngredient ingredient={ingredient} />
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

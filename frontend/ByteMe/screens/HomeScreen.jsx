@@ -35,7 +35,7 @@ const HomeScreen = () => {
   const [userId, setUserId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // const [todayYYYYMMDD, setTodayYYYYMMDD] = useState(getYYYYMMDD(new Date()));
+  const [todayYYYYMMDD, setTodayYYYYMMDD] = useState(getYYYYMMDD(new Date()));
 
 
   // console.log("--- Rendering HomeScreen ---");

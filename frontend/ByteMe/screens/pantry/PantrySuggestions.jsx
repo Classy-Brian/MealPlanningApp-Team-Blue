@@ -25,6 +25,7 @@ import { fonts } from '@/components/Fonts';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePantry } from '@/components/PantryContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 function BackButton() {
@@ -93,7 +94,7 @@ const PantrySuggestions = ( { route } ) => {
   // console.log('First filtered recipe:', filteredRecipes[0])
 
   return (
-    <View style={styles.whiteBackground}>
+    <SafeAreaView style={styles.whiteBackground}>
         <View style={styles.screenContainer}>
           <BackButton />
           
@@ -193,7 +194,7 @@ const PantrySuggestions = ( { route } ) => {
 
         
         </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

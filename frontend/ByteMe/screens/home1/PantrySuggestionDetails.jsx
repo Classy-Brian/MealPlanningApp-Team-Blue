@@ -8,6 +8,7 @@ import backarrow from "@/assets/images/back_arrow_navigate.png";
 import { colors } from '@/components/Colors';
 import { styles } from '@/components/Sheet';
 import { usePantry } from '@/components/PantryContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function BackButton() {
   const navigation = useNavigation();
@@ -96,7 +97,7 @@ const PantrySuggestionDetailsScreen = () => {
     );
 
     return (
-        <View style={det.container}>
+        <SafeAreaView style={det.container}>
             <View style={det.header}>
                 <BackButton />
             </View>
@@ -167,7 +168,7 @@ const PantrySuggestionDetailsScreen = () => {
                     )}
                 </View>
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 };
 

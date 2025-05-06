@@ -7,6 +7,7 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { colors } from '@/components/Colors';
 import { styles } from '@/components/Sheet';
 import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function BackButton() {
     const navigation = useNavigation();
@@ -115,7 +116,7 @@ const RecipeDetailsScreen = () => {
   };
 
   return (
-    <View style={det.container}>
+    <SafeAreaView style={det.container}>
       {/* Header with Back Button */}
       <View style={det.header}>
         <BackButton />
@@ -205,7 +206,7 @@ const RecipeDetailsScreen = () => {
 
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

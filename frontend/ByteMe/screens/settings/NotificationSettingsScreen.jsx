@@ -9,6 +9,7 @@ import { textcolors} from '../../components/TextColors';
 import { fonts } from '../../components/Fonts';
 import { styles } from '@/components/Sheet'; 
 import backarrow from "@/assets/images/back_arrow_navigate.png";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function BackButton() {
     const navigation = useNavigation();
@@ -135,36 +136,39 @@ const NotificationSettingsScreen = () => {
     };
 
     return (
-        <ScrollView style={localStyles.container}>
-            <BackButton />
+        <SafeAreaView>
+            <ScrollView style={localStyles.container}>
+                <BackButton />
 
-            <Text style={localStyles.title}>Notification Settings</Text>
+                <Text style={localStyles.title}>Notification Settings</Text>
 
-            <View style={localStyles.section}>
-                <Text style={localStyles.sectionTitle}>Email Notifications</Text>
+                <View style={localStyles.section}>
+                    <Text style={localStyles.sectionTitle}>Email Notifications</Text>
 
-                <View style={localStyles.settingRow}>
-                    <Text style={localStyles.settingLabel}>Confirm when meal plan is saved?</Text>
-                    <Switch
-                        trackColor={{ false: "#767577", true: colors.primary || "#81b0ff" }}
-                        thumbColor={"#f4f3f4"}
-                        ios_backgroundColor="#3e3e3e"
-                        onValueChange={handleToggleSaveConfirm}
-                        value={isSaveConfirmEnabled}
-                        disabled={isLoading}
-                    />
+                    <View style={localStyles.settingRow}>
+                        <Text style={localStyles.settingLabel}>Confirm when meal plan is saved?</Text>
+                        <Switch
+                            trackColor={{ false: "#767577", true: colors.primary || "#81b0ff" }}
+                            thumbColor={"#f4f3f4"}
+                            ios_backgroundColor="#3e3e3e"
+                            onValueChange={handleToggleSaveConfirm}
+                            value={isSaveConfirmEnabled}
+                            disabled={isLoading}
+                        />
+                    </View>
+
+                    {/* Add indicator while fetching initial settings */}
+                    {isLoading && <ActivityIndicator style={{marginTop: 10}} />}
+                    {/* Display fetch error */}
+                    {error && <Text style={localStyles.errorText}>{error}</Text>}
+
+
+                    {/* Add more notification toggles here later */}
                 </View>
 
-                 {/* Add indicator while fetching initial settings */}
-                {isLoading && <ActivityIndicator style={{marginTop: 10}} />}
-                {/* Display fetch error */}
-                {error && <Text style={localStyles.errorText}>{error}</Text>}
-
-
-                {/* Add more notification toggles here later */}
-            </View>
-
-        </ScrollView>
+            </ScrollView>
+        </SafeAreaView>
+        
     );
 };
 

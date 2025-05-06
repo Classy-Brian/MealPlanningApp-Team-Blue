@@ -8,6 +8,7 @@ import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const SavedRecipesDupi = () => {
   const navigation = useNavigation();
@@ -64,7 +65,7 @@ const SavedRecipesDupi = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <MaterialIcons name="arrow-back" size={24} color="#1F508F" />
@@ -113,7 +114,7 @@ const SavedRecipesDupi = () => {
           <Text style={styles.confirmButtonText}>Confirm Selection</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

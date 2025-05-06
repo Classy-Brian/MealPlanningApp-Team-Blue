@@ -8,6 +8,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import axios from 'axios';
 import Back_butt from '@/assets/images/backbutton.png';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -175,114 +176,117 @@ const AddDayScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('calendar')}>
-        <Image source={Back_butt} style={styles.backIcon} />
-        <Text style={styles.backText}>Calendar</Text>
-      </TouchableOpacity>
+    <SafeAreaView>
+        <ScrollView style={styles.container}>
+        {/* Back Button */}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('calendar')}>
+          <Image source={Back_butt} style={styles.backIcon} />
+          <Text style={styles.backText}>Calendar</Text>
+        </TouchableOpacity>
 
-      <Text style={styles.title}>
-        {route.params?.editing ? 'Edit Recipes for Day' : 'Add Recipes to Calendar'}
-      </Text>
+        <Text style={styles.title}>
+          {route.params?.editing ? 'Edit Recipes for Day' : 'Add Recipes to Calendar'}
+        </Text>
 
-      {/* Pick Date */}
-      <Text style={styles.label}>Pick Date</Text>
-      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.timePickerButton}>
-        <Text style={styles.timeText}>{selectedDate.toDateString()}</Text>
-      </TouchableOpacity>
-      {showDatePicker && (
-        <DateTimePicker
-          mode="date"
-          value={selectedDate}
-          onChange={(e, date) => {
-            setShowDatePicker(false);
-            if (date) setSelectedDate(date);
-          }}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-        />
-      )}
+        {/* Pick Date */}
+        <Text style={styles.label}>Pick Date</Text>
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.timePickerButton}>
+          <Text style={styles.timeText}>{selectedDate.toDateString()}</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            mode="date"
+            value={selectedDate}
+            onChange={(e, date) => {
+              setShowDatePicker(false);
+              if (date) setSelectedDate(date);
+            }}
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          />
+        )}
 
-      {/* Browse Recipes */}
-      <Text style={styles.label}>Pick a Recipe</Text>
-      <TouchableOpacity
-        style={styles.selectRecipeButton}
-        onPress={() =>
-          navigation.navigate('savedrecipesdupi', {
-            selectedTime,
-            selectedDate,
-          })
-        }
-      >
-        <Text style={styles.selectRecipeText}>Browse Saved Recipes</Text>
-      </TouchableOpacity>
+        {/* Browse Recipes */}
+        <Text style={styles.label}>Pick a Recipe</Text>
+        <TouchableOpacity
+          style={styles.selectRecipeButton}
+          onPress={() =>
+            navigation.navigate('savedrecipesdupi', {
+              selectedTime,
+              selectedDate,
+            })
+          }
+        >
+          <Text style={styles.selectRecipeText}>Browse Saved Recipes</Text>
+        </TouchableOpacity>
 
-      {/* Selected Meals */}
-      <Text style={styles.label}>Selected Meals:</Text>
+        {/* Selected Meals */}
+        <Text style={styles.label}>Selected Meals:</Text>
 
-      {Object.entries(
-        selectedMeals.reduce((acc, meal) => {
-          if (!acc[meal.date]) acc[meal.date] = [];
-          acc[meal.date].push(meal);
-          return acc;
-        }, {})
-      ).map(([date, meals]) => (
-        <View key={date} style={styles.groupBox}>
-          <Text style={styles.groupDate}>{date}</Text>
+        {Object.entries(
+          selectedMeals.reduce((acc, meal) => {
+            if (!acc[meal.date]) acc[meal.date] = [];
+            acc[meal.date].push(meal);
+            return acc;
+          }, {})
+        ).map(([date, meals]) => (
+          <View key={date} style={styles.groupBox}>
+            <Text style={styles.groupDate}>{date}</Text>
 
-          {meals.map((m, i) => {
-            const globalIndex = selectedMeals.findIndex(
-              sm => sm.label === m.label && sm.date === m.date && sm.value === m.value
-            );
+            {meals.map((m, i) => {
+              const globalIndex = selectedMeals.findIndex(
+                sm => sm.label === m.label && sm.date === m.date && sm.value === m.value
+              );
 
-            return (
-              <View key={`${m.value}-${i}`} style={styles.mealCard}>
-                <Image source={{ uri: m.image }} style={styles.mealImage} />
-                <View style={styles.mealDetails}>
-                  <Text style={styles.mealText}>{m.label}</Text>
+              return (
+                <View key={`${m.value}-${i}`} style={styles.mealCard}>
+                  <Image source={{ uri: m.image }} style={styles.mealImage} />
+                  <View style={styles.mealDetails}>
+                    <Text style={styles.mealText}>{m.label}</Text>
 
-                  <View style={styles.timeRow}>
-                    <Text style={styles.mealSubText}>
-                      {m.time ? `${m.time}` : 'No time selected'}
-                    </Text>
+                    <View style={styles.timeRow}>
+                      <Text style={styles.mealSubText}>
+                        {m.time ? `${m.time}` : 'No time selected'}
+                      </Text>
 
-                    <TouchableOpacity style={styles.pickTimeButton} onPress={() => openTimePicker(globalIndex)}>
-                      <Text style={styles.pickTimeButtonText}>Pick Time</Text>
-                    </TouchableOpacity>
+                      <TouchableOpacity style={styles.pickTimeButton} onPress={() => openTimePicker(globalIndex)}>
+                        <Text style={styles.pickTimeButtonText}>Pick Time</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <TextInput
+                      style={styles.servingInput}
+                      keyboardType="numeric"
+                      value={String(m.servings)}
+                      onChangeText={(val) => updateServings(globalIndex, val)}
+                    />
                   </View>
 
-                  <TextInput
-                    style={styles.servingInput}
-                    keyboardType="numeric"
-                    value={String(m.servings)}
-                    onChangeText={(val) => updateServings(globalIndex, val)}
-                  />
+                  <TouchableOpacity onPress={() => removeMeal(globalIndex)}>
+                    <Ionicons name="trash" size={22} color="#d00" />
+                  </TouchableOpacity>
                 </View>
+              );
+            })}
+          </View>
+        ))}
 
-                <TouchableOpacity onPress={() => removeMeal(globalIndex)}>
-                  <Ionicons name="trash" size={22} color="#d00" />
-                </TouchableOpacity>
-              </View>
-            );
-          })}
-        </View>
-      ))}
+        {/* Mini Time Picker */}
+        {timePickerIndex !== null && (
+          <DateTimePicker
+            mode="time"
+            value={new Date()}
+            onChange={onTimeChange}
+            display="spinner"
+          />
+        )}
 
-      {/* Mini Time Picker */}
-      {timePickerIndex !== null && (
-        <DateTimePicker
-          mode="time"
-          value={new Date()}
-          onChange={onTimeChange}
-          display="spinner"
-        />
-      )}
-
-      {/* Save Button */}
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveText}>Save Day</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Save Button */}
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveText}>Save Day</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+    
   );
 };
 

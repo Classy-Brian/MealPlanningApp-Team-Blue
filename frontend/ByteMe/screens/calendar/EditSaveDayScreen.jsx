@@ -6,6 +6,7 @@ import axios from 'axios';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import EditIcon from '@/assets/images/edit.png';
 import Back_butt from "@/assets/images/backbutton.png";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const EditSaveDayScreen = () => {
   const route = useRoute();
@@ -99,7 +100,7 @@ const EditSaveDayScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Image source={Back_butt} style={styles.backIcon} />
@@ -157,7 +158,7 @@ const EditSaveDayScreen = () => {
       <TouchableOpacity style={styles.saveButton} onPress={handleSaveDay}>
         <Text style={styles.saveButtonText}>Save Day</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 

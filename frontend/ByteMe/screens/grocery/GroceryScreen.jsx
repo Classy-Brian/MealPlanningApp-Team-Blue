@@ -27,6 +27,7 @@ import maglass from "@/assets/images/magnifyingglass.png";
 import chright from "@/assets/images/chevron_right.png";
 import getUserIdFromToken from "@/components/getUserIdFromToken";
 import { filterModal } from "@/components/Filter";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const GroceryScreen = () => {
   const navigation = useNavigation();
@@ -183,7 +184,7 @@ const GroceryScreen = () => {
   );
 
   return (
-    <View style={styles.whiteBackground}>
+    <SafeAreaView style={styles.whiteBackground}>
       {/* Header & Search */}
       <View style={styles.screenContainer}>
         <Text style={styles.title}>Grocery</Text>
@@ -369,7 +370,7 @@ const GroceryScreen = () => {
           </Pressable>
         </Pressable>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
