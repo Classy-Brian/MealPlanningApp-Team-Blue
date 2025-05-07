@@ -40,7 +40,7 @@ const HomeRecipeDetailsScreen = () => {
   const tabs = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{flex: 1}}>
         <ScrollView style={styles.container}>
         {/* 🔙 Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
