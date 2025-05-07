@@ -133,6 +133,7 @@ export default function ChatBot() {
         if (assignedUri && !usedUris.has(assignedUri)) {
           try {
             await delay(250); // ⏳ Add 250ms delay between each recipe fetch
+            recipe.mealType = [meal]; 
             const recipe = await fetchRecipeDetails(assignedUri);
             dayData[meal.toLowerCase()] = recipe;
             usedUris.add(assignedUri); 
