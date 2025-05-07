@@ -7,6 +7,23 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import EditIcon from '@/assets/images/edit.png';
 import Back_butt from "@/assets/images/backbutton.png";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import { styles } from '@/components/Sheet';
+
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Back</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const EditSaveDayScreen = () => {
   const route = useRoute();
@@ -100,21 +117,22 @@ const EditSaveDayScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={det.container}>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Image source={Back_butt} style={styles.backIcon} />
-        <Text style={styles.backText}>Calendar</Text>
-      </TouchableOpacity>
+      <BackButton />
+      {/* <TouchableOpacity style={det.backButton} onPress={() => navigation.goBack()}>
+        <Image source={Back_butt} style={det.backIcon} />
+        <Text style={det.backText}>Calendar</Text>
+      </TouchableOpacity> */}
 
-      <Text style={styles.title}>
+      <Text style={det.title}>
         Meal Plan for {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
       </Text>
 
-      <View style={styles.headerRow}>
-        <Text style={[styles.time, styles.headerText]}>Time</Text>
-        <Text style={[styles.recipeHeader, styles.headerText]}>Recipes</Text>
-        <Text style={styles.editHeader}></Text>
+      <View style={det.headerRow}>
+        <Text style={[det.time, det.headerText]}>Time</Text>
+        <Text style={[det.recipeHeader, det.headerText]}>Recipes</Text>
+        <Text style={det.editHeader}></Text>
       </View>
 
       <FlatList
@@ -124,10 +142,10 @@ const EditSaveDayScreen = () => {
           const meal = hourlyMeals[hour];
 
           return (
-            <View style={styles.row}>
-              <Text style={styles.time}>{hour}</Text>
+            <View style={det.row}>
+              <Text style={det.time}>{hour}</Text>
 
-              <View style={styles.recipeBox}>
+              <View style={det.recipeBox}>
                 {editingHour === hour ? (
                   <DropDownPicker
                     items={recipes}
@@ -136,33 +154,33 @@ const EditSaveDayScreen = () => {
                     value={meal?.recipeId ?? null}
                     setValue={(val) => updateRecipeForHour(hour, val())}
                     placeholder="Select recipe"
-                    style={styles.dropdown}
-                    dropDownContainerStyle={styles.dropDownContainer}
+                    style={det.dropdown}
+                    dropDownContainerStyle={det.dropDownContainer}
                     listMode="SCROLLVIEW"
                   />
                 ) : meal ? (
-                  <View style={styles.recipeBubble}>
-                    <Text style={styles.recipeText}>{meal.recipeLabel || meal.recipeId}</Text>
+                  <View style={det.recipeBubble}>
+                    <Text style={det.recipeText}>{meal.recipeLabel || meal.recipeId}</Text>
                   </View>
                 ) : null}
               </View>
 
-              <TouchableOpacity onPress={() => setEditingHour(hour)} style={styles.iconWrapper}>
-                <Image source={EditIcon} style={styles.editIcon} />
+              <TouchableOpacity onPress={() => setEditingHour(hour)} style={det.iconWrapper}>
+                <Image source={EditIcon} style={det.editIcon} />
               </TouchableOpacity>
             </View>
           );
         }}
       />
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSaveDay}>
-        <Text style={styles.saveButtonText}>Save Day</Text>
+      <TouchableOpacity style={det.saveButton} onPress={handleSaveDay}>
+        <Text style={det.saveButtonText}>Save Day</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   backButton: {
     flexDirection: "row",

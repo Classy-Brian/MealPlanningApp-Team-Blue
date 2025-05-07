@@ -783,185 +783,152 @@ const localStyles = StyleSheet.create({
     placeholderText: { textAlign: 'center', marginVertical: 40, color: textcolors.grey, fontSize: 16, paddingHorizontal: 20, }
 });
 
-const styles_home = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    welcomeContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        alignItems: 'flex-start',
-        minHeight: 50,
-    },
-    welcomeMessage: {
-        fontSize: 35,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-        color: textcolors.black,
-    },
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-        color: textcolors.black,
-        paddingHorizontal: 20,
-        marginTop: 10,
-        marginBottom: 10,
-    },
-    horizontalRecipeList: {
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-    },
-    recipeCard: {
-        width: 250,
-        height: 160,
-        borderRadius: 10,
-        overflow: 'hidden',
-        marginRight: 15,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        backgroundColor: colors.lightgrey,
-    },
-    cardImage: {
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-    cardImageStyle: {
-        borderRadius: 10,
-    },
-    cardTextOverlay: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-    },
-    cardTitle: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-    },
-    discoverButton: {
-        backgroundColor: colors.othergrey,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        alignSelf: 'center',
-        marginTop: 10,
-        marginBottom: 20,
-        marginLeft: 250
-    },
-    discoverButtonText: {
-        color: textcolors.black,
-        fontSize: 16,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-    },
-    mealPlanContainer: {
-        marginTop: 10,
-        marginBottom: 30,
-        paddingHorizontal: 15,
-        backgroundColor: colors.lightgrey,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 5,
-    },
-    mealTypeHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    mealTypeText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-        color: textcolors.black,
-        marginRight: 8,
-    },
-    mealTypeIcon: {
-        fontSize: 18,
-    },
-    mealItemCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.white,
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 15,
-        borderWidth: 1,
-        borderColor: colors.othergrey,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.15,
-        shadowRadius: 2,
-    },
-    mealTime: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-        color: textcolors.darkgrey,
-        width: 70,
-        marginRight: 15,
-    },
-    mealDetails: {
-        flex: 1,
-    },
-    mealRecipeName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-        color: textcolors.black,
-        marginBottom: 3,
-    },
-    mealCalories: {
-        fontSize: 13,
-        color: textcolors.darkgrey,
-        fontFamily: fonts.regular,
-    },
-    totalCaloriesContainer: {
-        borderTopWidth: 1,
-        borderTopColor: colors.othergrey,
-        marginTop: 10,
-        paddingTop: 10,
-        alignItems: 'flex-end',
-     },
-    totalCaloriesText: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        fontFamily: fonts.bold,
-        color: textcolors.darkgrey,
-     },
-});
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  welcomeContainer: { paddingHorizontal: 20, paddingVertical: 15 },
-  welcomeMessage: { fontSize: 30, fontWeight: 'bold', color: textcolors.black },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', marginHorizontal: 20, marginTop: 10, marginBottom: 10 },
-  horizontalRecipeList: { paddingHorizontal: 15, paddingVertical: 10 },
-  recipeCard: { width: 250, height: 160, borderRadius: 10, overflow: 'hidden', marginRight: 15 },
-  cardImage: { flex: 1, justifyContent: 'flex-end' },
-  cardImageStyle: { borderRadius: 10 },
-  cardTextOverlay: { backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 10, paddingVertical: 5 },
-  cardTitle: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
-  discoverButton: { backgroundColor: colors.othergrey, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20, alignSelf: 'center', marginTop: 10, marginBottom: 20 },
-  discoverButtonText: { color: textcolors.black, fontSize: 16, fontWeight: 'bold' },
-  mealPlanContainer: { backgroundColor: colors.lightgrey, marginBottom: 20, borderRadius: 8, padding: 10, marginHorizontal: 10 },
-  dayTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F508F' },
-  noMealText: { textAlign: 'center', marginVertical: 10, color: textcolors.darkgrey },
-  mealItemCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 10, padding: 15, marginTop: 8, borderWidth: 1, borderColor: colors.othergrey },
-  checkCircle: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#1F508F', justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  mealTime: { fontSize: 14, fontWeight: 'bold', width: 70, marginRight: 10, color: textcolors.darkgrey },
-  mealDetails: { flex: 1 },
-  mealRecipeName: { fontSize: 16, fontWeight: 'bold', color: textcolors.black },
-  mealCalories: { fontSize: 13, color: textcolors.darkgrey },
-  totalCaloriesContainer: { borderTopWidth: 1, borderTopColor: colors.othergrey, marginTop: 10, paddingTop: 10, alignItems: 'flex-end' },
-  totalCaloriesText: { fontSize: 14, fontWeight: 'bold', fontFamily: fonts.bold, color: textcolors.darkgrey },
-  viewWeekButton: { backgroundColor: '#1F508F', borderRadius: 20, padding: 10, marginHorizontal: 20, marginBottom: 20, alignItems: 'center' },
-  viewWeekButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff' 
+  },
+  welcomeContainer: { 
+    paddingHorizontal: 20, 
+    paddingVertical: 15 
+  },
+  welcomeMessage: { 
+    fontSize: 30, 
+    fontFamily: fonts.bold, 
+    color: textcolors.black 
+  },
+  sectionTitle: { 
+    fontSize: 24, 
+    fontFamily: fonts.semiBold, 
+    marginHorizontal: 20, 
+    marginTop: 10, 
+    marginBottom: 10 
+  },
+  horizontalRecipeList: { 
+    paddingHorizontal: 15, 
+    paddingVertical: 10 
+  },
+  recipeCard: { 
+    width: 250, 
+    height: 160, 
+    borderRadius: 10, 
+    overflow: 'hidden', 
+    marginRight: 15 
+  },
+  cardImage: { 
+    flex: 1, 
+    justifyContent: 'flex-end' 
+  },
+  cardImageStyle: { 
+    borderRadius: 10 
+  },
+  cardTextOverlay: { 
+    backgroundColor: 'rgba(0,0,0,0.5)', 
+    paddingHorizontal: 10, 
+    paddingVertical: 5 
+  },
+  cardTitle: { 
+    color: '#fff', 
+    fontSize: 18, 
+    fontFamily: fonts.medium 
+  },
+  discoverButton: { 
+    backgroundColor: colors.othergrey, 
+    paddingVertical: 10, 
+    paddingHorizontal: 20, 
+    borderRadius: 20, 
+    alignSelf: 'center', 
+    marginTop: 10, 
+    marginBottom: 20 
+  },
+  discoverButtonText: { 
+    color: textcolors.black, 
+    fontSize: 16,
+    fontWeight: 'bold'
+   },
+  mealPlanContainer: { 
+    backgroundColor: colors.lightgrey, 
+    marginBottom: 20, 
+    borderRadius: 8, 
+    padding: 10, 
+    marginHorizontal: 10 
+  },
+  dayTitle: { 
+    fontSize: 20, 
+    fontFamily: fonts.bold, 
+    color: '#1F508F' 
+  },
+  noMealText: { 
+    textAlign: 'center', 
+    marginVertical: 10, 
+    color: textcolors.darkgrey ,
+    fontSize: 16,
+    fontFamily: fonts.regular
+  },
+  mealItemCard: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: colors.white, 
+    borderRadius: 10, 
+    padding: 15, 
+    marginTop: 8, 
+    borderWidth: 1, 
+    borderColor: colors.othergrey 
+  },
+  checkCircle: { 
+    width: 22, 
+    height: 22, 
+    borderRadius: 11, 
+    borderWidth: 2, 
+    borderColor: '#1F508F', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginRight: 10 
+  },
+  mealTime: { 
+    fontSize: 16, 
+    fontFamily: fonts.semiBold, 
+    width: 70, 
+    marginRight: 10, 
+    color: textcolors.darkgrey 
+  },
+  mealDetails: { 
+    flex: 1 
+  },
+  mealRecipeName: { 
+    fontSize: 18, 
+    fontFamily: fonts.bold, 
+    color: textcolors.black 
+  },
+  mealCalories: { 
+    fontSize: 13, 
+    color: textcolors.darkgrey 
+  },
+  totalCaloriesContainer: { 
+    borderTopWidth: 1, 
+    borderTopColor: colors.othergrey, 
+    marginTop: 10, 
+    paddingTop: 10, 
+    alignItems: 'flex-end' 
+  },
+  totalCaloriesText: { 
+    fontSize: 16, 
+    fontFamily: fonts.bold, 
+    color: textcolors.darkgrey 
+  },
+  viewWeekButton: { 
+    backgroundColor: '#1F508F', 
+    borderRadius: 20, 
+    padding: 10, 
+    marginHorizontal: 20, 
+    marginBottom: 20, 
+    alignItems: 'center' 
+  },
+  viewWeekButtonText: { 
+    color: '#fff', 
+    fontWeight: fonts.bold, 
+    fontSize: 20 
+  },
 });
 
 export default HomeScreen;

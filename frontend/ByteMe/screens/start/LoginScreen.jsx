@@ -71,7 +71,9 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView 
+    style={{flex: 1}} 
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <SafeAreaView style={styles.whiteBackground}>
         <View style={[styles.screenContainer, {marginTop: 20}]}>          
           <View >
@@ -92,7 +94,7 @@ const Login = ({ navigation }) => {
                 placeholder='Enter your email'
                 onChangeText={setEmail}
                 placeholderTextColor={textcolors.lightgrey}
-                style={isFocused} 
+                style={[isFocused, styles.regularText]} 
                 onFocus={() => setFocused(styles.focusedinput)}
                 onBlur={() => setFocused(styles.inputContainer)}
                 />
@@ -107,7 +109,7 @@ const Login = ({ navigation }) => {
                 secureTextEntry
                 onChangeText={setPass}
                 placeholderTextColor={textcolors.lightgrey}
-                style={isFocused1}
+                style={[isFocused1, styles.regularText]}
                 onFocus={() => setFocused1(styles.focusedinput)}
                 onBlur={() => setFocused1(styles.inputContainer)}
                 />          
@@ -134,7 +136,7 @@ const Login = ({ navigation }) => {
           </View>   
         </View>
 
-        <View style={[logo.bluebar, {width: window.width}]}/>
+        {/* <View style={[logo.bluebar, {width: window.width}]}/> */}
       </SafeAreaView> 
     </KeyboardAvoidingView>
     

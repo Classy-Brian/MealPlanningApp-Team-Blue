@@ -142,11 +142,11 @@ const styles_forgot = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
+    fontFamily: fonts.regular,
     marginLeft: 5,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
     fontFamily: fonts.bold,
     color: textcolors.black,
     marginBottom: 15,
@@ -184,7 +184,6 @@ const styles_forgot = StyleSheet.create({
   buttonText: {
     color: textcolors.white,
     fontSize: 18,
-    fontWeight: 'bold',
     fontFamily: fonts.bold,
   },
   greybutton: {

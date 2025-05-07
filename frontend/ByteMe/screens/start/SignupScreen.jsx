@@ -141,7 +141,11 @@ const SignUp = () => {
 
   return (
     <SafeAreaView style={{flex: 1}}>
-      <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <View style={{flex: 1, position: 'relative'}}>
+      <KeyboardAvoidingView 
+        style={{flex: 1}} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
         <View style={styles.whiteBackground}>
         <View style={[styles.screenContainer, {marginTop: 20}]}>
           <View >
@@ -163,7 +167,7 @@ const SignUp = () => {
                   placeholderTextColor={textcolors.lightgrey}
                   onChangeText={setUserName}
                   value={name}
-                  style={isFocused}
+                  style={[isFocused, styles.regularText]}
                   onFocus={() => setFocused(styles.focusedinput)}
                   onBlur={() => setFocused(styles.inputContainer)}
                 />
@@ -179,7 +183,7 @@ const SignUp = () => {
                 placeholderTextColor={textcolors.lightgrey}
                 onChangeText={setEmail}
                 value={email}
-                style={isFocused2} 
+                style={[isFocused2, styles.regularText]} 
                 onFocus={() => setFocused2(styles.focusedinput)}
                 onBlur={() => setFocused2(styles.inputContainer)}
                 />
@@ -195,7 +199,7 @@ const SignUp = () => {
                 placeholderTextColor={textcolors.lightgrey}
                 onChangeText={setPass}
                 value={password}
-                style={isFocused3}
+                style={[isFocused3, styles.regularText]}
                 onFocus={() => setFocused3(styles.focusedinput)}
                 onBlur={() => setFocused3(styles.inputContainer)}
                 />
@@ -211,7 +215,7 @@ const SignUp = () => {
                 placeholderTextColor={textcolors.lightgrey}
                 onChangeText={setConfPass}
                 value={confpassword}
-                style={isFocused4}
+                style={[isFocused4, styles.regularText]}
                 onFocus={() => setFocused4(styles.focusedinput)}
                 onBlur={() => setFocused4(styles.inputContainer)}
                 />
@@ -235,9 +239,12 @@ const SignUp = () => {
         
         
       </View>
+      
       </KeyboardAvoidingView>
+      {/* <View style={[logo.bluebar]}/> */}
+      </View>
         
-      <View style={[logo.bluebar, {width: window.width}]}/>
+      
     </SafeAreaView>
     
   )
@@ -270,6 +277,9 @@ const logo = StyleSheet.create({
     backgroundColor: colors.header,
     position: 'absolute',
     bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   circle: {
     borderRadius: 250,
