@@ -1,247 +1,215 @@
 import React, { useState, useEffect } from "react";
-import { Image, StyleSheet, Text, View, Button, ScrollView, TouchableOpacity, Dimensions, Alert, SafeAreaView } from 'react-native'
+import { Image, StyleSheet, Text, View, TouchableOpacity, Alert, SafeAreaView, TextInput } from 'react-native';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { colors } from '../../components/Colors'
-import { textcolors} from '../../components/TextColors'
-import { fonts } from '../../components/Fonts'
-import { styles } from '@/components/Sheet'
-import { RadioButton } from 'react-native-paper'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-
-const feeds1Icon = require('../../assets/images/feeds1_icon.png')
-const feeds2Icon = require('../../assets/images/feeds2_icon.png')
-const feeds4Icon = require('../../assets/images/feeds4_icon.png')
-import backarrow from "@/assets/images/back_arrow_navigate.png"
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors } from '../../components/Colors';
+import { textcolors } from '../../components/TextColors';
+import { fonts } from '../../components/Fonts';
+import { styles } from '@/components/Sheet';
+import { RadioButton } from 'react-native-paper';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useNavigation } from "@react-navigation/native";
 
+const backarrow = require('@/assets/images/back_arrow_navigate.png');
+
 function BackButton() {
-    const navigation = useNavigation();
-    return (
-        <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-                <View style={[styles.greybutton, ]}>
-                    <Image style={{marginRight:10}} source={backarrow}/>
-                    <Text style={styles.regularText}>Preference Settings</Text>
-                </View>
-            </TouchableOpacity>
+  const navigation = useNavigation();
+  return (
+    <View style={{ flexDirection: 'row' }}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <View style={styles.greybutton}>
+          <Image style={{ marginRight: 10 }} source={backarrow} />
+          <Text style={styles.regularText}>Preference Settings</Text>
         </View>
-    )
+      </TouchableOpacity>
+    </View>
+  );
 }
 
-const PORTION_OPTIONS = [
-    { value: 1, label: 'Feeds 1', description: 'Individual', icon: feeds1Icon },
-    { value: 2, label: 'Feeds 2', description: 'Couple', icon: feeds2Icon },
-    { value: 4, label: 'Feeds 4', description: 'Family', icon: feeds4Icon },
-]
-
 const PortionSettingsScreen = () => {
-    const [portion, setSelectedPortion] = useState(null);
-    const params = useLocalSearchParams();
-    const { from } = params;
-    // const router = useRouter();
-    const [token, setToken] = useState(null);
-    const [axiosInstance, setAxiosInstance] = useState(null);
+  const [portion, setPortion] = useState(1);
+  const [isCustom, setIsCustom] = useState(false);
+  const [customPortion, setCustomPortion] = useState('');
+  const [token, setToken] = useState(null);
+  const [axiosInstance, setAxiosInstance] = useState(null);
 
-    useEffect(() => {
-        const getToken = async () => {
-            try {
-                const storedToken = await AsyncStorage.getItem('authToken')
-                if (storedToken) {
-                    setToken(storedToken);
-                    setAxiosInstance(() => axios.create({
-                        baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
-                        headers: {
-                            Authorization: `Bearer ${storedToken}`,
-                        },
-                    }));
-                } else {
-                    Alert.alert("Error", "Not logged in. Please log in first");
-                }
-            } catch (error) {
-                console.error("Error getting tocken:", error);
-                Alert.alert("Error", "Failed to load authentication token.");
-            }
-        };
-        getToken();
-    }, []);
-
-    const fetchUserData = async () => {
-        if (!axiosInstance) return;
-
-        try {
-            console.log("Fetching user data for portion size");
-            const response = await axiosInstance.get(`/api/users/profile/${token}`)
-            const userPortion = response.data.portion;
-            const portionValue = parseInt(userPortion, 10);
-            setSelectedPortion(isNaN(portionValue) ? 1: portionValue)
-        } catch (error) {
-            console.error("Error, fetching user data:", error);
-            if (err.response && err.response.status === 404) {
-                Alert.alert("Error", "User profile not found.");
-            } else if (err.response && err.response.status === 401) {
-                Alert.alert("Error", "Unauthorized. Please log in again.");
-            } else {
-                Alert.alert("Error", "Could not load portion data.");
-            }
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('authToken');
+        if (storedToken) {
+          setToken(storedToken);
+          setAxiosInstance(() =>
+            axios.create({
+              baseURL: process.env.EXPO_PUBLIC_BACKEND_URL,
+              headers: { Authorization: `Bearer ${storedToken}` },
+            })
+          );
+        } else {
+          Alert.alert("Error", "Not logged in. Please log in first.");
         }
+      } catch (error) {
+        console.error("Error getting token:", error);
+        Alert.alert("Error", "Failed to load authentication token.");
+      }
     };
+    getToken();
+  }, []);
 
-    useEffect(() => {
-        if (axiosInstance){
-            fetchUserData();
-        }
-    }, [axiosInstance]);
+  const fetchUserData = async () => {
+    if (!axiosInstance) return;
+    try {
+      const response = await axiosInstance.get(`/api/users/profile/${token}`);
+      const userPortion = parseInt(response.data.portion, 10);
+      if (userPortion > 5) {
+        setIsCustom(true);
+        setCustomPortion(userPortion.toString());
+      } else {
+        setPortion(isNaN(userPortion) ? 1 : userPortion);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      Alert.alert("Error", "Could not load user portion data.");
+    }
+  };
 
-    const handleSelection = (value) => {
-        setSelectedPortion(value);
-    };
+  useEffect(() => {
+    if (axiosInstance) fetchUserData();
+  }, [axiosInstance]);
 
-    const savePortionSize = async () => {
-        if (portion === null) {
-            Alert.alert("Selection Needed", "Please select a portion size to save.");
-            return;
-        }
-        if (!axiosInstance) {
-            Alert.alert("Error", "Session invalid. Please log in again.");
-            return;
-        }
+  const handleSelection = (value) => {
+    if (value === 'custom') {
+      setIsCustom(true);
+      setPortion(null);
+    } else {
+      setIsCustom(false);
+      setPortion(parseInt(value, 10));
+    }
+  };
 
-        try { 
-            console.log("Saving portion size:", portion)
-
-            await axiosInstance.patch(`/api/users/preferences`, {
-                portion: portion
-            });
-
-            Alert.alert("Success", "Portion size updated successfully!");
-
-        } catch (error) {
-            console.error("Error updating portion size:", error);
-            Alert.alert("Error", "Could not update portion size. Please try again.");
-        }
+  const savePortionSize = async () => {
+    if (!axiosInstance) {
+      Alert.alert("Error", "Session invalid. Please log in again.");
+      return;
     }
 
-    return (
-        <SafeAreaView style={styles_portion.safeArea}>
-            <View style={styles_portion.container}>
+    const finalPortion = isCustom ? parseInt(customPortion, 10) : portion;
 
-                {/* Header */}
-                <BackButton />
+    if (!finalPortion || finalPortion <= 0) {
+      Alert.alert("Error", "Please enter a valid portion size.");
+      return;
+    }
 
-                <Text style={[styles.title, {marginTop: 10}]}>Portion Size</Text>
-                <Text style={styles_portion.normalText}>Select your preferred portion size.</Text>
+    try {
+      await axiosInstance.patch(`/api/users/preferences`, { portion: finalPortion });
+      Alert.alert("Success", "Portion size updated successfully!");
+    } catch (error) {
+      console.error("Error updating portion size:", error);
+      Alert.alert("Error", "Could not update portion size. Please try again.");
+    }
+  };
 
-                {/* Radio Button Options */}
-                <View style={styles_portion.optionsContainer}>
-                    <RadioButton.Group onValueChange={newValue => handleSelection(parseInt(newValue, 10))} value={portion?.toString()}>
-                        {PORTION_OPTIONS.map((option) => (
-                            <TouchableOpacity key={option.value} onPress={() => handleSelection(option.value)} style={styles_portion.optionRow}>
-                                <RadioButton.Android
-                                    value={option.value.toString()}
-                                    status={portion === option.value ? 'checked' : 'unchecked'}
-                                    color={colors.header}
-                                />
-                                <Text style={styles_portion.optionLabel}>{option.label}</Text>
-                                <Image source={option.icon} style={styles_portion.optionIcon} />
-                            </TouchableOpacity>
-                        ))}
-                    </RadioButton.Group>
-                </View>
+  return (
+    <SafeAreaView style={styles_portion.safeArea}>
+      <View style={styles_portion.container}>
+        <BackButton />
 
-                <TouchableOpacity
-                    style={styles_portion.saveButton}
-                    onPress={savePortionSize}
-                >
-                    <Text style={styles_portion.saveButtonText}>Save</Text>
-                </TouchableOpacity>
+        <Text style={[styles.title, { marginTop: 10 }]}>Portion Size</Text>
+        <Text style={styles_portion.normalText}>Select how many people you're feeding.</Text>
 
+        <View style={styles_portion.optionsContainer}>
+          <RadioButton.Group onValueChange={handleSelection} value={isCustom ? 'custom' : portion?.toString()}>
+            {[1, 2, 3, 4, 5].map(num => (
+              <TouchableOpacity key={num} onPress={() => handleSelection(num.toString())} style={styles_portion.optionRow}>
+                <RadioButton.Android
+                  value={num.toString()}
+                  status={portion === num && !isCustom ? 'checked' : 'unchecked'}
+                  color={colors.header}
+                />
+                <Text style={styles_portion.optionLabel}>{num} {num === 1 ? 'person' : 'people'}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity onPress={() => handleSelection('custom')} style={styles_portion.optionRow}>
+              <RadioButton.Android
+                value="custom"
+                status={isCustom ? 'checked' : 'unchecked'}
+                color={colors.header}
+              />
+              <Text style={styles_portion.optionLabel}>5+ (custom)</Text>
+            </TouchableOpacity>
+          </RadioButton.Group>
+
+          {isCustom && (
+            <View style={styles_portion.customInputContainer}>
+              <TextInput
+                value={customPortion}
+                onChangeText={setCustomPortion}
+                placeholder="Enter number of people"
+                keyboardType="numeric"
+                style={styles_portion.customInput}
+              />
             </View>
-        </SafeAreaView>
-    );
+          )}
+        </View>
+
+        <TouchableOpacity style={styles_portion.saveButton} onPress={savePortionSize}>
+          <Text style={styles_portion.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
 };
 
 const styles_portion = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    container: {
-        flex: 1,
-        padding: 20,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        position: 'relative',   
-        height: 40, 
-        marginBottom: 20, 
-    },
-    settingsButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        position: 'absolute', 
-        left: 0,
-        top: 0,
-        borderRadius: 15,
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-        backgroundColor: colors.othergrey,
-        justifyContent: 'center',
-        marginVertical: 20,
-        elevation: 2,
-        shadowColor: colors.black,
-    },
-    settingsText: {
-        fontSize: 20,
-        marginLeft: 5,
-    },
-    normalText: {
-        fontSize: 16,
-        marginBottom: 20,
-    },
-    optionsContainer: {
-        marginTop: 20,
-    },
-    optionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.lightgrey,
-        borderRadius: 10,
-        paddingVertical: 12,
-        paddingHorizontal: 15,
-        marginBottom: 15,
-    },
-    optionLabel: {
-        fontSize: 18,
-        marginLeft: 10,
-        flex: 1,
-        color: textcolors.black,
-        fontFamily: fonts.regular,
-    },
-    optionIcon: {
-        width: 40,
-        height: 40,
-        marginLeft: 10,
-        resizeMode: 'contain',
-    },
-    saveButton: {
-        backgroundColor: colors.header, 
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        borderRadius: 25, 
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 20, 
-        alignSelf: 'center', 
-        minWidth: 150, 
-    },
-    saveButtonText: {
-        color: textcolors.white,
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
+  safeArea: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, padding: 20 },
+  normalText: { fontSize: 16, marginBottom: 20 },
+  optionsContainer: { marginTop: 20 },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.lightgrey,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+  },
+  optionLabel: {
+    fontSize: 18,
+    marginLeft: 10,
+    flex: 1,
+    color: textcolors.black,
+    fontFamily: fonts.regular,
+  },
+  customInputContainer: {
+    marginTop: 10,
+    backgroundColor: colors.lightgrey,
+    borderRadius: 10,
+    padding: 10,
+  },
+  customInput: {
+    height: 50,
+    fontSize: 18,
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    borderRadius: 10,
+  },
+  saveButton: {
+    backgroundColor: colors.header,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    alignSelf: 'center',
+    minWidth: 150,
+  },
+  saveButtonText: {
+    color: textcolors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });
 
 export default PortionSettingsScreen;
