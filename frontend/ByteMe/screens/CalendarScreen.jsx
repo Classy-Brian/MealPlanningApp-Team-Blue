@@ -10,6 +10,7 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import EditIcon from '@/assets/images/edit.png';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { styles } from '@/components/Sheet';
 
 const CalendarScreen = () => {
   const navigation = useNavigation();
@@ -126,8 +127,9 @@ const CalendarScreen = () => {
     : savedDays;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Calendar</Text>
+    <SafeAreaView style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <Text style={styles.title}>Calendar</Text>
 
       <Calendar
         onDayPress={(day) => {
@@ -157,7 +159,7 @@ const CalendarScreen = () => {
         }}
       />
 
-      <ScrollView style={styles.cardsContainer}>
+      <ScrollView style={det.cardsContainer}>
        {displayedDays.map((day, index) => {
          try {
              const [year, month, dayOfMonth] = day.date.split('-');
@@ -173,9 +175,9 @@ const CalendarScreen = () => {
              const yyyyMMdd = day.date;
 
              const mealList = day.meals.map((m, i) => (
-               <View key={`${day.date}-meal-${i}`} style={[styles.mealRow, i < day.meals.length - 1 && styles.mealRowBorder]}>
-                 <View style={styles.mealBox}>
-                   <Text style={styles.mealText}>{m.recipeLabel || m.recipeId || 'Unknown Meal'}</Text>
+               <View key={`${day.date}-meal-${i}`} style={[det.mealRow, i < day.meals.length - 1 && det.mealRowBorder]}>
+                 <View style={det.mealBox}>
+                   <Text style={det.mealText}>{m.recipeLabel || m.recipeId || 'Unknown Meal'}</Text>
                  </View>
                </View>
              ));
@@ -184,10 +186,10 @@ const CalendarScreen = () => {
 
              return (
                <React.Fragment key={yyyyMMdd}>
-                 <View style={styles.card}>
+                 <View style={det.card}>
                    {/* Edit Button - Pass 'YYYY-MM-DD' */}
                    <TouchableOpacity
-                     style={styles.editIconWrapper}
+                     style={det.editIconWrapper}
                      onPress={() =>
                        navigation.navigate('addday', {
                          editing: true,
@@ -196,23 +198,23 @@ const CalendarScreen = () => {
                        })
                      }
                    >
-                     <Image source={EditIcon} style={styles.editIcon} />
+                     <Image source={EditIcon} style={det.editIcon} />
                    </TouchableOpacity>
 
                    {/* Card Row */}
-                   <View style={styles.cardRow}>
-                     <View style={styles.dateBox}>
+                   <View style={det.cardRow}>
+                     <View style={det.dateBox}>
                        {/* Display formatted local date */}
-                       <Text style={styles.dateDay}>{dayOfWeek}</Text>
-                       <Text style={styles.dateNumber}>{monthDay}</Text>
+                       <Text style={det.dateDay}>{dayOfWeek}</Text>
+                       <Text style={det.dateNumber}>{monthDay}</Text>
                      </View>
-                     <View style={styles.verticalDivider} />
+                     <View style={det.verticalDivider} />
                      {/* Render the list of meals */}
-                     <View style={styles.cardContent}>{mealList}</View>
+                     <View style={det.cardContent}>{mealList}</View>
                    </View>
 
                    {/* Trash Icon - Pass 'YYYY-MM-DD' */}
-                   <View style={styles.trashWrapper}>
+                   <View style={det.trashWrapper}>
                      {/* Ensure deleteDay function expects 'YYYY-MM-DD' */}
                      <TouchableOpacity onPress={() => deleteDay(yyyyMMdd)}>
                        <Ionicons name="trash" size={24} color="#d00" />
@@ -221,8 +223,8 @@ const CalendarScreen = () => {
                  </View>
 
                  {/* Footer Box */}
-                 <View style={styles.footerBox}>
-                   <Text style={styles.footerText}>
+                 <View style={det.footerBox}>
+                   <Text style={det.footerText}>
                      Total Calories: {totalCalories.toLocaleString()}
                    </Text>
                  </View>
@@ -236,6 +238,8 @@ const CalendarScreen = () => {
        })}
       </ScrollView>
 
+      
+      </View>
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('addday')}
@@ -246,7 +250,7 @@ const CalendarScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
   title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: '#000' },
   cardsContainer: { marginTop: 20 },

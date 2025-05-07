@@ -21,6 +21,9 @@ import { textcolors } from '@/components/TextColors';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from '@/components/Sheet';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import maglass from "@/assets/images/magnifyingglass.png"
+import { Divider } from 'react-native-paper';
 
 
 export default function Recipes() {
@@ -118,123 +121,133 @@ export default function Recipes() {
   };
 
   return (
-    <View style={det.container}>
-      <Text style={styles.title}>Saved Recipes</Text>
+    <SafeAreaView style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <Text style={styles.title}>Saved Recipes</Text>
 
-      <View style={det.searchContainer}>
-        <View style={det.inputContainer}>
+        {/* search box */}
+        <View style={[styles.searchInput]}>
+          <Image 
+            style={det.magnifyingGlassIcon} 
+            source={maglass} />          
           <TextInput
-            placeholder='Search through your recipes'
-            placeholderTextColor={textcolors.lightgrey}
-            style={det.inputText}
-            value={query}
+            placeholder='Search for ingredients'
+            placeholderTextColor={textcolors.darkgrey}
             onChangeText={(text) => setQuery(text)}
+            value={query}
+            style={styles.regularText}
           />
         </View>
 
-        <TouchableOpacity style={det.filterButton} onPress={() => setFilterModalVisible(true)}>
-          <MaterialIcons name="filter-list" size={24} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={det.filterButtonText}>Filter</Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={filteredRecipes}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={det.recipeContainer}
-            onPress={() => {
-              navigation.navigate("favorite_recipe", {
-                recipeId: item.uri,
-                title: item.label,
-                imageUri: item.image,
-                ingredients: item.ingredients || [],
-                directions: item.directions || "No directions available.",
-                allergies: item.allergies || [],
-                nutrition: JSON.stringify(item.nutrition),
-              });
-            }}
-          >
-            <View style={det.rectangleView}>
-              <Image source={{ uri: item.image }} style={det.recipeImage} />
-              <Text style={det.recipeTitle}>{item.label}</Text>
-            </View>
+        {/* filter button */}
+        <View style={{marginBottom: 10}}>
+          <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
+            <MaterialIcons name="filter-list" size={24} color={textcolors.darkgrey} style={{ marginRight: 8 }} />
+            <Text style={styles.regularText}>Filter</Text>
           </TouchableOpacity>
-        )}
-        ListEmptyComponent={!loading && <Text style={det.noRecipesText}>No recipes found.</Text>}
-      />
-
-      <Modal visible={filterModalVisible} animationType='slide' transparent={true}>
-        <View style={det.modalBackground}>
-          <View style={det.modalContainer}>
-                  {/* Close Button */}
-                  <TouchableOpacity style={det.closeButton} onPress={() => setFilterModalVisible(false)}>
-                    <Ionicons name="close" size={24} color="#000" />
-                  </TouchableOpacity>
-            <ScrollView>
-              <Text style={det.modalTitle}>Filter Options</Text>
-
-              {[
-                ['Category', 'category', availableFilters.categories],
-                ['Cuisine', 'cuisine', availableFilters.cuisines],
-                ['Diet', 'diet', availableFilters.diets],
-                ['Health', 'health', availableFilters.healthLabels],
-                ['Caution', 'caution', availableFilters.cautions],
-              ].map(([label, key, options]) => (
-                <View key={key} style={{ marginBottom: 10 }}>
-                  <Text style={det.modalLabel}>{label}</Text>
-                  <ScrollView horizontal style={det.filterRow}>
-                    {options.map((val) => (
-                      <TouchableOpacity
-                        key={val}
-                        style={[det.filterOption, filters[key] === val && det.filterOptionSelected]}
-                        onPress={() => toggleFilter(key, val)}
-                      >
-                        <Text style={filters[key] === val ? det.filterOptionTextSelected : det.filterOptionText}>{val}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              ))}
-
-              <Text style={det.modalLabel}>Ingredient</Text>
-              <TextInput
-                style={det.modalInput}
-                placeholder='e.g. chicken'
-                value={filters.ingredient}
-                onChangeText={(text) => setFilters({ ...filters, ingredient: text })}
-              />
-
-              <Text style={det.modalLabel}>Max Calories</Text>
-              <TextInput
-                style={det.modalInput}
-                placeholder='e.g. 500'
-                keyboardType='numeric'
-                value={filters.maxCalories}
-                onChangeText={(text) => setFilters({ ...filters, maxCalories: text })}
-              />
-
-              <View style={det.modalActions}>
-                <TouchableOpacity onPress={resetFilters} style={det.cancelButton}>
-                  <Text style={{ color: 'black' }}>Reset</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={det.applyButton}>
-                  <Text style={{ color: 'white' }}>Apply Filters</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
         </View>
-      </Modal>
+        <Divider />
+        
+        <FlatList
+          data={filteredRecipes}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={{ paddingBottom: 260}}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={det.recipeContainer}
+              onPress={() => {
+                navigation.navigate("favorite_recipe", {
+                  recipeId: item.uri,
+                  title: item.label,
+                  imageUri: item.image,
+                  ingredients: item.ingredients || [],
+                  directions: item.directions || "No directions available.",
+                  allergies: item.allergies || [],
+                  nutrition: JSON.stringify(item.nutrition),
+                });
+              }}
+            >
+              <View style={det.rectangleView}>
+                <Image source={{ uri: item.image }} style={det.recipeImage} />
+                <Text style={det.recipeTitle}>{item.label}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={!loading && <Text style={det.noRecipesText}>No recipes found.</Text>}
+        />
 
-      {loading && <ActivityIndicator size="large" color={colors.primary} />}
-      {error && <Text style={det.error}>{error}</Text>}
+        <Modal visible={filterModalVisible} animationType='slide' transparent={true}>
+          <View style={det.modalBackground}>
+            <View style={det.modalContainer}>
+                    {/* Close Button */}
+                    <TouchableOpacity style={det.closeButton} onPress={() => setFilterModalVisible(false)}>
+                      <Ionicons name="close" size={24} color="#000" />
+                    </TouchableOpacity>
+              <ScrollView>
+                <Text style={det.modalTitle}>Filter Options</Text>
 
+                {[
+                  ['Category', 'category', availableFilters.categories],
+                  ['Cuisine', 'cuisine', availableFilters.cuisines],
+                  ['Diet', 'diet', availableFilters.diets],
+                  ['Health', 'health', availableFilters.healthLabels],
+                  ['Caution', 'caution', availableFilters.cautions],
+                ].map(([label, key, options]) => (
+                  <View key={key} style={{ marginBottom: 10 }}>
+                    <Text style={det.modalLabel}>{label}</Text>
+                    <ScrollView horizontal style={det.filterRow}>
+                      {options.map((val) => (
+                        <TouchableOpacity
+                          key={val}
+                          style={[det.filterOption, filters[key] === val && det.filterOptionSelected]}
+                          onPress={() => toggleFilter(key, val)}
+                        >
+                          <Text style={filters[key] === val ? det.filterOptionTextSelected : det.filterOptionText}>{val}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                ))}
+
+                <Text style={det.modalLabel}>Ingredient</Text>
+                <TextInput
+                  style={det.modalInput}
+                  placeholder='e.g. chicken'
+                  value={filters.ingredient}
+                  onChangeText={(text) => setFilters({ ...filters, ingredient: text })}
+                />
+
+                <Text style={det.modalLabel}>Max Calories</Text>
+                <TextInput
+                  style={det.modalInput}
+                  placeholder='e.g. 500'
+                  keyboardType='numeric'
+                  value={filters.maxCalories}
+                  onChangeText={(text) => setFilters({ ...filters, maxCalories: text })}
+                />
+
+                <View style={det.modalActions}>
+                  <TouchableOpacity onPress={resetFilters} style={det.cancelButton}>
+                    <Text style={{ color: 'black' }}>Reset</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={det.applyButton}>
+                    <Text style={{ color: 'white' }}>Apply Filters</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        {loading && <ActivityIndicator size="large" color={colors.primary} />}
+        {error && <Text style={det.error}>{error}</Text>}
+
+        
+      </View>
       <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('explore_recipe')}>
-        <Ionicons name="add" size={60} color="#d9d9d9" />
-      </TouchableOpacity>
-    </View>
+          <Ionicons name="add" size={60} color="#d9d9d9" />
+        </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
@@ -326,5 +339,10 @@ const det = StyleSheet.create({
     right: 10,
     zIndex: 10,
     padding: 8,
+  },
+  magnifyingGlassIcon: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 15, // Space between the icon and input
   },
 });
