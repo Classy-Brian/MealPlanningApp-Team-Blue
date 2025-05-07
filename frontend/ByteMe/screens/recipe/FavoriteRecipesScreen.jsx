@@ -1,98 +1,103 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import axios from 'axios';
-import Back_butt from '../../assets/images/backbutton.png';  // Adjusted path for back button
-import heartIcon from '../../assets/images/heart.png';  // Add filled heart image
-import emptyHeartIcon from '../../assets/images/empty-heart.png';  // Add empty heart image
-import getUserIdFromToken from '@/components/getUserIdFromToken';
-import { styles } from '@/components/Sheet';
-import backarrow from "@/assets/images/back_arrow_navigate.png"
-import { colors } from '@/components/Colors';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// frontend/ByteMe/screens/recipe/FavoriteRecipesScreen.jsx
 
-// const USER_ID = "67d3a9717c654c6be6f07502"; // Temporary test user ID
-const PORT = process.env.PORT;
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  Modal,
+  Pressable,
+  SafeAreaView,
+} from "react-native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import axios from "axios";
+import getUserIdFromToken from "@/components/getUserIdFromToken";
+import { styles } from "@/components/Sheet";
+import backarrow from "@/assets/images/back_arrow_navigate.png";
+import heartIcon from "@/assets/images/heart.png";
+import emptyHeartIcon from "@/assets/images/empty-heart.png";
+import { colors } from "@/components/Colors";
+import { fonts } from "@/components/Fonts";
+import { Ionicons } from "@expo/vector-icons";
 
-function BackButton() {
-    const navigation = useNavigation();
-    return (
-        <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.navigate('savedrecipes')}>
-                <View style={[det.greybutton, ]}>
-                    <Image style={{marginRight:10}} source={backarrow}/>
-                    <Text style={styles.regularText}>Recipes</Text>
-                </View>
-            </TouchableOpacity>
-        </View>
+// Helper to clean an ingredient line by stripping amounts, parentheses, “for garnish,” etc.
+const cleanIngredient = (line = "") =>
+  line
+    .replace(/\(.*?\)/g, "") // drop parentheses
+    .replace(/,.*$/g, "") // drop after first comma
+    .replace(/^\s*\d+([\/.\d\s]*)?/g, "") // drop leading amounts
+    .replace(
+      /\b(?:cup|cups|tbsp|tablespoon|tablespoons|tsp|teaspoon|teaspoons|oz|ounce|ounces|g|grams|kg|pound|lb|lbs)\b\.?/gi,
+      ""
     )
-}
+    .replace(/for\s+garnish.*$/i, "") // drop “for garnish”
+    .trim();
 
 const RecipeDetailsScreen = () => {
+  const navigation = useNavigation();
   const route = useRoute();
 
   const [userId, setUserId] = useState(null);
-  
   useEffect(() => {
-    const fetchUserId = async () => {
+    (async () => {
       const id = await getUserIdFromToken();
-      if (!id) {
-        console.warn("User ID not found")
-      }
+      if (!id) console.warn("User ID not found");
       setUserId(id);
-    }
-    fetchUserId()
-  }, [])
+    })();
+  }, []);
 
-  // Extract parameters directly from route
   const {
-    recipeId = '',
-    title = '',
+    recipeId = "",
+    title = "",
     directions = "No directions available.",
-    imageUri = '',
-    isSaved = false,  // Check if the recipe is saved
+    imageUri = "",
+    isSaved: initialSaved = false,
+    ingredients: rawIngredients = [],
+    allergies: rawAllergies = [],
+    nutrition: rawNutrition = "{}",
   } = route.params || {};
 
-    const ingredients = typeof route.params['ingredients'] === 'string' 
-    ? route.params['ingredients'].split(',') 
-    : route.params['ingredients'];
-    
-  
-    const allergies = typeof route.params['allergies'] === 'string' 
-    ? route.params['allergies'].split(',') 
-    : route.params['allergies'];
-  
-    const nutrition = JSON.parse(typeof route.params.nutrition === "string" ? route.params.nutrition : JSON.stringify(route.params.nutrition));
-  
-    if (!recipeId || !title || ingredients.length === 0 || !directions) {
-      return (
-        <View style={det.container}>
-          <Text style={det.errorText}>Error: Recipe details not passed correctly!</Text>
-        </View>
-      );
-    }
+  // ensure arrays
+  const ingredients = Array.isArray(rawIngredients)
+    ? rawIngredients
+    : String(rawIngredients).split(",");
+  const allergies = Array.isArray(rawAllergies)
+    ? rawAllergies
+    : String(rawAllergies).split(",");
+  const nutrition = JSON.parse(
+    typeof rawNutrition === "string"
+      ? rawNutrition
+      : JSON.stringify(rawNutrition)
+  );
 
-  const [activeSection, setActiveSection] = useState(0);
-  const [isSavedRecipe, setIsSavedRecipe] = useState(true);  // Initialize with route param
+  // handle missing details
+  if (!recipeId || !title || !ingredients.length) {
+    return (
+      <View style={localStyles.errorContainer}>
+        <Text style={localStyles.errorText}>
+          Error: Recipe details not passed correctly!
+        </Text>
+      </View>
+    );
+  }
 
-  const sections = ['Ingredients', 'Allergies', 'Directions', 'Nutrition'];
+  //  save / unsave button logic
 
-  // Function to Save Recipe to Backend
+  const [isSavedRecipe, setIsSavedRecipe] = useState(initialSaved);
+
   const saveRecipe = async () => {
-    if (!recipeId) return;
-
     try {
-      const response = await axios.post(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/save-recipe`, {
-        userId: userId, // Send only user ID
-        recipeId: recipeId, // Send only recipe ID
-      });
-
-      if (response.status === 200) {
-        setIsSavedRecipe(true); // Update the saved state
+      const res = await axios.post(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/save-recipe`,
+        { userId, recipeId }
+      );
+      if (res.status === 200) {
+        setIsSavedRecipe(true);
         Alert.alert("Success", "Recipe saved successfully!");
-
-      } else {
-        throw new Error("Failed to save recipe.");
       }
     } catch (err) {
       console.error("Error saving recipe:", err);
@@ -100,265 +105,304 @@ const RecipeDetailsScreen = () => {
     }
   };
 
-  const unsaveRecipe = async() => {
-    if (!recipeId) return;
-
+  const unsaveRecipe = async () => {
     try {
-      const response = await axios.delete(process.env.EXPO_PUBLIC_BACKEND_URL + `/api/users/remove/remove-recipe`, {
-        data: {
-        userId: userId, // Send only user ID
-        recipeId: recipeId, // Send only recipe ID
-        }
-      });
-
-
-      if (response.status == 200){
+      const res = await axios.delete(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/remove/remove-recipe`,
+        { data: { userId, recipeId } }
+      );
+      if (res.status === 200) {
         setIsSavedRecipe(false);
-        Alert.alert("success", "Recipe unsave successfully!");
+        Alert.alert("Success", "Recipe unsaved successfully!");
       }
-       else{
-        throw new Error("Faield to unsave recipe.");
-      }
-    } catch (err){
-      console.log("Error remove recipe:", err);
-      Alert.alert("Error", "Could not remove recipe, please try again.");
+    } catch (err) {
+      console.error("Error unsaving recipe:", err);
+      Alert.alert("Error", "Could not unsave recipe. Please try again.");
     }
-  }
+  };
 
-// Function to render heart icon (save/unsave button)
-const renderSaveButton = () => {
-  return (
+  const renderSaveButton = () => (
     <TouchableOpacity
-      style={det.saveButton}
-      onPress={() => {
-        isSavedRecipe ? unsaveRecipe() : saveRecipe();
-      }}  // Toggle between save and unsave
+      style={localStyles.saveButton}
+      onPress={() => (isSavedRecipe ? unsaveRecipe() : saveRecipe())}
     >
       <Image
-        source={isSavedRecipe ? heartIcon : emptyHeartIcon}  // Toggle between filled and empty heart
-        style={det.heartIcon}
+        source={isSavedRecipe ? heartIcon : emptyHeartIcon}
+        style={localStyles.heartIcon}
       />
     </TouchableOpacity>
   );
-};
 
+  // New: “Add to Grocery” modal state & handlers
+
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [checked, setChecked] = useState(() => ingredients.map(() => true));
+
+  const toggleChecked = (i) =>
+    setChecked((prev) => {
+      const c = [...prev];
+      c[i] = !c[i];
+      return c;
+    });
+
+  const handleContinueToGrocery = () => {
+    const selectedLines = ingredients
+      .filter((_, i) => checked[i])
+      .map((line) => cleanIngredient(line))
+      .filter(Boolean);
+    if (!selectedLines.length) {
+      Alert.alert("Nothing selected", "Please select at least one ingredient.");
+      return;
+    }
+    setAddModalOpen(false);
+    // navigate to your grocery search screen with the batch queue
+    navigation.navigate("grocery", {
+      screen: "addgroceryingredient",
+      params: { batch: selectedLines },
+    });
+  };
+
+  // UI: Tabs for Ingredients / Allergies / Directions / Nutrition
+
+  const [activeSection, setActiveSection] = useState(0);
+  const sections = ["Ingredients", "Allergies", "Directions", "Nutrition"];
 
   return (
-    <SafeAreaView style={det.container}>
-      {/* Header with Back Button */}
-      <View style={det.header}>
-        <BackButton />
+    <SafeAreaView style={localStyles.container}>
+      {/* Header */}
+      <View style={localStyles.header}>
+        <TouchableOpacity onPress={() => navigation.navigate("savedrecipes")}>
+          <Image source={backarrow} style={localStyles.backIcon} />
+        </TouchableOpacity>
       </View>
 
-      {/* Recipe Image */}
+      {/* Image */}
       {imageUri ? (
-        <View style={det.recipeWrapper}>
-          <Image source={{ uri: imageUri }} style={det.recipeImage} />
+        <View style={localStyles.recipeWrapper}>
+          <Image source={{ uri: imageUri }} style={localStyles.recipeImage} />
         </View>
       ) : (
-        <Text style={det.errorText}>No image available</Text>
+        <Text style={localStyles.errorText}>No image available</Text>
       )}
 
-      {/* Title */}
-      <Text style={det.title}>{title}</Text>
-
-      {/* Save Button - Only show if not already saved */}
+      {/* Title & Save */}
+      <Text style={localStyles.title}>{title}</Text>
       {renderSaveButton()}
 
-      {/* Compact Section Tabs */}
-      <View style={det.tabContainer}>
-        {sections.map((section, index) => (
+      {/* Tabs */}
+      <View style={localStyles.tabContainer}>
+        {sections.map((sec, i) => (
           <TouchableOpacity
-            key={index}
-            style={[det.tab, activeSection === index && det.activeTab]}
-            onPress={() => setActiveSection(index)}
+            key={i}
+            style={[
+              localStyles.tab,
+              activeSection === i && localStyles.activeTab,
+            ]}
+            onPress={() => setActiveSection(i)}
           >
-            <Text style={[det.tabText, activeSection === index && det.activeTabText]}>
-              {section}
+            <Text
+              style={[
+                localStyles.tabText,
+                activeSection === i && localStyles.activeTabText,
+              ]}
+            >
+              {sec}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Section Content */}
-      <ScrollView contentContainerStyle={det.scrollContent}>
-        <View style={det.sectionContent}>
+      <ScrollView contentContainerStyle={localStyles.scrollContent}>
+        <View style={localStyles.sectionContent}>
           {activeSection === 0 && (
             <>
-              <Text style={det.sectionTitle}>Ingredients:</Text>
-              {ingredients.map((ingredient, index) => (
-                <Text key={index} style={det.sectionText}>- {ingredient}</Text>
+              <Text style={localStyles.sectionTitle}>Ingredients:</Text>
+              {ingredients.map((line, idx) => (
+                <Text key={idx} style={localStyles.sectionText}>
+                  • {line}
+                </Text>
               ))}
+
+              {/* NEW: Add to Grocery List button */}
+              <TouchableOpacity
+                style={[
+                  localStyles.saveButton,
+                  { marginTop: 20, borderColor: colors.primary },
+                ]}
+                onPress={() => {
+                  setChecked(ingredients.map(() => true));
+                  setAddModalOpen(true);
+                }}
+              >
+                <Text style={{ color: colors.primary, fontWeight: "600" }}>
+                  Add to Grocery List
+                </Text>
+              </TouchableOpacity>
             </>
           )}
 
           {activeSection === 1 && (
             <>
-              <Text style={det.sectionTitle}>Allergy Information:</Text>
-              {allergies.length > 0 ? (
-                allergies.map((allergy, index) => (
-                  <Text key={index} style={det.sectionText}>- {allergy}</Text>
+              <Text style={localStyles.sectionTitle}>Allergy Information:</Text>
+              {allergies.length ? (
+                allergies.map((a, i) => (
+                  <Text key={i} style={localStyles.sectionText}>
+                    • {a}
+                  </Text>
                 ))
               ) : (
-                <Text style={det.sectionText}>No allergy information available.</Text>
+                <Text style={localStyles.sectionText}>
+                  No allergy information.
+                </Text>
               )}
             </>
           )}
 
           {activeSection === 2 && (
             <>
-              <Text style={det.sectionTitle}>Directions:</Text>
-              <Text style={det.sectionText}>{directions}</Text>
+              <Text style={localStyles.sectionTitle}>Directions:</Text>
+              <Text style={localStyles.sectionText}>{directions}</Text>
             </>
           )}
 
           {activeSection === 3 && (
             <>
-              <Text style={det.sectionTitle}>Nutrition Facts:</Text>
+              <Text style={localStyles.sectionTitle}>Nutrition Facts:</Text>
               {nutrition ? (
-                <>
-                  {Object.keys(nutrition).map((key) => {
-                    const { label, quantity, unit } = nutrition[key];
-                    return (
-                      <Text key={key} style={det.sectionText}>
-                        {label}: {Math.round(quantity || 0)} {unit}
-                      </Text>
-                    );
-                  })}
-                </>
+                Object.entries(nutrition).map(([key, val]) => (
+                  <Text key={key} style={localStyles.sectionText}>
+                    {val.label}: {Math.round(val.quantity || 0)} {val.unit}
+                  </Text>
+                ))
               ) : (
-                <Text style={det.sectionText}>No nutrition data available.</Text>
+                <Text style={localStyles.sectionText}>No nutrition data.</Text>
               )}
             </>
           )}
         </View>
       </ScrollView>
+
+      {/* Select‑Ingredients Modal */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={addModalOpen}
+        onRequestClose={() => setAddModalOpen(false)}
+      >
+        <Pressable
+          style={localStyles.modalBackdrop}
+          onPress={() => setAddModalOpen(false)}
+        >
+          <Pressable style={localStyles.modalBox}>
+            <Text style={localStyles.modalTitle}>Select Ingredients</Text>
+            <ScrollView>
+              {ingredients.map((line, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={localStyles.checkRow}
+                  onPress={() => toggleChecked(idx)}
+                >
+                  <Ionicons
+                    name={checked[idx] ? "checkbox" : "square-outline"}
+                    size={22}
+                    color={colors.primary}
+                  />
+                  <Text style={localStyles.checkLabel}>
+                    {cleanIngredient(line)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <View style={localStyles.modalActions}>
+              <TouchableOpacity
+                style={[localStyles.modalBtn, localStyles.cancelBtn]}
+                onPress={() => setAddModalOpen(false)}
+              >
+                <Text style={styles.regularText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[localStyles.modalBtn, localStyles.contBtn]}
+                onPress={handleContinueToGrocery}
+              >
+                <Text style={styles.regularText}>Continue</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 };
 
-// det
-const det = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+const localStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#fff" },
+  header: { flexDirection: "row", padding: 16 },
+  backIcon: { width: 24, height: 24 },
+  recipeWrapper: {
+    width: "100%",
+    height: 220,
+    overflow: "hidden",
+    marginBottom: 16,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: '#d7e2f1',
-  },
-  backIcon: {
-    width: 22,
-    height: 22,
-    marginRight: 8,
-  },
-  backText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#000',
-  },
+  recipeImage: { width: "100%", height: "100%", resizeMode: "cover" },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#1f508f',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 8,
+    color: colors.primary,
   },
   saveButton: {
-    backgroundColor: '#fff',
+    alignSelf: "center",
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 8,
-    marginBottom: 10,
-    alignSelf: 'center',
-    borderColor: '#1f508f',
     borderWidth: 1,
+    borderColor: colors.primary,
+    marginBottom: 12,
   },
-  heartIcon: {
-    width: 32,
-    height: 32,
-  },
-  recipeWrapper: {
-    width: '100%',
-    height: 220,
-    borderWidth: 2,
-    borderColor: '#000',
-    borderRadius: 8,
-    overflow: 'hidden',
-    alignSelf: 'center',
-    marginBottom: 15,
-  },
-  recipeImage: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#f0f0f0',
-    resizeMode: 'cover',
-  },
+  heartIcon: { width: 24, height: 24 },
   tabContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginBottom: 5,
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    paddingBottom: 5,
+    borderBottomColor: "#ddd",
   },
-  tab: {
+  tab: { flex: 1, paddingVertical: 8, alignItems: "center" },
+  activeTab: { borderBottomWidth: 2, borderBottomColor: colors.primary },
+  tabText: { color: "#555" },
+  activeTabText: { color: colors.primary, fontWeight: "600" },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 24 },
+  sectionContent: { marginTop: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
+  sectionText: { fontSize: 14, marginVertical: 2 },
+  errorContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  errorText: { fontSize: 16, color: colors.red },
+  // Modal styles
+  modalBackdrop: {
     flex: 1,
-    paddingVertical: 6,
-    alignItems: 'center',
+    backgroundColor: "#0006",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  tabText: {
-    fontSize: 14,
-    color: '#555',
+  modalBox: {
+    width: "90%",
+    maxHeight: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
   },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#1f508f',
+  modalTitle: { fontSize: 20, fontWeight: "600", marginBottom: 12 },
+  checkRow: { flexDirection: "row", alignItems: "center", marginVertical: 6 },
+  checkLabel: { marginLeft: 10, fontSize: 15 },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
   },
-  activeTabText: {
-    fontWeight: 'bold',
-    color: '#1f508f',
-  },
-  sectionContent: {
-    paddingHorizontal: 10,
-    marginTop: 10,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  sectionText: {
-    fontSize: 14,
-    color: '#333',
-    marginVertical: 2,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'flex-start',  // Ensures content starts at the top
-  },
-      greybutton: {
-        flexDirection: 'row',
-        borderRadius: 15,
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-        backgroundColor: colors.othergrey,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 10,
-        elevation: 2,
-        shadowColor: colors.black,
-    },
+  modalBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8 },
+  cancelBtn: { backgroundColor: colors.othergrey },
+  contBtn: { backgroundColor: colors.primary },
 });
 
 export default RecipeDetailsScreen;
