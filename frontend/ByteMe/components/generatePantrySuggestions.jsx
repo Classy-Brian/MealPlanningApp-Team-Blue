@@ -3,6 +3,10 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const generatePantrySuggestions =  async (ingrLabels) => {
+  if (!Array.isArray(ingrLabels) || ingrLabels.length === 0) {
+    console.warn("Ingredient labels are empty or not an array.");
+    return [];
+  }
     const API_ID = process.env.EXPO_PUBLIC_EDAMAM_APP_ID;
     const API_KEY = process.env.EXPO_PUBLIC_EDAMAM_API_KEY;
     try {

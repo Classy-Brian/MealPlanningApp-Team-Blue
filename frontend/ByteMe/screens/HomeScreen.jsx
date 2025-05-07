@@ -151,7 +151,19 @@ const HomeScreen = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const userRes = await axiosInstance.get(`/api/users/profile/${token}`);
+      let userRes;
+      try {
+        userRes = await axiosInstance.get(`/api/users/profile/${token}`);
+      } catch (err) {
+        if (err.response?.status === 403) {
+          console.warn("Access denied. User is not authorized or does not exist.")
+          Alert.alert("Access Denied", "Your account is not authorized or may be inactive")
+          router.replace('/(start)/login')
+          return;
+        }
+        throw err;
+      }
+      // const userRes = await axiosInstance.get(`/api/users/profile/${token}`);
 
       let fetchedUserId = null;
 
@@ -168,9 +180,24 @@ const HomeScreen = () => {
           setUserName(null);
         }
 
+        let savedDays = [];
+
+        try {
+          const calendarRes = await axiosInstance.get(`/api/users/${fetchedUserId}/saved-days`);
+          savedDays = calendarRes.data.savedDays || [];
+        } catch (err) {
+          if (err.response?.status === 403 || err.response?.status === 404) {
+            console.warn("No saved days found or access denied to calendar data")
+            Alert.alert("Notice", "No saved days found for your account")
+            savedDays = []
+          } else {
+            throw err
+          }
+        }
+
         // console.log(`Workspaceing saved days for user: ${fetchedUserId}`);
         const calendarRes = await axiosInstance.get(`/api/users/${fetchedUserId}/saved-days`);
-        const savedDays = calendarRes.data.savedDays || [];
+        // const savedDays = calendarRes.data.savedDays || [];
         // console.log("fetchData - Raw savedDays from API:", JSON.stringify(savedDays, null, 2));
 
         const todayObj = new Date();

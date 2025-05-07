@@ -31,7 +31,7 @@ function BackButton() {
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <View style={globalStyles.greybutton}>
           <Image source={backarrow} style={localStyles.backArrow} />
-          <Text style={globalStyles.regularText}>Meal Planning</Text>
+          <Text style={globalStyles.regularText}>Back</Text>
         </View>
       </TouchableOpacity>
     </View>

@@ -75,7 +75,7 @@ export default function EditProfile() {
         body: JSON.stringify({ name: username, avatar }),
       });
 
-      navigation.navigate('profile');
+      navigation.goBack();
     } catch (error) {
       console.error('Error updating user:', error);
     }
