@@ -63,8 +63,7 @@ const HomeScreen = () => {
         const userId = await getUserIdFromToken(storedToken);
         setUserId(userId);
 
-        const userRes = await axiosInst.get(`/api/users/profile`);
-
+        const userRes = await axiosInst.get(`/api/users/profile/${storedToken}`);
         setUserName(userRes.data?.name || null);
 
         const calendarRes = await axiosInst.get(`/api/users/${userId}/saved-days`);
