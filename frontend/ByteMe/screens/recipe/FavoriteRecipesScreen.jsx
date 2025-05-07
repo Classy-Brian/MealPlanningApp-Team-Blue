@@ -36,7 +36,6 @@ function BackButton() {
 }
 
 const RecipeDetailsScreen = () => {
-  const navigation = useNavigation();
   const route = useRoute();
   const navigation = useNavigation();
   const [userId, setUserId] = useState(null);
@@ -60,7 +59,7 @@ const RecipeDetailsScreen = () => {
   };
 
   useEffect(() => {
-    (async () => {
+    const fetchUserId = async () => {
       const id = await getUserIdFromToken();
       setUserId(id);
     };
@@ -201,11 +200,11 @@ const RecipeDetailsScreen = () => {
         <BackButton />
       </View>
       {imageUri ? (
-        <View style={localStyles.recipeWrapper}>
-          <Image source={{ uri: imageUri }} style={localStyles.recipeImage} />
+        <View style={det.recipeWrapper}>
+          <Image source={{ uri: imageUri }} style={det.recipeImage} />
         </View>
       ) : (
-        <Text style={localStyles.errorText}>No image available</Text>
+        <Text style={det.errorText}>No image available</Text>
       )}
       <Text style={det.title}>{title}</Text>
       {renderActionButtons()}
@@ -213,20 +212,12 @@ const RecipeDetailsScreen = () => {
       <View style={det.tabContainer}>
         {sections.map((section, index) => (
           <TouchableOpacity
-            key={i}
-            style={[
-              localStyles.tab,
-              activeSection === i && localStyles.activeTab,
-            ]}
-            onPress={() => setActiveSection(i)}
+            key={index}
+            style={[det.tab, activeSection === index && det.activeTab]}
+            onPress={() => setActiveSection(index)}
           >
-            <Text
-              style={[
-                localStyles.tabText,
-                activeSection === i && localStyles.activeTabText,
-              ]}
-            >
-              {sec}
+            <Text style={[det.tabText, activeSection === index && det.activeTabText]}>
+              {section}
             </Text>
           </TouchableOpacity>
         ))}
@@ -270,10 +261,10 @@ const det = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
-    color: colors.primary,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#1f508f',
+    textAlign: 'center',
   },
   actionButtonContainer: {
     flexDirection: 'row',
@@ -316,35 +307,40 @@ const det = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 15,
   },
-  heartIcon: { width: 24, height: 24 },
+  recipeImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f0f0f0',
+    resizeMode: 'cover',
+  },
   tabContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginBottom: 5,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: '#ddd',
+    paddingBottom: 5,
   },
-  tab: { flex: 1, paddingVertical: 8, alignItems: "center" },
-  activeTab: { borderBottomWidth: 2, borderBottomColor: colors.primary },
-  tabText: { color: "#555" },
-  activeTabText: { color: colors.primary, fontWeight: "600" },
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 24 },
-  sectionContent: { marginTop: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
-  sectionText: { fontSize: 14, marginVertical: 2 },
-  errorContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  errorText: { fontSize: 16, color: colors.red },
-  // Modal styles
-  modalBackdrop: {
+  tab: {
     flex: 1,
-    backgroundColor: "#0006",
-    justifyContent: "center",
-    alignItems: "center",
+    paddingVertical: 6,
+    alignItems: 'center',
   },
-  modalBox: {
-    width: "90%",
-    maxHeight: "85%",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
+  tabText: {
+    fontSize: 14,
+    color: '#555',
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#1f508f',
+  },
+  activeTabText: {
+    fontWeight: 'bold',
+    color: '#1f508f',
+  },
+  sectionContent: {
+    paddingHorizontal: 10,
+    marginTop: 10,
   },
   sectionText: {
     fontSize: 14,
