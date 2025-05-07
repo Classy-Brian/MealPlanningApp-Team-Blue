@@ -1,6 +1,5 @@
-// frontend/ByteMe/screens/recipe/FavoriteRecipesScreen.jsx
-
-import React, { useState, useEffect } from "react";
+// START OF FILE
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,8 +11,10 @@ import {
   Modal,
   Pressable,
   SafeAreaView,
+  Animated
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
+import { Tooltip } from 'react-native-elements';
 import axios from "axios";
 import getUserIdFromToken from "@/components/getUserIdFromToken";
 import { styles } from "@/components/Sheet";
@@ -23,6 +24,8 @@ import emptyHeartIcon from "@/assets/images/empty-heart.png";
 import { colors } from "@/components/Colors";
 import { fonts } from "@/components/Fonts";
 import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
 
 // Helper to clean an ingredient line by stripping amounts, parentheses, “for garnish,” etc.
 const cleanIngredient = (line = "") =>
@@ -37,11 +40,44 @@ const cleanIngredient = (line = "") =>
     .replace(/for\s+garnish.*$/i, "") // drop “for garnish”
     .trim();
 
-const RecipeDetailsScreen = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
 
+function BackButton() {
+  const navigation = useNavigation();
+  return (
+    <View style={{ flexDirection: 'row', paddingLeft: 8 }}>
+      <TouchableOpacity onPress={() => navigation.navigate('savedrecipes')}>
+        <View style={localStyles.greybutton}>
+          <Image style={{ marginRight: 10 }} source={backarrow} />
+          <Text style={styles.regularText}>Recipes</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const RecipeDetailsScreen = () => {
+  const route = useRoute();
+  const navigation = useNavigation();
   const [userId, setUserId] = useState(null);
+
+  const heartScale = useRef(new Animated.Value(1)).current;
+  const triedScale = useRef(new Animated.Value(1)).current;
+
+  const animateIcon = (animRef) => {
+    Animated.sequence([
+      Animated.timing(animRef, {
+        toValue: 1.2,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animRef, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   useEffect(() => {
     (async () => {
       const id = await getUserIdFromToken();
@@ -89,7 +125,18 @@ const RecipeDetailsScreen = () => {
 
   const [isSavedRecipe, setIsSavedRecipe] = useState(initialSaved);
 
+  // UI: Tabs for Ingredients / Allergies / Directions / Nutrition
+
+  const [activeSection, setActiveSection] = useState(0);
+  const sections = ["Ingredients", "Allergies", "Directions", "Nutrition"];
+
+  // New: “Add to Grocery” modal state & handlers
+
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [checked, setChecked] = useState(() => ingredients.map(() => true));
+
   const saveRecipe = async () => {
+    animateIcon(heartScale);
     try {
       const res = await axios.post(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/save-recipe`,
@@ -100,12 +147,13 @@ const RecipeDetailsScreen = () => {
         Alert.alert("Success", "Recipe saved successfully!");
       }
     } catch (err) {
-      console.error("Error saving recipe:", err);
-      Alert.alert("Error", "Could not save recipe. Please try again.");
+      console.error('Error saving recipe:', err);
+      Alert.alert('Error', 'Could not save recipe.');
     }
   };
 
   const unsaveRecipe = async () => {
+    animateIcon(heartScale);
     try {
       const res = await axios.delete(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/remove/remove-recipe`,
@@ -121,29 +169,37 @@ const RecipeDetailsScreen = () => {
     }
   };
 
-  const renderSaveButton = () => (
-    <TouchableOpacity
-      style={localStyles.saveButton}
-      onPress={() => (isSavedRecipe ? unsaveRecipe() : saveRecipe())}
-    >
-      <Image
-        source={isSavedRecipe ? heartIcon : emptyHeartIcon}
-        style={localStyles.heartIcon}
-      />
-    </TouchableOpacity>
-  );
-
-  // New: “Add to Grocery” modal state & handlers
-
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [checked, setChecked] = useState(() => ingredients.map(() => true));
-
-  const toggleChecked = (i) =>
+  const toggleChecked = (i) =>  // for grocery ingredient adding
     setChecked((prev) => {
       const c = [...prev];
       c[i] = !c[i];
       return c;
     });
+
+  const renderActionButtons = () => (
+    <View style={localStyles.actionButtonContainer}>
+      <Tooltip popover={<Text>Save Recipe</Text>}>
+        <TouchableOpacity
+          style={localStyles.roundButton}
+          onPress={() => isSavedRecipe ? unsaveRecipe() : saveRecipe()}
+        >
+          <Animated.Image
+            source={isSavedRecipe ? heartIcon : emptyHeartIcon}
+            style={[localStyles.heartIcon, { transform: [{ scale: heartScale }] }]}
+          />
+        </TouchableOpacity>
+      </Tooltip>
+
+      <Tooltip popover={<Text>Mark as Tried</Text>}>
+        <TouchableOpacity style={localStyles.roundButton} onPress={tryRecipe}>
+          <Animated.View style={{ alignItems: 'center', justifyContent: 'center', transform: [{ scale: triedScale }] }}>
+            <MaterialCommunityIcons name="check-circle-outline" size={28} color="#1f508f" />
+            <Text style={localStyles.roundButtonText}>Tried</Text>
+          </Animated.View>
+        </TouchableOpacity>
+      </Tooltip>
+    </View>
+  );
 
   const handleContinueToGrocery = () => {
     const selectedLines = ingredients
@@ -160,21 +216,60 @@ const RecipeDetailsScreen = () => {
       screen: "addgroceryingredient",
       params: { batch: selectedLines },
     });
-  };
+  };  
+    
+  const tryRecipe = async () => {
+    animateIcon(triedScale);
+  
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) throw new Error('Missing token');
+      const calories = nutrition?.ENERC_KCAL?.quantity || 0;
 
-  // UI: Tabs for Ingredients / Allergies / Directions / Nutrition
-
-  const [activeSection, setActiveSection] = useState(0);
-  const sections = ["Ingredients", "Allergies", "Directions", "Nutrition"];
+  
+      const triedRes = await axios.post(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/recipe-tried`,
+        {
+          userId,
+          recipeId,
+          title,
+          calories
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      if (triedRes.status === 200) {
+        setTimeout(async () => {
+          const syncRes = await axios.get(
+            `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/profile/updated/sync`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+  
+          if (syncRes.status === 200) {
+            await AsyncStorage.setItem('syncedUser', JSON.stringify(syncRes.data));
+            console.log('Profile synced successfully');
+          }
+  
+          await unsaveRecipe();
+          Alert.alert('Great!', 'Marked as tried and goals updated!');
+          navigation.navigate('savedrecipes');
+        }, 500);
+      }
+    } catch (err) {
+      console.error('Error marking as tried:', err);
+      Alert.alert('Error', 'Could not update your goals.');
+    }
+  };  
 
   return (
     <SafeAreaView style={localStyles.container}>
       {/* Header */}
-      <View style={localStyles.header}>
+      <BackButton />
+      {/* <View style={localStyles.header}>
         <TouchableOpacity onPress={() => navigation.navigate("savedrecipes")}>
           <Image source={backarrow} style={localStyles.backIcon} />
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* Image */}
       {imageUri ? (
@@ -187,7 +282,7 @@ const RecipeDetailsScreen = () => {
 
       {/* Title & Save */}
       <Text style={localStyles.title}>{title}</Text>
-      {renderSaveButton()}
+      {renderActionButtons()}
 
       {/* Tabs */}
       <View style={localStyles.tabContainer}>
@@ -280,6 +375,14 @@ const RecipeDetailsScreen = () => {
               )}
             </>
           )}
+          {activeSection === 3 && nutrition && Object.keys(nutrition).map((key) => {
+            const { label, quantity, unit } = nutrition[key];
+            return (
+              <Text key={key} style={localStyles.sectionText}>
+                {label}: {Math.round(quantity || 0)} {unit}
+              </Text>
+            );
+          })}
         </View>
       </ScrollView>
 
@@ -346,6 +449,16 @@ const localStyles = StyleSheet.create({
     marginBottom: 16,
   },
   recipeImage: { width: "100%", height: "100%", resizeMode: "cover" },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -361,6 +474,32 @@ const localStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.primary,
     marginBottom: 12,
+  actionButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 15,
+  },
+  roundButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#fff',
+    borderColor: '#1f508f',
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+    overflow: 'hidden',
+    flexShrink: 0,
+    flexGrow: 0,
+  },
+  roundButtonText: {
+    fontSize: 10,
+    color: '#1f508f',
+    fontWeight: '600',
+    marginTop: 2,
+    textAlign: 'center',
   },
   heartIcon: { width: 24, height: 24 },
   tabContainer: {
@@ -403,6 +542,35 @@ const localStyles = StyleSheet.create({
   modalBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8 },
   cancelBtn: { backgroundColor: colors.othergrey },
   contBtn: { backgroundColor: colors.primary },
+  activeTabText: {
+    fontWeight: 'bold',
+    color: '#1f508f',
+  },
+  sectionContent: {
+    paddingHorizontal: 10,
+    marginTop: 10,
+  },
+  sectionText: {
+    fontSize: 14,
+    color: '#333',
+    marginVertical: 2,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+  },
+  greybutton: {
+    flexDirection: 'row',
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    backgroundColor: colors.othergrey,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    elevation: 2,
+    shadowColor: colors.black,
+  },
 });
 
 export default RecipeDetailsScreen;

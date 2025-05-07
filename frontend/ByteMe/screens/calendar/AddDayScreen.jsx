@@ -7,8 +7,26 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import getUserIdFromToken from '@/components/getUserIdFromToken';
 import axios from 'axios';
-import Back_butt from '@/assets/images/backbutton.png';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { styles } from '@/components/Sheet';
+import { textcolors } from '@/components/TextColors';
+import { fonts } from '@/components/Fonts';
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Calendar</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const AddDayScreen = () => {
   const navigation = useNavigation();
@@ -177,22 +195,22 @@ const AddDayScreen = () => {
 
   return (
     <SafeAreaView>
-        <ScrollView style={styles.container}>
+        <ScrollView style={det.container}>
         {/* Back Button */}
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('calendar')}>
-          <Image source={Back_butt} style={styles.backIcon} />
-          <Text style={styles.backText}>Calendar</Text>
-        </TouchableOpacity>
+        <BackButton />
 
         <Text style={styles.title}>
           {route.params?.editing ? 'Edit Recipes for Day' : 'Add Recipes to Calendar'}
         </Text>
 
         {/* Pick Date */}
-        <Text style={styles.label}>Pick Date</Text>
-        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.timePickerButton}>
-          <Text style={styles.timeText}>{selectedDate.toDateString()}</Text>
-        </TouchableOpacity>
+        <View style={{marginBottom: 10}}>
+          <Text style={styles.heading}>Pick Date</Text>
+          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={det.timePickerButton}>
+            <Text style={det.timeText}>{selectedDate.toDateString()}</Text>
+          </TouchableOpacity>
+        </View>
+        
         {showDatePicker && (
           <DateTimePicker
             mode="date"
@@ -206,69 +224,75 @@ const AddDayScreen = () => {
         )}
 
         {/* Browse Recipes */}
-        <Text style={styles.label}>Pick a Recipe</Text>
-        <TouchableOpacity
-          style={styles.selectRecipeButton}
-          onPress={() =>
-            navigation.navigate('savedrecipesdupi', {
-              selectedTime,
-              selectedDate,
-            })
-          }
-        >
-          <Text style={styles.selectRecipeText}>Browse Saved Recipes</Text>
-        </TouchableOpacity>
+        <View style={{marginBottom: 10}}>
+          <Text style={styles.heading}>Pick a Recipe</Text>
+          <TouchableOpacity
+            style={det.selectRecipeButton}
+            onPress={() =>
+              navigation.navigate('savedrecipesdupi', {
+                selectedTime,
+                selectedDate,
+              })
+            }
+          >
+            <Text style={det.timeText}>Browse Saved Recipes</Text>
+          </TouchableOpacity>
+        </View>
+        
 
         {/* Selected Meals */}
-        <Text style={styles.label}>Selected Meals:</Text>
+        <View style={{marginBottom: 10}}>
+            <Text style={styles.heading}>Selected Meals:</Text>
 
-        {Object.entries(
-          selectedMeals.reduce((acc, meal) => {
-            if (!acc[meal.date]) acc[meal.date] = [];
-            acc[meal.date].push(meal);
-            return acc;
-          }, {})
-        ).map(([date, meals]) => (
-          <View key={date} style={styles.groupBox}>
-            <Text style={styles.groupDate}>{date}</Text>
+          {Object.entries(
+            selectedMeals.reduce((acc, meal) => {
+              if (!acc[meal.date]) acc[meal.date] = [];
+              acc[meal.date].push(meal);
+              return acc;
+            }, {})
+          ).map(([date, meals]) => (
+            <View key={date} style={det.groupBox}>
+              <Text style={det.groupDate}>{date}</Text>
 
-            {meals.map((m, i) => {
-              const globalIndex = selectedMeals.findIndex(
-                sm => sm.label === m.label && sm.date === m.date && sm.value === m.value
-              );
+              {meals.map((m, i) => {
+                const globalIndex = selectedMeals.findIndex(
+                  sm => sm.label === m.label && sm.date === m.date && sm.value === m.value
+                );
 
-              return (
-                <View key={`${m.value}-${i}`} style={styles.mealCard}>
-                  <Image source={{ uri: m.image }} style={styles.mealImage} />
-                  <View style={styles.mealDetails}>
-                    <Text style={styles.mealText}>{m.label}</Text>
+                return (
+                  <View key={`${m.value}-${i}`} style={det.mealCard}>
+                    <Image source={{ uri: m.image }} style={det.mealImage} />
+                    <View style={det.mealDetails}>
+                      <Text style={det.mealText}>{m.label}</Text>
 
-                    <View style={styles.timeRow}>
-                      <Text style={styles.mealSubText}>
-                        {m.time ? `${m.time}` : 'No time selected'}
-                      </Text>
+                      <View style={det.timeRow}>
+                        <Text style={det.mealSubText}>
+                          {m.time ? `${m.time}` : 'No time selected'}
+                        </Text>
 
-                      <TouchableOpacity style={styles.pickTimeButton} onPress={() => openTimePicker(globalIndex)}>
-                        <Text style={styles.pickTimeButtonText}>Pick Time</Text>
-                      </TouchableOpacity>
+                        <TouchableOpacity style={det.pickTimeButton} onPress={() => openTimePicker(globalIndex)}>
+                          <Text style={det.pickTimeButtonText}>Pick Time</Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      <TextInput
+                        style={det.servingInput}
+                        keyboardType="numeric"
+                        value={String(m.servings)}
+                        onChangeText={(val) => updateServings(globalIndex, val)}
+                      />
                     </View>
 
-                    <TextInput
-                      style={styles.servingInput}
-                      keyboardType="numeric"
-                      value={String(m.servings)}
-                      onChangeText={(val) => updateServings(globalIndex, val)}
-                    />
+                    <TouchableOpacity onPress={() => removeMeal(globalIndex)}>
+                      <Ionicons name="trash" size={22} color="#d00" />
+                    </TouchableOpacity>
                   </View>
-
-                  <TouchableOpacity onPress={() => removeMeal(globalIndex)}>
-                    <Ionicons name="trash" size={22} color="#d00" />
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
-          </View>
-        ))}
+                );
+              })}
+            </View>
+          ))}
+        </View>
+        
 
         {/* Mini Time Picker */}
         {timePickerIndex !== null && (
@@ -281,8 +305,8 @@ const AddDayScreen = () => {
         )}
 
         {/* Save Button */}
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveText}>Save Day</Text>
+        <TouchableOpacity style={det.saveButton} onPress={handleSave}>
+          <Text style={[styles.regularText, {color: textcolors.white}]}>Save Day</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -290,7 +314,7 @@ const AddDayScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: { padding: 20 },
   backButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#D7E2F1", padding: 10, borderRadius: 10, marginBottom: 10, alignSelf: 'flex-start' },
   backIcon: { width: 20, height: 20, marginRight: 5 },
@@ -298,7 +322,11 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   label: { fontSize: 16, fontWeight: 'bold', marginTop: 20 },
   timePickerButton: { padding: 12, backgroundColor: '#f1f3f8', borderRadius: 8, marginTop: 5, alignItems: 'center', borderWidth: 1, borderColor: '#ccc' },
-  timeText: { fontSize: 16, fontWeight: 'bold', color: '#1F508F' },
+  timeText: { 
+    fontSize: 20, 
+    color: '#1F508F',
+    fontFamily: fonts.bold
+   },
   selectRecipeButton: { padding: 12, backgroundColor: '#cde0fc', borderRadius: 10, alignItems: 'center', marginTop: 10, borderColor: '#1F508F', borderWidth: 1 },
   selectRecipeText: { fontWeight: 'bold', color: '#1F508F' },
   groupBox: { backgroundColor: '#e4edff', borderRadius: 10, padding: 10, marginBottom: 10 },

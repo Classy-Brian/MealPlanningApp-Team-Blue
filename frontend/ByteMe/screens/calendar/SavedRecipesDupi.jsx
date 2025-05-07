@@ -9,6 +9,24 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import { colors } from '@/components/Colors';
 import { textcolors } from '@/components/TextColors';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { styles } from '@/components/Sheet';
+import backarrow from "@/assets/images/back_arrow_navigate.png"
+import maglass from "@/assets/images/magnifyingglass.png"
+
+
+function BackButton() {
+    const navigation = useNavigation();
+    return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Back</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+    )
+}
 
 const SavedRecipesDupi = () => {
   const navigation = useNavigation();
@@ -65,60 +83,73 @@ const SavedRecipesDupi = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <BackButton />
+
+        {/* Title */}
+        <Text style={styles.title}>Saved Recipes</Text>
+
+        {/* Search Input */}
+        <View style={[styles.searchInput]}>
+          <Image 
+            style={det.magnifyingGlassIcon} 
+            source={maglass} />          
+          <TextInput
+            placeholder='Search for ingredients'
+            placeholderTextColor={textcolors.darkgrey}
+            onChangeText={(text) => setQuery(text)}
+            value={query}
+            style={styles.regularText}
+          />
+        </View>
+        {/* <TextInput
+          placeholder="Search recipes..."
+          placeholderTextColor={textcolors.lightgrey}
+          style={det.input}
+          value={query}
+          onChangeText={(text) => setQuery(text)}
+        /> */}
+
+        {/* Recipes List */}
+        {loading ? (
+          <ActivityIndicator size="large" color={colors.primary} />
+        ) : (
+          <FlatList
+            data={savedRecipes.filter(recipe =>
+              recipe.label.toLowerCase().includes(query.toLowerCase())
+            )}
+            keyExtractor={(item) => item.uri}
+            ListFooterComponent={<View style={{marginBottom: 100}} />}
+            renderItem={({ item }) => {
+              const isSelected = selectedRecipes.find(r => r.uri === item.uri);
+              return (
+                <TouchableOpacity
+                  style={[det.recipeCard, isSelected && det.selectedCard]}
+                  onPress={() => toggleSelectRecipe(item)}
+                >
+                  <Image source={{ uri: item.image }} style={det.recipeImage} />
+                  <Text style={det.recipeLabel}>{item.label}</Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )}
+
+        {/* Confirm Button */}
+        {selectedRecipes.length > 0 && (
+          <TouchableOpacity style={det.confirmButton} onPress={confirmSelection}>
+            <Text style={det.confirmButtonText}>Confirm Selection</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <MaterialIcons name="arrow-back" size={24} color="#1F508F" />
-        <Text style={styles.backButtonText}>Back to Add Day</Text>
-      </TouchableOpacity>
-
-      {/* Title */}
-      <Text style={styles.title}>Saved Recipes</Text>
-
-      {/* Search Input */}
-      <TextInput
-        placeholder="Search recipes..."
-        placeholderTextColor={textcolors.lightgrey}
-        style={styles.input}
-        value={query}
-        onChangeText={(text) => setQuery(text)}
-      />
-
-      {/* Recipes List */}
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
-      ) : (
-        <FlatList
-          data={savedRecipes.filter(recipe =>
-            recipe.label.toLowerCase().includes(query.toLowerCase())
-          )}
-          keyExtractor={(item) => item.uri}
-          renderItem={({ item }) => {
-            const isSelected = selectedRecipes.find(r => r.uri === item.uri);
-            return (
-              <TouchableOpacity
-                style={[styles.recipeCard, isSelected && styles.selectedCard]}
-                onPress={() => toggleSelectRecipe(item)}
-              >
-                <Image source={{ uri: item.image }} style={styles.recipeImage} />
-                <Text style={styles.recipeLabel}>{item.label}</Text>
-              </TouchableOpacity>
-            );
-          }}
-        />
-      )}
-
-      {/* Confirm Button */}
-      {selectedRecipes.length > 0 && (
-        <TouchableOpacity style={styles.confirmButton} onPress={confirmSelection}>
-          <Text style={styles.confirmButtonText}>Confirm Selection</Text>
-        </TouchableOpacity>
-      )}
+      
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const det = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
   backButton: {
     flexDirection: 'row',
@@ -162,6 +193,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   confirmButtonText: { color: 'white', fontWeight: 'bold' },
+  magnifyingGlassIcon: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 15, // Space between the icon and input
+  },
 });
 
 export default SavedRecipesDupi;
