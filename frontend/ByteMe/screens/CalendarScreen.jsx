@@ -11,6 +11,7 @@ import EditIcon from '@/assets/images/edit.png';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from '@/components/Sheet';
+import { fonts } from '@/components/Fonts';
 
 const CalendarScreen = () => {
   const navigation = useNavigation();
@@ -253,9 +254,14 @@ const CalendarScreen = () => {
 };
 
 const det = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: '#000' },
-  cardsContainer: { marginTop: 20 },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff', 
+    padding: 20 
+  },
+  cardsContainer: { 
+    marginTop: 20 
+  },
   card: {
     backgroundColor: '#e5efff',
     borderRadius: 15,
@@ -276,15 +282,13 @@ const det = StyleSheet.create({
     justifyContent: 'center',
   },
   dateDay: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 16,
+    fontFamily: fonts.bold,
     textAlign: 'center',
   },
   dateNumber: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
     textAlign: 'center',
   },
   verticalDivider: {
@@ -312,8 +316,8 @@ const det = StyleSheet.create({
   },
   mealText: {
     color: '#1F508F',
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontFamily: fonts.semiBold,
+    fontSize: 18,
   },
   footerBox: {
     marginTop: 10,
@@ -328,8 +332,9 @@ const det = StyleSheet.create({
     marginBottom: 20,
   },
   footerText: {
-    fontWeight: 'bold',
+    fontFamily: fonts.semiBold,
     color: '#1F508F',
+    fontSize: 16
   },
   editIconWrapper: {
     position: 'absolute',

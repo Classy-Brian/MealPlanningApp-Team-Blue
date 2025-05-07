@@ -18,7 +18,7 @@ import { textcolors } from '@/components/TextColors'
 import { Divider } from 'react-native-paper'
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios'
 import { filterModal } from '@/components/Filter'
 import { fonts } from '@/components/Fonts';
@@ -26,6 +26,7 @@ import getUserIdFromToken from '@/components/getUserIdFromToken';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePantry } from '@/components/PantryContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 
 function BackButton() {
@@ -128,7 +129,7 @@ const PantrySuggestions = ( { route } ) => {
                   style={{ width: '48%', marginBottom: 16 }}
                 >
                   <Image source={{ uri: item.recipe.image }} style={{ width: '100%', height: 120, borderRadius: 10 }} resizeMode="cover" />
-                  <Text style={{ marginTop: 8, fontWeight: 'bold' }}>{item.recipe.label}</Text>
+                  <Text style={det.recipeTitle}>{item.recipe.label}</Text>
                 </TouchableOpacity>
               )}
               ListFooterComponent={loading ? <ActivityIndicator size="large" color={colors.primary} /> : <View style={det.space } />}
@@ -140,6 +141,10 @@ const PantrySuggestions = ( { route } ) => {
           <Modal visible={filterModalVisible} animationType="slide" transparent>
             <View style={filterModal.modalBackground}>
               <View style={filterModal.modalContainer}>
+                {/* Close Button */}
+                <TouchableOpacity style={det.closeButton} onPress={() => setFilterModalVisible(false)}>
+                  <Ionicons name="close" size={24} color="#000" />
+                </TouchableOpacity>
                 <ScrollView>
                   <Text style={filterModal.modalTitle}>Filter Options</Text>
                   {[
@@ -234,5 +239,16 @@ const det = StyleSheet.create({
   },
   space: {
     marginBottom: 100
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    padding: 8,
+  },
+  recipeTitle: {
+    fontSize: 16,
+    fontFamily: fonts.semiBold
   }
 })

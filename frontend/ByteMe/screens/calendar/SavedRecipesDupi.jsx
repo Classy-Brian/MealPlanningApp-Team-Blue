@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from '@/components/Sheet';
 import backarrow from "@/assets/images/back_arrow_navigate.png"
 import maglass from "@/assets/images/magnifyingglass.png"
+import { fonts } from '@/components/Fonts';
 
 
 function BackButton() {
@@ -198,7 +199,11 @@ const det = StyleSheet.create({
   },
   selectedCard: { backgroundColor: '#cde0fc' },
   recipeImage: { width: '100%', height: 100, borderRadius: 10, marginBottom: 8 },
-  recipeLabel: { fontWeight: 'bold', color: '#1F508F' },
+  recipeLabel: { 
+    fontFamily: fonts.bold, 
+    fontSize: 20,
+    color: '#1F508F' 
+  },
   confirmButton: {
     backgroundColor: colors.primary,
     padding: 15,

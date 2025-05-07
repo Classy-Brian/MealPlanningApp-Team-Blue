@@ -1,7 +1,9 @@
 import { Image, View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { colors } from "../components/Colors";
+import getUserIdFromToken from '@/components/getUserIdFromToken';
+import axios from 'axios';
 // import { createStackNavigator } from '@react-navigation/stack'
 // import SavedRecipesScreen from "@/screens/recipe/SavedRecipesScreen"; // This will be handled by the router
 
@@ -19,11 +21,33 @@ function HeaderLogo() {
 
 function ProfileIcon() {
   const router = useRouter();
+  const [profileImg, setProfileImg] = useState(null);
+
+  useEffect(() => {
+    
+    const fetchProfileImage = async () => {
+      const id = await getUserIdFromToken();
+      if (!id) {
+        return;
+      }
+      try {
+        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${id}`)
+        const data = await res.json();
+        console.log("FETCHED USER AVATAR:", data.avatar)
+        setProfileImg(data.avatar)
+      } catch (err) {
+        console.error("Failed to load profile image", err)
+      }
+      fetchProfileImage()
+    }
+  }, [])
 
   return (
     <TouchableOpacity onPress={() => router.push('/(profile)/profile')}>
       <Image
-        source={require('../assets/images/profile.png')}
+        source={
+          profileImg ? {uri: profileImg}
+          : require('../assets/images/profile.png')}
         style={styles.profileImage}
       />
     </TouchableOpacity>

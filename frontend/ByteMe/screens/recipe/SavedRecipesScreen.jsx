@@ -24,6 +24,8 @@ import { styles } from '@/components/Sheet';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import maglass from "@/assets/images/magnifyingglass.png"
 import { Divider } from 'react-native-paper';
+import { filterModal } from '@/components/Filter';
+import { fonts } from '@/components/Fonts';
 
 
 export default function Recipes() {
@@ -177,14 +179,14 @@ export default function Recipes() {
         />
 
         <Modal visible={filterModalVisible} animationType='slide' transparent={true}>
-          <View style={det.modalBackground}>
-            <View style={det.modalContainer}>
+          <View style={filterModal.modalBackground}>
+            <View style={filterModal.modalContainer}>
                     {/* Close Button */}
                     <TouchableOpacity style={det.closeButton} onPress={() => setFilterModalVisible(false)}>
                       <Ionicons name="close" size={24} color="#000" />
                     </TouchableOpacity>
               <ScrollView>
-                <Text style={det.modalTitle}>Filter Options</Text>
+                <Text style={filterModal.modalTitle}>Filter Options</Text>
 
                 {[
                   ['Category', 'category', availableFilters.categories],
@@ -194,44 +196,44 @@ export default function Recipes() {
                   ['Caution', 'caution', availableFilters.cautions],
                 ].map(([label, key, options]) => (
                   <View key={key} style={{ marginBottom: 10 }}>
-                    <Text style={det.modalLabel}>{label}</Text>
-                    <ScrollView horizontal style={det.filterRow}>
+                    <Text style={filterModal.modalLabel}>{label}</Text>
+                    <ScrollView horizontal style={filterModal.filterRow}>
                       {options.map((val) => (
                         <TouchableOpacity
                           key={val}
-                          style={[det.filterOption, filters[key] === val && det.filterOptionSelected]}
+                          style={[filterModal.filterOption, filters[key] === val && filterModal.filterOptionSelected]}
                           onPress={() => toggleFilter(key, val)}
                         >
-                          <Text style={filters[key] === val ? det.filterOptionTextSelected : det.filterOptionText}>{val}</Text>
+                          <Text style={filters[key] === val ? filterModal.filterOptionTextSelected : filterModal.filterOptionText}>{val}</Text>
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
                   </View>
                 ))}
 
-                <Text style={det.modalLabel}>Ingredient</Text>
+                <Text style={filterModal.modalLabel}>Ingredient</Text>
                 <TextInput
-                  style={det.modalInput}
+                  style={filterModal.modalInput}
                   placeholder='e.g. chicken'
                   value={filters.ingredient}
                   onChangeText={(text) => setFilters({ ...filters, ingredient: text })}
                 />
 
-                <Text style={det.modalLabel}>Max Calories</Text>
+                <Text style={filterModal.modalLabel}>Max Calories</Text>
                 <TextInput
-                  style={det.modalInput}
+                  style={filterModal.modalInput}
                   placeholder='e.g. 500'
                   keyboardType='numeric'
                   value={filters.maxCalories}
                   onChangeText={(text) => setFilters({ ...filters, maxCalories: text })}
                 />
 
-                <View style={det.modalActions}>
-                  <TouchableOpacity onPress={resetFilters} style={det.cancelButton}>
-                    <Text style={{ color: 'black' }}>Reset</Text>
+                <View style={filterModal.modalActions}>
+                  <TouchableOpacity onPress={resetFilters} style={filterModal.cancelButton}>
+                    <Text style={styles.regularText}>Reset</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={det.applyButton}>
-                    <Text style={{ color: 'white' }}>Apply Filters</Text>
+                  <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={filterModal.applyButton}>
+                    <Text style={styles.regularText}>Apply Filters</Text>
                   </TouchableOpacity>
                 </View>
               </ScrollView>
@@ -252,58 +254,17 @@ export default function Recipes() {
 }
 
 const det = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 20 },
-  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: colors.primary },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff', 
+    padding: 20 
+  },
   searchContainer: { marginBottom: 10 },
-  inputContainer: {
-    height: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: textcolors.lightgrey,
-    backgroundColor: colors.white,
+  
+  recipeContainer: { 
+    alignItems: 'center', 
+    paddingVertical: 10 
   },
-  inputText: { flex: 1, fontSize: 16, paddingVertical: 8 },
-  filterButton: {
-    flexDirection: 'row',
-    alignSelf: 'flex-start',
-    backgroundColor: colors.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    marginTop: 12,
-    alignItems: 'center',
-  },
-  filterButtonText: { color: '#fff', fontWeight: '700', fontSize: 18 },
-  modalBackground: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000088' },
-  modalContainer: { backgroundColor: 'white', borderRadius: 10, padding: 20, width: '90%' },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
-  modalLabel: { fontWeight: '600', marginTop: 10 },
-  modalInput: {
-    borderWidth: 1,
-    borderColor: textcolors.lightgrey,
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 5,
-  },
-  modalActions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
-  cancelButton: { padding: 10, borderRadius: 8, backgroundColor: '#eee', flex: 1, marginRight: 10, alignItems: 'center' },
-  applyButton: { padding: 10, borderRadius: 8, backgroundColor: colors.primary, flex: 1, alignItems: 'center' },
-  filterRow: { flexDirection: 'row', marginTop: 5, marginBottom: 10 },
-  filterOption: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: textcolors.lightgrey,
-    marginRight: 8,
-  },
-  filterOptionSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-  filterOptionText: { color: textcolors.darkgrey },
-  filterOptionTextSelected: { color: '#fff' },
-  recipeContainer: { alignItems: 'center', paddingVertical: 10 },
   rectangleView: {
     height: 150,
     borderRadius: 10,
@@ -316,9 +277,23 @@ const det = StyleSheet.create({
     marginBottom: 10,
     overflow: 'hidden',
   },
-  recipeImage: { width: '100%', height: 100, resizeMode: 'cover' },
-  recipeTitle: { fontSize: 18, fontWeight: 'bold', color: '#133E7C', marginTop: 5 },
-  noRecipesText: { fontSize: 16, textAlign: 'center', marginTop: 20, color: textcolors.lightgrey },
+  recipeImage: { 
+    width: '100%', 
+    height: 100, 
+    resizeMode: 'cover' },
+  recipeTitle: { 
+    fontSize: 20, 
+    fontFamily: fonts.bold,
+    color: '#133E7C', 
+    padding: 5 
+  },
+  noRecipesText: { 
+    fontSize: 24, 
+    textAlign: 'center', 
+    marginTop: 20, 
+    color: textcolors.lightgrey,
+    fontFamily: fonts.semiBold
+  },
   addButton: {
     position: 'absolute',
     bottom: 20,
@@ -331,8 +306,14 @@ const det = StyleSheet.create({
     alignItems: 'center',
     elevation: 5,
   },
-  addButtonText: { fontSize: 30, color: '#fff' },
-  error: { color: 'red', textAlign: 'center', marginBottom: 10 },
+  addButtonText: { 
+    fontSize: 30, 
+    color: '#fff' 
+  },
+  error: { 
+    color: 'red', 
+    textAlign: 'center', 
+    marginBottom: 10 },
   closeButton: {
     position: 'absolute',
     top: 10,

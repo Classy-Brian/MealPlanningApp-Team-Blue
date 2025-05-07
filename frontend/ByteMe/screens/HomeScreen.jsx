@@ -718,8 +718,7 @@ const localStyles = StyleSheet.create({
     },
     aiButtonText: {
         color: colors.white,
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 18,
         fontFamily: fonts.bold,
     },
     errorText: {
@@ -747,6 +746,7 @@ const localStyles = StyleSheet.create({
         marginVertical: 40,
         color: textcolors.grey,
         fontSize: 16,
+        fontFamily: fonts.regular,
         paddingHorizontal: 20,
     },
     actionButtonsContainer: {
@@ -780,7 +780,6 @@ const localStyles = StyleSheet.create({
     mealImage: { width: 60, height: 60, borderRadius: 8, marginRight: 15, backgroundColor: colors.lightgrey, },
     mealSource: { fontSize: 11, color: textcolors.grey, fontStyle: 'italic', marginTop: 4, },
     errorText: { color: 'red', textAlign: 'center', marginVertical: 20, paddingHorizontal: 15, fontSize: 16, },
-    placeholderText: { textAlign: 'center', marginVertical: 40, color: textcolors.grey, fontSize: 16, paddingHorizontal: 20, }
 });
 
 const styles = StyleSheet.create({
@@ -901,8 +900,9 @@ const styles = StyleSheet.create({
     color: textcolors.black 
   },
   mealCalories: { 
-    fontSize: 13, 
-    color: textcolors.darkgrey 
+    fontSize: 15, 
+    color: textcolors.darkgrey ,
+    fontFamily: fonts.regular,
   },
   totalCaloriesContainer: { 
     borderTopWidth: 1, 
@@ -926,7 +926,7 @@ const styles = StyleSheet.create({
   },
   viewWeekButtonText: { 
     color: '#fff', 
-    fontWeight: fonts.bold, 
+    fontFamily: fonts.bold, 
     fontSize: 20 
   },
 });

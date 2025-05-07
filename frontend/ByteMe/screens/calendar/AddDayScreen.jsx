@@ -308,6 +308,7 @@ const AddDayScreen = () => {
         <TouchableOpacity style={det.saveButton} onPress={handleSave}>
           <Text style={[styles.regularText, {color: textcolors.white}]}>Save Day</Text>
         </TouchableOpacity>
+        <View style={{marginBottom: 50}}/>
       </ScrollView>
     </SafeAreaView>
     
@@ -330,15 +331,15 @@ const det = StyleSheet.create({
   selectRecipeButton: { padding: 12, backgroundColor: '#cde0fc', borderRadius: 10, alignItems: 'center', marginTop: 10, borderColor: '#1F508F', borderWidth: 1 },
   selectRecipeText: { fontWeight: 'bold', color: '#1F508F' },
   groupBox: { backgroundColor: '#e4edff', borderRadius: 10, padding: 10, marginBottom: 10 },
-  groupDate: { fontSize: 16, fontWeight: 'bold', color: '#1F508F', marginBottom: 8 },
+  groupDate: { fontSize: 18, fontFamily: fonts.bold, color: '#1F508F', marginBottom: 8 },
   mealCard: { flexDirection: 'row', backgroundColor: '#fff', padding: 10, borderRadius: 8, marginBottom: 8, alignItems: 'center' },
   mealImage: { width: 50, height: 50, borderRadius: 10, marginRight: 10 },
   mealDetails: { flex: 1 },
-  mealText: { fontWeight: 'bold', fontSize: 16, color: '#1F508F' },
-  mealSubText: { fontSize: 14, color: '#555' },
+  mealText: { fontFamily: fonts.bold, fontSize: 18, color: '#1F508F' },
+  mealSubText: { fontSize: 16, fontFamily: fonts.regular, color: '#555' },
   timeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
   pickTimeButton: { backgroundColor: '#1F508F', borderRadius: 20, paddingVertical: 4, paddingHorizontal: 10, marginLeft: 10 },
-  pickTimeButtonText: { color: '#fff', fontSize: 12 },
+  pickTimeButtonText: { color: '#fff', fontSize: 14, fontFamily: fonts.regular },
   servingInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 4, width: 60, marginTop: 6 },
   saveButton: { backgroundColor: '#1F508F', padding: 15, borderRadius: 10, marginTop: 30, alignItems: 'center' },
   saveText: { color: '#fff', fontWeight: 'bold' },

@@ -713,5 +713,12 @@ const det = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     backgroundColor: colors.primary,
+  },  
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    padding: 8,
   },
 })
