@@ -26,14 +26,17 @@ export default function ProfileScreen() {
   const fetchUser = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      if (!token) return Alert.alert('Error', 'Not logged in.');
+      if (!token) {
+        Alert.alert('Error', 'Not logged in.');
+        return;
+      }
 
-      await fetch(`http://localhost:5000/api/users/profile/updated/sync`, {
+      await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/profile/updated/sync`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const response = await fetch(`http://localhost:5000/api/users/profile/${token}`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/profile/${token}`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
