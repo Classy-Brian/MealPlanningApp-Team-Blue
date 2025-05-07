@@ -25,6 +25,7 @@ import { colors } from "@/components/Colors";
 import { fonts } from "@/components/Fonts";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 // Helper to clean an ingredient line by stripping amounts, parentheses, “for garnish,” etc.
@@ -91,7 +92,7 @@ const RecipeDetailsScreen = () => {
     title = "",
     directions = "No directions available.",
     imageUri = "",
-    isSaved: initialSaved = false,
+    isSaved: initialSaved = true,
     ingredients: rawIngredients = [],
     allergies: rawAllergies = [],
     nutrition: rawNutrition = "{}",
@@ -474,6 +475,7 @@ const localStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.primary,
     marginBottom: 12,
+  },
   actionButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
