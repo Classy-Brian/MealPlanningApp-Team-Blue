@@ -26,6 +26,7 @@ import { fonts } from "@/components/Fonts";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 
 // Helper to clean an ingredient line by stripping amounts, parentheses, “for garnish,” etc.
@@ -57,6 +58,7 @@ function BackButton() {
 }
 
 const RecipeDetailsScreen = () => {
+  const router = useRouter();
   const route = useRoute();
   const navigation = useNavigation();
   const [userId, setUserId] = useState(null);

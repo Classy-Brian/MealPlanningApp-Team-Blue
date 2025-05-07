@@ -35,14 +35,16 @@ const STORAGE_KEY = "@recentGroceryQueries";
 
 const BackButton = () => {
   const navigation = useNavigation();
-  return (
-    <TouchableOpacity onPress={() => navigation.goBack()}>
-      <View style={styles.greybutton}>
-        <Image source={backarrow} style={{ marginRight: 10 }} />
-        <Text style={styles.regularText}>Grocery</Text>
-      </View>
-    </TouchableOpacity>
-  );
+      return (
+        <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate('grocery')}>
+                <View style={[styles.greybutton, ]}>
+                    <Image style={{marginRight:10}} source={backarrow}/>
+                    <Text style={styles.regularText}>Grocery</Text>
+                </View>
+            </TouchableOpacity>
+        </View>
+      )
 };
 
 const AddGroceryIngredientScreen = () => {
@@ -214,184 +216,186 @@ const AddGroceryIngredientScreen = () => {
 
   // Render
   return (
-    <SafeAreaView style={ui.container}>
-      <BackButton />
+    <SafeAreaView style={styles.whiteBackground}>
+      <View style={styles.screenContainer}>
+        <BackButton />
 
-      {/* Search & Filter */}
-      <View style={{ marginVertical: 10 }}>
-        <View style={styles.searchInput}>
-          <Image source={maglass} style={ui.magnifyingGlassIcon} />
-          <TextInput
-            placeholder="Search for groceries"
-            placeholderTextColor={textcolors.darkgrey}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={styles.regularText}
-            onSubmitEditing={() => searchIngredients()}
-          />
-        </View>
-        <TouchableOpacity
-          style={styles.filterButton}
-          onPress={() => setFilterOpen(true)}
-        >
-          <MaterialIcons
-            name="filter-list"
-            size={24}
-            color={textcolors.darkgrey}
-            style={{ marginRight: 8 }}
-          />
-          <Text style={styles.regularText}>Filter</Text>
-        </TouchableOpacity>
-      </View>
-      <Divider />
-
-      {/* Recent search chips */}
-      {recent.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={ui.chipsContainer}
-        >
-          {recent.map((q) => (
-            <Chip key={q} text={q} />
-          ))}
-        </ScrollView>
-      )}
-
-      {/* Loading spinner */}
-      {loading && <ActivityIndicator size="large" color={colors.primary} />}
-
-      {/* Results list */}
-      <FlatList
-        contentContainerStyle={{ paddingTop: 12 }}
-        data={filteredResults}
-        keyExtractor={(i) => i.foodId}
-        renderItem={({ item }) => (
+        {/* Search & Filter */}
+        <View style={{ marginVertical: 10 }}>
+          <View style={styles.searchInput}>
+            <Image source={maglass} style={ui.magnifyingGlassIcon} />
+            <TextInput
+              placeholder="Search for groceries"
+              placeholderTextColor={textcolors.darkgrey}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.regularText}
+              onSubmitEditing={() => searchIngredients()}
+            />
+          </View>
           <TouchableOpacity
-            style={ui.resultItem}
-            onPress={() => addIngredient(item)}
+            style={styles.filterButton}
+            onPress={() => setFilterOpen(true)}
           >
-            <Image source={{ uri: item.image }} style={ui.image} />
-            <View style={{ flex: 1 }}>
-              <Text style={ui.label}>{item.label}</Text>
-              <Text style={ui.cat}>{item.category}</Text>
-            </View>
-            <Text style={ui.qty}>x {quantity}</Text>
+            <MaterialIcons
+              name="filter-list"
+              size={24}
+              color={textcolors.darkgrey}
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.regularText}>Filter</Text>
           </TouchableOpacity>
+        </View>
+        <Divider />
+
+        {/* Recent search chips */}
+        {recent.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={ui.chipsContainer}
+          >
+            {recent.map((q) => (
+              <Chip key={q} text={q} />
+            ))}
+          </ScrollView>
         )}
-        ListEmptyComponent={
-          !loading && <Text style={ui.noRes}>No ingredients found.</Text>
-        }
-      />
 
-      {/* Filter Modal */}
-      <Modal
-        transparent
-        animationType="slide"
-        visible={filterOpen}
-        onRequestClose={() => setFilterOpen(false)}
-      >
-        <Pressable style={modal.backdrop} onPress={() => setFilterOpen(false)}>
-          <Pressable style={modal.sheet}>
-            <ScrollView>
-              <Text style={modal.title}>Filter Search Results</Text>
+        {/* Loading spinner */}
+        {loading && <ActivityIndicator size="large" color={colors.primary} />}
 
-              <Text style={modal.label}>Categories</Text>
-              {allCategories.map((c) => (
-                <TouchableOpacity
-                  key={c}
-                  style={modal.catRow}
-                  onPress={() =>
-                    setSelectedCategories((prev) =>
-                      prev.includes(c)
-                        ? prev.filter((x) => x !== c)
-                        : [...prev, c]
-                    )
-                  }
-                >
-                  <Ionicons
-                    name={
-                      selectedCategories.includes(c)
-                        ? "checkbox"
-                        : "square-outline"
+        {/* Results list */}
+        <FlatList
+          contentContainerStyle={{ paddingTop: 12, paddingBottom: 250 }}
+          data={filteredResults}
+          keyExtractor={(item, index) => `${item.foodId}_${index}`}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={ui.resultItem}
+              onPress={() => addIngredient(item)}
+            >
+              <Image source={{ uri: item.image }} style={ui.image} />
+              <View style={{ flex: 1 }}>
+                <Text style={ui.label}>{item.label}</Text>
+                <Text style={ui.cat}>{item.category}</Text>
+              </View>
+              <Text style={ui.qty}>x {quantity}</Text>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            !loading && <Text style={ui.noRes}>No ingredients found.</Text>
+          }
+        />
+
+        {/* Filter Modal */}
+        <Modal
+          transparent
+          animationType="slide"
+          visible={filterOpen}
+          onRequestClose={() => setFilterOpen(false)}
+        >
+          <Pressable style={modal.backdrop} onPress={() => setFilterOpen(false)}>
+            <Pressable style={modal.sheet}>
+              <ScrollView>
+                <Text style={modal.title}>Filter Search Results</Text>
+
+                <Text style={modal.label}>Categories</Text>
+                {allCategories.map((c) => (
+                  <TouchableOpacity
+                    key={c}
+                    style={modal.catRow}
+                    onPress={() =>
+                      setSelectedCategories((prev) =>
+                        prev.includes(c)
+                          ? prev.filter((x) => x !== c)
+                          : [...prev, c]
+                      )
                     }
-                    size={22}
-                    color={colors.primary}
-                  />
-                  <Text style={modal.catText}>{c}</Text>
-                </TouchableOpacity>
-              ))}
+                  >
+                    <Ionicons
+                      name={
+                        selectedCategories.includes(c)
+                          ? "checkbox"
+                          : "square-outline"
+                      }
+                      size={22}
+                      color={colors.primary}
+                    />
+                    <Text style={modal.catText}>{c}</Text>
+                  </TouchableOpacity>
+                ))}
 
-              <Text style={modal.label}>Nutrient Bounds (per 100 g)</Text>
-              {[
-                ["Calories (kcal)", "kcal"],
-                ["Protein (g)", "protein"],
-                ["Fat (g)", "fat"],
-                ["Carbs (g)", "carb"],
-                ["Fiber (g)", "fiber"],
-              ].map(([lbl, key]) => {
-                const b = bounds[key];
-                return (
-                  <View style={modal.row} key={key}>
-                    <View style={modal.toggleGroup}>
-                      {["min", "max"].map((m) => (
-                        <TouchableOpacity
-                          key={m}
-                          style={[
-                            modal.toggle,
-                            b.mode === m && modal.toggleSel,
-                          ]}
-                          onPress={() =>
-                            setBounds((p) => ({
-                              ...p,
-                              [key]: { ...p[key], mode: m },
-                            }))
-                          }
-                        >
-                          <Text
-                            style={
-                              b.mode === m
-                                ? modal.toggleTextSel
-                                : modal.toggleText
+                <Text style={modal.label}>Nutrient Bounds (per 100 g)</Text>
+                {[
+                  ["Calories (kcal)", "kcal"],
+                  ["Protein (g)", "protein"],
+                  ["Fat (g)", "fat"],
+                  ["Carbs (g)", "carb"],
+                  ["Fiber (g)", "fiber"],
+                ].map(([lbl, key]) => {
+                  const b = bounds[key];
+                  return (
+                    <View style={modal.row} key={key}>
+                      <View style={modal.toggleGroup}>
+                        {["min", "max"].map((m) => (
+                          <TouchableOpacity
+                            key={m}
+                            style={[
+                              modal.toggle,
+                              b.mode === m && modal.toggleSel,
+                            ]}
+                            onPress={() =>
+                              setBounds((p) => ({
+                                ...p,
+                                [key]: { ...p[key], mode: m },
+                              }))
                             }
                           >
-                            {m.toUpperCase()}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
+                            <Text
+                              style={
+                                b.mode === m
+                                  ? modal.toggleTextSel
+                                  : modal.toggleText
+                              }
+                            >
+                              {m.toUpperCase()}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                      <TextInput
+                        placeholder={lbl}
+                        placeholderTextColor={textcolors.lightgrey}
+                        keyboardType="numeric"
+                        value={b.value}
+                        onChangeText={(v) =>
+                          setBounds((p) => ({
+                            ...p,
+                            [key]: { ...p[key], value: v },
+                          }))
+                        }
+                        style={modal.input}
+                      />
                     </View>
-                    <TextInput
-                      placeholder={lbl}
-                      placeholderTextColor={textcolors.lightgrey}
-                      keyboardType="numeric"
-                      value={b.value}
-                      onChangeText={(v) =>
-                        setBounds((p) => ({
-                          ...p,
-                          [key]: { ...p[key], value: v },
-                        }))
-                      }
-                      style={modal.input}
-                    />
-                  </View>
-                );
-              })}
+                  );
+                })}
 
-              <View style={modal.actions}>
-                <TouchableOpacity style={modal.resetBtn} onPress={resetFilters}>
-                  <Text style={styles.regularText}>Reset</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={modal.applyBtn}
-                  onPress={() => setFilterOpen(false)}
-                >
-                  <Text style={styles.regularText}>Apply</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
+                <View style={modal.actions}>
+                  <TouchableOpacity style={modal.resetBtn} onPress={resetFilters}>
+                    <Text style={styles.regularText}>Reset</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={modal.applyBtn}
+                    onPress={() => setFilterOpen(false)}
+                  >
+                    <Text style={styles.regularText}>Apply</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </Pressable>
           </Pressable>
-        </Pressable>
-      </Modal>
+        </Modal>
+      </View>
     </SafeAreaView>
   );
 };

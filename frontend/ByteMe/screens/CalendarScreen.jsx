@@ -128,117 +128,119 @@ const CalendarScreen = () => {
 
   return (
     <SafeAreaView style={styles.whiteBackground}>
-      <View style={styles.screenContainer}>
-        <Text style={styles.title}>Calendar</Text>
+      <View style={styles.screenContainer}>      
+        <ScrollView>
+          <Text style={styles.title}>Calendar</Text>
 
-      <Calendar
-        onDayPress={(day) => {
-          // console.log('Calendar day pressed:', day);
-          setSelectedDate(prevSelectedDate => {
-              if (prevSelectedDate === day.dateString) {
-                  // console.log('Deselecting date:', day.dateString);
+        <Calendar
+          onDayPress={(day) => {
+            // console.log('Calendar day pressed:', day);
+            setSelectedDate(prevSelectedDate => {
+                if (prevSelectedDate === day.dateString) {
+                    // console.log('Deselecting date:', day.dateString);
+                    return null;
+                } else {
+                    // console.log('Selecting date:', day.dateString);
+                    return day.dateString;
+                }
+            });
+          }}
+          markedDates={markedDates}
+          markingType="custom"
+          theme={{
+            calendarBackground: "#fff",
+            textSectionTitleColor: "#133E7C",
+            selectedDayBackgroundColor: "#133E7C",
+            selectedDayTextColor: "#fff",
+            todayTextColor: "#133E7C",
+            dayTextColor: "#000",
+            textDisabledColor: "#d9e1e8",
+            arrowColor: "#133E7C",
+            monthTextColor: "#133E7C",
+          }}
+        />
+
+        <ScrollView style={det.cardsContainer}>
+        {displayedDays.map((day, index) => {
+          try {
+              const [year, month, dayOfMonth] = day.date.split('-');
+              const dateObject = new Date(year, parseInt(month) - 1, dayOfMonth);
+
+              if (isNaN(dateObject.getTime())) {
+                  console.error(`!!! INVALID DATE OBJECT parsed from string: ${day.date}`);
                   return null;
-              } else {
-                  // console.log('Selecting date:', day.dateString);
-                  return day.dateString;
               }
-          });
-        }}
-        markedDates={markedDates}
-        markingType="custom"
-        theme={{
-          calendarBackground: "#fff",
-          textSectionTitleColor: "#133E7C",
-          selectedDayBackgroundColor: "#133E7C",
-          selectedDayTextColor: "#fff",
-          todayTextColor: "#133E7C",
-          dayTextColor: "#000",
-          textDisabledColor: "#d9e1e8",
-          arrowColor: "#133E7C",
-          monthTextColor: "#133E7C",
-        }}
-      />
 
-      <ScrollView style={det.cardsContainer}>
-       {displayedDays.map((day, index) => {
-         try {
-             const [year, month, dayOfMonth] = day.date.split('-');
-             const dateObject = new Date(year, parseInt(month) - 1, dayOfMonth);
+              const dayOfWeek = dateObject.toLocaleDateString('en-US', { weekday: 'long' });
+              const monthDay = dateObject.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+              const yyyyMMdd = day.date;
 
-             if (isNaN(dateObject.getTime())) {
-                 console.error(`!!! INVALID DATE OBJECT parsed from string: ${day.date}`);
-                 return null;
-             }
+              const mealList = day.meals.map((m, i) => (
+                <View key={`${day.date}-meal-${i}`} style={[det.mealRow, i < day.meals.length - 1 && det.mealRowBorder]}>
+                  <View style={det.mealBox}>
+                    <Text style={det.mealText}>{m.recipeLabel || m.recipeId || 'Unknown Meal'}</Text>
+                  </View>
+                </View>
+              ));
 
-             const dayOfWeek = dateObject.toLocaleDateString('en-US', { weekday: 'long' });
-             const monthDay = dateObject.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
-             const yyyyMMdd = day.date;
+              const totalCalories = day.totalCalories ?? day.meals.reduce((sum, m) => sum + (Number(m.calories) || 0), 0);
 
-             const mealList = day.meals.map((m, i) => (
-               <View key={`${day.date}-meal-${i}`} style={[det.mealRow, i < day.meals.length - 1 && det.mealRowBorder]}>
-                 <View style={det.mealBox}>
-                   <Text style={det.mealText}>{m.recipeLabel || m.recipeId || 'Unknown Meal'}</Text>
-                 </View>
-               </View>
-             ));
+              return (
+                <React.Fragment key={yyyyMMdd}>
+                  <View style={det.card}>
+                    {/* Edit Button - Pass 'YYYY-MM-DD' */}
+                    <TouchableOpacity
+                      style={det.editIconWrapper}
+                      onPress={() =>
+                        navigation.navigate('addday', {
+                          editing: true,
+                          existingDate: yyyyMMdd,
+                          existingMeals: day.meals,
+                        })
+                      }
+                    >
+                      <Image source={EditIcon} style={det.editIcon} />
+                    </TouchableOpacity>
 
-             const totalCalories = day.totalCalories ?? day.meals.reduce((sum, m) => sum + (Number(m.calories) || 0), 0);
+                    {/* Card Row */}
+                    <View style={det.cardRow}>
+                      <View style={det.dateBox}>
+                        {/* Display formatted local date */}
+                        <Text style={det.dateDay}>{dayOfWeek}</Text>
+                        <Text style={det.dateNumber}>{monthDay}</Text>
+                      </View>
+                      <View style={det.verticalDivider} />
+                      {/* Render the list of meals */}
+                      <View style={det.cardContent}>{mealList}</View>
+                    </View>
 
-             return (
-               <React.Fragment key={yyyyMMdd}>
-                 <View style={det.card}>
-                   {/* Edit Button - Pass 'YYYY-MM-DD' */}
-                   <TouchableOpacity
-                     style={det.editIconWrapper}
-                     onPress={() =>
-                       navigation.navigate('addday', {
-                         editing: true,
-                         existingDate: yyyyMMdd,
-                         existingMeals: day.meals,
-                       })
-                     }
-                   >
-                     <Image source={EditIcon} style={det.editIcon} />
-                   </TouchableOpacity>
+                    {/* Trash Icon - Pass 'YYYY-MM-DD' */}
+                    <View style={det.trashWrapper}>
+                      {/* Ensure deleteDay function expects 'YYYY-MM-DD' */}
+                      <TouchableOpacity onPress={() => deleteDay(yyyyMMdd)}>
+                        <Ionicons name="trash" size={24} color="#d00" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
 
-                   {/* Card Row */}
-                   <View style={det.cardRow}>
-                     <View style={det.dateBox}>
-                       {/* Display formatted local date */}
-                       <Text style={det.dateDay}>{dayOfWeek}</Text>
-                       <Text style={det.dateNumber}>{monthDay}</Text>
-                     </View>
-                     <View style={det.verticalDivider} />
-                     {/* Render the list of meals */}
-                     <View style={det.cardContent}>{mealList}</View>
-                   </View>
+                  {/* Footer Box */}
+                  <View style={det.footerBox}>
+                    <Text style={det.footerText}>
+                      Total Calories: {totalCalories.toLocaleString()}
+                    </Text>
+                  </View>
+                </React.Fragment>
+              );
 
-                   {/* Trash Icon - Pass 'YYYY-MM-DD' */}
-                   <View style={det.trashWrapper}>
-                     {/* Ensure deleteDay function expects 'YYYY-MM-DD' */}
-                     <TouchableOpacity onPress={() => deleteDay(yyyyMMdd)}>
-                       <Ionicons name="trash" size={24} color="#d00" />
-                     </TouchableOpacity>
-                   </View>
-                 </View>
+          } catch (e) {
+              console.error(`Error rendering day card for date: ${day.date}`, e);
+              return <Text key={`error-${index}`}>Error displaying day: {day.date}</Text>;
+          }
+        })}
+        </ScrollView>
 
-                 {/* Footer Box */}
-                 <View style={det.footerBox}>
-                   <Text style={det.footerText}>
-                     Total Calories: {totalCalories.toLocaleString()}
-                   </Text>
-                 </View>
-               </React.Fragment>
-             );
-
-         } catch (e) {
-             console.error(`Error rendering day card for date: ${day.date}`, e);
-             return <Text key={`error-${index}`}>Error displaying day: {day.date}</Text>;
-         }
-       })}
-      </ScrollView>
-
-      
+        <View style={{marginBottom: 60}} />
+        </ScrollView>
       </View>
       <TouchableOpacity
         style={styles.addButton}

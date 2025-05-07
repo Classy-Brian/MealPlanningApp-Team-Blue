@@ -120,7 +120,7 @@ const SavedRecipesDupi = () => {
               recipe.label.toLowerCase().includes(query.toLowerCase())
             )}
             keyExtractor={(item) => item.uri}
-            ListFooterComponent={<View style={{marginBottom: 100}} />}
+            ListFooterComponent={<View style={{marginBottom: 260}} />}
             renderItem={({ item }) => {
               const isSelected = selectedRecipes.find(r => r.uri === item.uri);
               return (
@@ -137,13 +137,17 @@ const SavedRecipesDupi = () => {
         )}
 
         {/* Confirm Button */}
-        {selectedRecipes.length > 0 && (
-          <TouchableOpacity style={det.confirmButton} onPress={confirmSelection}>
-            <Text style={det.confirmButtonText}>Confirm Selection</Text>
-          </TouchableOpacity>
-        )}
+        
       </View>
       {/* Back Button */}
+      {selectedRecipes.length > 0 && (
+        <View style={det.backgroundwhite}>
+          <TouchableOpacity style={det.confirmButton} onPress={confirmSelection}>
+            <Text style={styles.regularText}>Confirm Selection</Text>
+          </TouchableOpacity>
+        </View>  
+         )}
+      
       
     </SafeAreaView>
   );
@@ -151,6 +155,16 @@ const SavedRecipesDupi = () => {
 
 const det = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
+  backgroundwhite: {
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 25,
+    paddingHorizontal: 100,
+    bottom: 10,
+    position: 'absolute',
+    alignSelf: 'center',
+  },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -190,7 +204,9 @@ const det = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
+    // position: 'absolute',
+    // bottom: 20, 
+    // alignSelf: 'center',
   },
   confirmButtonText: { color: 'white', fontWeight: 'bold' },
   magnifyingGlassIcon: {
