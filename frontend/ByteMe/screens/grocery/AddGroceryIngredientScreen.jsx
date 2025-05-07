@@ -17,50 +17,56 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Divider } from "react-native-paper";
 
 import { colors } from "@/components/Colors";
 import { textcolors } from "@/components/TextColors";
 import { fonts } from "@/components/Fonts";
 import { styles } from "@/components/Sheet";
 import getUserIdFromToken from "@/components/getUserIdFromToken";
+
 import backarrow from "@/assets/images/back_arrow_navigate.png";
 import maglass from "@/assets/images/magnifyingglass.png";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Divider } from "react-native-paper";
-
 
 const STORAGE_KEY = "@recentGroceryQueries";
 
 const BackButton = () => {
   const navigation = useNavigation();
   return (
-    <View style={{flexDirection: 'row'}}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <View style={styles.greybutton}>
-          <Image source={backarrow} style={{ marginRight: 10 }} />
-          <Text style={styles.regularText}>Grocery</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-    
+    <TouchableOpacity onPress={() => navigation.goBack()}>
+      <View style={styles.greybutton}>
+        <Image source={backarrow} style={{ marginRight: 10 }} />
+        <Text style={styles.regularText}>Grocery</Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 
 const AddGroceryIngredientScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
 
-  /* Core state */
+  //Batch‑add setup
+
+  const initialBatch =
+    route.params?.batch ?? // direct push
+    route.params?.params?.batch ?? // nested push through tab navigator
+    [];
+  const [batchQueue, setBatchQueue] = useState(initialBatch);
+
+  // Core state
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  /* Recent searches */
+  // Recent searches
   const [recent, setRecent] = useState([]);
 
-  /* Filter modal */
+  // Filter modal
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [bounds, setBounds] = useState({
@@ -71,7 +77,7 @@ const AddGroceryIngredientScreen = () => {
     fiber: { mode: "max", value: "" },
   });
 
-  /* Load recent from storage */
+  // Load “recent” from storage
   useEffect(() => {
     (async () => {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
@@ -86,9 +92,19 @@ const AddGroceryIngredientScreen = () => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  /* API search */
-  const searchIngredients = async (manual = true) => {
-    if (!searchQuery.trim()) return;
+  // If we have a batch, kick off the first search on mount
+  useEffect(() => {
+    if (initialBatch.length > 0) {
+      const first = initialBatch[0];
+      setSearchQuery(first);
+      searchIngredients(false, first);
+    }
+  }, []);
+
+  //API search
+  const searchIngredients = async (recordRecent = true, overrideQuery) => {
+    const q = overrideQuery ?? searchQuery;
+    if (!q.trim()) return;
     setLoading(true);
     try {
       const API_ID = process.env.EXPO_PUBLIC_FOODDB_ID;
@@ -96,7 +112,7 @@ const AddGroceryIngredientScreen = () => {
       const { data } = await axios.get(
         "https://api.edamam.com/api/food-database/v2/parser",
         {
-          params: { app_id: API_ID, app_key: API_KEY, ingr: searchQuery },
+          params: { app_id: API_ID, app_key: API_KEY, ingr: q },
           timeout: 10000,
         }
       );
@@ -108,7 +124,7 @@ const AddGroceryIngredientScreen = () => {
         nutrients: h.food.nutrients || {},
       }));
       setResults(list);
-      if (manual) pushRecent(searchQuery);
+      if (recordRecent) pushRecent(q);
     } catch (err) {
       console.error("search", err);
       Alert.alert("Error", "Could not search for ingredients.");
@@ -117,7 +133,7 @@ const AddGroceryIngredientScreen = () => {
     }
   };
 
-  /* Add ingredient */
+  // Add / batch‑advance logic
   const addIngredient = async (item) => {
     try {
       const userId = await getUserIdFromToken();
@@ -125,18 +141,32 @@ const AddGroceryIngredientScreen = () => {
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/${userId}/update-grocery`,
         { foodId: item.foodId, label: item.label, quantity }
       );
-      Alert.alert("Success", "Ingredient added to your grocery list!");
-      navigation.navigate("grocery");
+
+      // If in batch, move to next
+      if (batchQueue.length > 0) {
+        const [, ...rest] = batchQueue;
+        if (rest.length > 0) {
+          setBatchQueue(rest);
+          const next = rest[0];
+          setSearchQuery(next);
+          searchIngredients(false, next);
+        } else {
+          Alert.alert("All done!", "Added every selected ingredient.");
+          navigation.navigate("grocery");
+        }
+      } else {
+        Alert.alert("Success", "Ingredient added to your grocery list!");
+        navigation.navigate("grocery");
+      }
     } catch (err) {
       console.error("add", err);
       Alert.alert("Error", "Could not add the ingredient.");
     }
   };
 
-  /* Category list */
+  // Filtering helpers & derived data
   const allCategories = [...new Set(results.map((r) => r.category))];
 
-  /* Filtering */
   const checkBound = (num, b) => {
     const v = b.value.trim();
     if (!v) return true;
@@ -158,7 +188,6 @@ const AddGroceryIngredientScreen = () => {
     return catOk && nutrOk && textOk;
   });
 
-  /* Reset helper */
   const resetFilters = () => {
     setSelectedCategories([]);
     setBounds({
@@ -170,12 +199,12 @@ const AddGroceryIngredientScreen = () => {
     });
   };
 
-  /* Chip UI */
+  // UI chip for recent searches
   const Chip = ({ text }) => (
     <TouchableOpacity
       onPress={() => {
         setSearchQuery(text);
-        searchIngredients(false);
+        searchIngredients(false, text);
       }}
       style={ui.chip}
     >
@@ -183,66 +212,40 @@ const AddGroceryIngredientScreen = () => {
     </TouchableOpacity>
   );
 
+  // Render
   return (
-    <SafeAreaView style={styles.whiteBackground}>
-      <View style={styles.screenContainer}>
-        <BackButton />
-        <Text style={styles.title}>Search Groceries</Text>
-        
-        {/* Search box  */}
-        <View style={{marginBottom: 10}}>
-          <View style={[styles.searchInput]}>
-            <Image 
-              style={ui.magnifyingGlassIcon} 
-              source={maglass} />          
-            <TextInput
-              placeholder='Search for groceries'
-              placeholderTextColor={textcolors.darkgrey}
-              onChangeText={(text) => setSearchQuery(text)}
-              value={searchQuery}
-              style={styles.regularText}
-              onSubmitEditing={() => searchIngredients()} />
-          </View>
+    <SafeAreaView style={ui.container}>
+      <BackButton />
 
-          <TouchableOpacity style={styles.filterButton} onPress={() => setFilterOpen(true)}>
-            <MaterialIcons name="filter-list" size={24} color={textcolors.darkgrey} style={{ marginRight: 8 }} />
-            <Text style={styles.regularText}>Filter</Text>
-          </TouchableOpacity>
+      {/* Search & Filter */}
+      <View style={{ marginVertical: 10 }}>
+        <View style={styles.searchInput}>
+          <Image source={maglass} style={ui.magnifyingGlassIcon} />
+          <TextInput
+            placeholder="Search for groceries"
+            placeholderTextColor={textcolors.darkgrey}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={styles.regularText}
+            onSubmitEditing={() => searchIngredients()}
+          />
         </View>
-        <Divider />
-      
-
-      {/* Search + Filter */}
-      {/* <View style={ui.row}>
-        <TextInput
-          placeholder="Search ingredient..."
-          placeholderTextColor={textcolors.darkgrey}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={ui.input}
-        />
         <TouchableOpacity
-          style={ui.filterBtn}
+          style={styles.filterButton}
           onPress={() => setFilterOpen(true)}
         >
           <MaterialIcons
             name="filter-list"
             size={24}
             color={textcolors.darkgrey}
-            style={{ marginRight: 6 }}
+            style={{ marginRight: 8 }}
           />
           <Text style={styles.regularText}>Filter</Text>
         </TouchableOpacity>
       </View>
+      <Divider />
 
-      <TouchableOpacity
-        style={ui.searchBtn}
-        onPress={() => searchIngredients()}
-      >
-        <Text style={ui.searchBtnText}>Search</Text>
-      </TouchableOpacity> */}
-
-      {/* Recent */}
+      {/* Recent search chips */}
       {recent.length > 0 && (
         <ScrollView
           horizontal
@@ -255,8 +258,10 @@ const AddGroceryIngredientScreen = () => {
         </ScrollView>
       )}
 
+      {/* Loading spinner */}
       {loading && <ActivityIndicator size="large" color={colors.primary} />}
 
+      {/* Results list */}
       <FlatList
         contentContainerStyle={{ paddingTop: 12 }}
         data={filteredResults}
@@ -387,47 +392,16 @@ const AddGroceryIngredientScreen = () => {
           </Pressable>
         </Pressable>
       </Modal>
-    </View>
     </SafeAreaView>
-    
   );
 };
 
 export default AddGroceryIngredientScreen;
 
-/* UI Styles */
+/*  Styles  */
 const ui = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white, padding: 15 },
-  row: { flexDirection: "row", alignItems: "center" },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: textcolors.lightgrey,
-    borderRadius: 8,
-    padding: 10,
-    color: textcolors.darkgrey,
-  },
-  filterBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 20,
-    backgroundColor: "#d7d9ed",
-    marginLeft: 10,
-  },
-  searchBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    padding: 10,
-    alignItems: "center",
-    marginVertical: 15,
-  },
-  searchBtnText: {
-    color: colors.white,
-    fontFamily: fonts.medium,
-    fontSize: 16,
-  },
+  magnifyingGlassIcon: { width: 30, height: 30, marginHorizontal: 15 },
   chipsContainer: {
     height: 40,
     alignItems: "center",
@@ -464,14 +438,8 @@ const ui = StyleSheet.create({
     color: textcolors.lightgrey,
     fontFamily: fonts.semiBold,
   },
-  magnifyingGlassIcon: {
-    width: 30,
-    height: 30,
-    marginHorizontal: 15
-  },
 });
 
-/* Modal Styles */
 const modal = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "#0006", justifyContent: "flex-end" },
   sheet: {
